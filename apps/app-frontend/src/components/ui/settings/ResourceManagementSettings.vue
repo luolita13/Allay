@@ -7,7 +7,7 @@ import { ref, watch } from 'vue'
 import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
 import { purge_cache_types } from '@/helpers/cache.js'
 import { get, set } from '@/helpers/settings.ts'
-import { showAppDbBackupsFolder } from '@/helpers/utils.js'
+import { showAppDbBackupsFolder, showLauncherLogsFolder } from '@/helpers/utils.js'
 import { useTheming } from '@/store/state'
 
 const { handleError } = injectNotificationManager()
@@ -119,6 +119,19 @@ const messages = defineMessages({
 		defaultMessage:
 			'Backups of important app data are stored here in case you need to recover them later.',
 	},
+	launcherLogsTitle: {
+		id: 'app.resource-management.launcher-logs.title',
+		defaultMessage: 'Launcher logs',
+	},
+	launcherLogsButton: {
+		id: 'app.resource-management.launcher-logs.button',
+		defaultMessage: 'Open logs folder',
+	},
+	launcherLogsDescription: {
+		id: 'app.resource-management.launcher-logs.description',
+		defaultMessage:
+			'Session logs are stored here. If you encounter a bug or crash, please include the latest log file when reporting the issue.',
+	},
 	selectAppDirectory: {
 		id: 'app.resource-management.select-app-directory',
 		defaultMessage: 'Select a new app directory',
@@ -188,6 +201,10 @@ function handlePurgeCacheClick() {
 
 async function openDbBackupsFolder() {
 	await showAppDbBackupsFolder().catch(handleError)
+}
+
+async function openLauncherLogsFolder() {
+	await showLauncherLogsFolder().catch(handleError)
 }
 
 async function findLauncherDir() {
@@ -302,14 +319,25 @@ async function findLauncherDir() {
 		</div>
 
 		<div class="flex flex-col gap-2.5">
-			<h2 class="mt-0 m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.dbBackupsTitle) }}</h2>
-			<button id="open-db-backups-folder" class="btn min-w-max" @click="openDbBackupsFolder">
-				<FolderOpenIcon />
-				{{ formatMessage(messages.dbBackupsButton) }}
-			</button>
-			<p class="m-0 leading-tight text-secondary">
-				{{ formatMessage(messages.dbBackupsDescription) }}
-			</p>
-		</div>
+		<h2 class="mt-0 m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.dbBackupsTitle) }}</h2>
+		<button id="open-db-backups-folder" class="btn min-w-max" @click="openDbBackupsFolder">
+			<FolderOpenIcon />
+			{{ formatMessage(messages.dbBackupsButton) }}
+		</button>
+		<p class="m-0 leading-tight text-secondary">
+			{{ formatMessage(messages.dbBackupsDescription) }}
+		</p>
 	</div>
+
+	<div class="flex flex-col gap-2.5">
+		<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.launcherLogsTitle) }}</h2>
+		<button id="open-launcher-logs-folder" class="btn min-w-max" @click="openLauncherLogsFolder">
+			<FolderOpenIcon />
+			{{ formatMessage(messages.launcherLogsButton) }}
+		</button>
+		<p class="m-0 leading-tight text-secondary">
+			{{ formatMessage(messages.launcherLogsDescription) }}
+		</p>
+	</div>
+</div>
 </template>

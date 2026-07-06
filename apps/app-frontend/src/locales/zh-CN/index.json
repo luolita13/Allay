@@ -1772,6 +1772,15 @@
   "app.resource-management.db-backups.title": {
     "message": "应用数据库备份"
   },
+  "app.resource-management.launcher-logs.button": {
+    "message": "打开日志文件夹"
+  },
+  "app.resource-management.launcher-logs.description": {
+    "message": "每次启动会话的日志都存储在此处。如果遇到 Bug 或崩溃，请在反馈问题时附上最新的日志文件。"
+  },
+  "app.resource-management.launcher-logs.title": {
+    "message": "启动器日志"
+  },
   "app.resource-management.game-file-source.auto": {
     "message": "自动（推荐）"
   },
@@ -2595,7 +2604,7 @@
     "message": "创建大厅"
   },
   "app.gamelink.create.description": {
-    "message": "在 Minecraft 中将世界开放至局域网，然后创建大厅并把大厅码分享给好友。"
+    "message": "启动一个 Minecraft 实例，在游戏内开放至局域网，然后创建大厅并把大厅码分享给好友。"
   },
   "app.gamelink.join.title": {
     "message": "加入大厅"
@@ -2668,5 +2677,116 @@
   },
   "app.gamelink.windows-only": {
     "message": "局域网联机功能目前仅在 Windows 上可用。"
+  },
+  "app.gamelink.your-skin.title": {
+    "message": "你的皮肤"
+  },
+  "app.gamelink.your-skin.description": {
+    "message": "这是你加入大厅时其他玩家看到的皮肤。"
+  },
+  "app.gamelink.sign-in-hint": {
+    "message": "登录后显示你的皮肤"
+  },
+  "app.gamelink.transition.creating": {
+    "message": "正在创建大厅..."
+  },
+  "app.gamelink.transition.joining": {
+    "message": "正在加入大厅..."
+  },
+  "app.gamelink.transition.hint": {
+    "message": "正在建立虚拟局域网连接"
+  },
+  "app.gamelink.transition.complete": {
+    "message": "已连接！"
+  },
+  "app.gamelink.players-in-lobby": {
+    "message": "大厅中的玩家"
+  },
+  "app.gamelink.you-label": {
+    "message": "你"
+  },
+  "app.gamelink.host-label": {
+    "message": "房主"
+  },
+  "app.gamelink.waiting-for-peers": {
+    "message": "等待其他玩家加入..."
+  },
+  "app.gamelink.preparing-easytier": {
+    "message": "正在准备 EasyTier VPN..."
+  },
+  "app.gamelink.downloading-easytier": {
+    "message": "正在下载 EasyTier VPN 核心..."
+  },
+  "app.gamelink.guest-label": {
+    "message": "客人"
+  },
+  "app.gamelink.instances.section": {
+    "message": "1. 选择一个 Minecraft 实例"
+  },
+  "app.gamelink.instances.hint": {
+    "message": "选择你想要和好友共享的实例。"
+  },
+  "app.gamelink.launch-instance": {
+    "message": "启动"
+  },
+  "app.gamelink.launch-hint": {
+    "message": "Minecraft 启动后，在游戏内暂停菜单点击「对局域网开放」以暴露世界。"
+  },
+  "app.gamelink.no-instances": {
+    "message": "暂无可用实例，请先创建一个。"
+  },
+  "app.gamelink.selected": {
+    "message": "已选"
+  },
+  "app.gamelink.lan-discovery.section": {
+    "message": "2. 将 Minecraft 世界开放至局域网"
+  },
+  "app.gamelink.lan-discovery.hint": {
+    "message": "在局域网广播的本地 Minecraft 世界会被自动发现。请选择一个，或手动输入端口号。"
+  },
+  "app.gamelink.scanning": {
+    "message": "正在扫描..."
+  },
+  "app.gamelink.no-local-worlds": {
+    "message": "尚未检测到本地世界。请在 Minecraft 中点击「对局域网开放」，或使用下方的延迟模式。"
+  },
+  "app.gamelink.delayed-mode": {
+    "message": "延迟模式（立即创建大厅，稍后自动检测 MC 端口）"
+  },
+  "app.gamelink.delayed-mode-hint": {
+    "message": "适用于尚未在 Minecraft 中开放局域网的情况。大厅会持续监听 MC 局域网广播并自动转发。"
+  },
+  "app.gamelink.mc-port-status.label": {
+    "message": "MC 端口"
+  },
+  "app.gamelink.mc-port-waiting": {
+    "message": "等待 MC 开放局域网..."
+  },
+  "app.gamelink.instance-launched-hint": {
+    "message": "实例已启动，请记得在游戏内开放至局域网。"
+  },
+  "app.gamelink.invalid-port-error": {
+    "message": "请输入有效的 Minecraft 局域网端口 (1-65535)。"
+  },
+  "app.gamelink.port-required-error": {
+    "message": "请选择一个本地世界、输入端口号，或启用延迟模式。"
+  },
+  "app.gamelink.code-required-error": {
+    "message": "请输入大厅码。"
+  },
+  "app.gamelink.stage.preparing": {
+    "message": "正在准备 EasyTier VPN..."
+  },
+  "app.gamelink.stage.downloading": {
+    "message": "正在下载 EasyTier 核心..."
+  },
+  "app.gamelink.stage.connecting": {
+    "message": "正在建立虚拟局域网..."
+  },
+  "app.gamelink.stage.ready": {
+    "message": "正在协商 Scaffolding 协议..."
+  },
+  "app.gamelink.stage.complete": {
+    "message": "一切就绪！欢迎来到大厅。"
   }
 }

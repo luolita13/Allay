@@ -26,6 +26,10 @@ function dismiss() {
 function openGitHub() {
 	openUrl('https://github.com/luolita13')
 }
+
+function openRepo() {
+	openUrl('https://github.com/luolita13/code')
+}
 </script>
 
 <template>
@@ -81,7 +85,16 @@ function openGitHub() {
 					>
 						github.com/luolita13
 					</button>
-					. Source and issues can be found there.
+					.
+				</p>
+				<p class="m-0">
+					Source repository:
+					<button
+						class="text-brand hover:underline bg-transparent border-0 p-0 cursor-pointer"
+						@click="openRepo"
+					>
+						github.com/luolita13/code
+					</button>
 				</p>
 			</div>
 

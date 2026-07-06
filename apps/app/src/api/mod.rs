@@ -13,6 +13,7 @@ pub mod metadata;
 pub mod minecraft_skins;
 pub mod mr_auth;
 pub mod process;
+pub mod scaffolding;
 pub mod settings;
 pub mod system;
 pub mod shortcuts;

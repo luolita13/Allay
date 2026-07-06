@@ -114,6 +114,7 @@
 		"ads:default",
 		"friends:default",
 		"worlds:default",
-		"link:default"
+		"link:default",
+		"curseforge:default"
 	]
 }

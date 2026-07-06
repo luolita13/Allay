@@ -6,7 +6,6 @@ import {
 	CoffeeIcon,
 	InfoIcon,
 	MonitorIcon,
-	SettingsIcon,
 	WrenchIcon,
 } from '@modrinth/assets'
 import {
@@ -22,7 +21,6 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { computed, nextTick, ref, watch } from 'vue'
 
-import AdvancedSettings from '@/components/ui/instance_settings/AdvancedSettings.vue'
 import GeneralSettings from '@/components/ui/instance_settings/GeneralSettings.vue'
 import HooksSettings from '@/components/ui/instance_settings/HooksSettings.vue'
 import InstallationSettings from '@/components/ui/instance_settings/InstallationSettings.vue'
@@ -122,14 +120,6 @@ const tabs = computed<TabbedModalTab[]>(() => [
 		}),
 		icon: CodeIcon,
 		content: HooksSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'instance.settings.tabs.advanced',
-			defaultMessage: 'Advanced',
-		}),
-		icon: SettingsIcon,
-		content: AdvancedSettings,
 	},
 ])
 

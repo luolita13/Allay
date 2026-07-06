@@ -180,6 +180,9 @@ pub enum LoadingBarType {
         version: String,
         current_version: String,
     },
+    EasyTierDownload {
+        version: String,
+    },
 }
 
 #[derive(Serialize, Clone)]
