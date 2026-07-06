@@ -349,6 +349,19 @@ fn main() {
                     ),
             )
             .plugin(
+                "link",
+                InlinedPlugin::new()
+                    .commands(&[
+                        "link_create_lobby",
+                        "link_join_lobby",
+                        "link_leave_lobby",
+                        "link_get_lobby_status",
+                    ])
+                    .default_permission(
+                        DefaultPermissionRule::AllowAllCommands,
+                    ),
+            )
+            .plugin(
                 "curseforge",
                 InlinedPlugin::new()
                     .commands(&[

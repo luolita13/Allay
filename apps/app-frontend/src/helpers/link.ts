@@ -1,15 +1,11 @@
 import { invoke } from '@tauri-apps/api/core'
 
-export interface LobbyInfo {
-	lobbyCode: string
-	virtualIp: string
-	localPort: number
-}
-
 export interface LobbyStatus {
 	state: 'idle' | 'host' | 'client' | 'error'
 	lobbyCode: string | null
+	networkName: string | null
 	virtualIp: string | null
+	mcPort: number | null
 	localPort: number | null
 	peerCount: number
 	lastRefresh: number | null
@@ -20,7 +16,7 @@ export async function create_lobby(
 	networkName: string,
 	password: string,
 	mcPort: number,
-): Promise<LobbyInfo> {
+): Promise<string> {
 	return await invoke('plugin:link|link_create_lobby', {
 		networkName,
 		password,
@@ -28,7 +24,7 @@ export async function create_lobby(
 	})
 }
 
-export async function join_lobby(lobbyCode: string): Promise<LobbyInfo> {
+export async function join_lobby(lobbyCode: string): Promise<number> {
 	return await invoke('plugin:link|link_join_lobby', { lobbyCode })
 }
 

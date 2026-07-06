@@ -1,18 +1,24 @@
 use crate::api::Result;
 use base64::Engine;
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
 use std::net::SocketAddr;
 use std::process::Stdio;
 use std::sync::Arc;
+use tokio::fs;
 use tokio::io;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::process::{Child, Command};
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tauri::Manager;
+use tauri_plugin_http::reqwest;
 
 const LOBBY_CODE_PREFIX: &str = "ET-";
 const HOST_VIRTUAL_IP: &str = "10.114.51.41";
+const EASYTIER_VERSION: &str = "v2.2.4";
+const EASYTIER_DOWNLOAD_URL: &str =
+    "https://github.com/EasyTier/EasyTier/releases/download/v2.2.4/easytier-windows-x86_64-v2.2.4.zip";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct LobbyPayload {
@@ -37,14 +43,14 @@ pub enum LinkRole {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LobbyStatus {
-    pub role: LinkRole,
+    pub state: LinkRole,
     pub lobby_code: Option<String>,
     pub network_name: Option<String>,
-    pub host_virtual_ip: Option<String>,
+    pub virtual_ip: Option<String>,
     pub mc_port: Option<u16>,
-    pub local_proxy_port: Option<u16>,
+    pub local_port: Option<u16>,
     pub peer_count: usize,
-    pub last_peer_refresh: Option<chrono::DateTime<chrono::Utc>>,
+    pub last_refresh: Option<i64>,
     pub error: Option<String>,
 }
 
@@ -225,14 +231,14 @@ pub async fn link_get_lobby_status(
 ) -> Result<LobbyStatus> {
     let state = manager.state.read().await;
     Ok(LobbyStatus {
-        role: state.role,
+        state: state.role,
         lobby_code: state.lobby_code.clone(),
         network_name: state.payload.as_ref().map(|p| p.network_name.clone()),
-        host_virtual_ip: state.payload.as_ref().map(|p| p.host_virtual_ip.clone()),
+        virtual_ip: state.payload.as_ref().map(|p| p.host_virtual_ip.clone()),
         mc_port: state.payload.as_ref().map(|p| p.mc_port),
-        local_proxy_port: state.local_proxy_port,
+        local_port: state.local_proxy_port,
         peer_count: state.peer_count,
-        last_peer_refresh: state.last_peer_refresh,
+        last_refresh: state.last_peer_refresh.map(|dt| dt.timestamp_millis()),
         error: state.error.clone(),
     })
 }
@@ -267,11 +273,103 @@ async fn easytier_dir() -> theseus::Result<std::path::PathBuf> {
     Ok(state.directories.caches_dir().join("EasyTier"))
 }
 
+async fn ensure_easytier_binaries() -> theseus::Result<()> {
+    let dir = easytier_dir().await?;
+    let core = dir.join("easytier-core.exe");
+    let cli = dir.join("easytier-cli.exe");
+
+    if core.exists() && cli.exists() {
+        return Ok(());
+    }
+
+    fs::create_dir_all(&dir).await.map_err(|e| {
+        theseus::ErrorKind::FSError(format!("Failed to create EasyTier directory: {e}")).as_error()
+    })?;
+
+    let response = reqwest::get(EASYTIER_DOWNLOAD_URL).await.map_err(|e| {
+        theseus::ErrorKind::OtherError(format!(
+            "Failed to download EasyTier {EASYTIER_VERSION}: {e}"
+        ))
+        .as_error()
+    })?;
+    let response = response.error_for_status().map_err(|e| {
+        theseus::ErrorKind::OtherError(format!(
+            "Failed to download EasyTier {EASYTIER_VERSION}: {e}"
+        ))
+        .as_error()
+    })?;
+    let bytes = response.bytes().await.map_err(|e| {
+        theseus::ErrorKind::OtherError(format!(
+            "Failed to read EasyTier {EASYTIER_VERSION} download: {e}"
+        ))
+        .as_error()
+    })?;
+
+    extract_easytier_zip(&bytes, &dir).await?;
+
+    if !core.exists() || !cli.exists() {
+        return Err(theseus::ErrorKind::FSError(
+            "EasyTier binaries missing after extraction".to_string(),
+        )
+        .as_error());
+    }
+
+    Ok(())
+}
+
+async fn extract_easytier_zip(bytes: &[u8], dir: &std::path::Path) -> theseus::Result<()> {
+    let mut reader = async_zip::tokio::read::seek::ZipFileReader::with_tokio(Cursor::new(bytes.to_vec()))
+        .await
+        .map_err(|e| {
+            theseus::ErrorKind::FSError(format!("Failed to read EasyTier zip: {e}")).as_error()
+        })?;
+
+    let entry_count = reader.file().entries().len();
+    for i in 0..entry_count {
+        let filename = reader
+            .file()
+            .entries()
+            .get(i)
+            .and_then(|e| e.filename().as_str().ok())
+            .unwrap_or("")
+            .to_string();
+        let name = std::path::Path::new(&filename)
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or(&filename)
+            .to_string();
+
+        if name != "easytier-core.exe" && name != "easytier-cli.exe" {
+            continue;
+        }
+
+        let target = dir.join(&name);
+        let mut data = vec![];
+        let mut entry_reader = reader.reader_with_entry(i).await.map_err(|e| {
+            theseus::ErrorKind::FSError(format!("Failed to open zip entry {name}: {e}")).as_error()
+        })?;
+        entry_reader
+            .read_to_end_checked(&mut data)
+            .await
+            .map_err(|e| {
+                theseus::ErrorKind::FSError(format!("Failed to extract {name}: {e}")).as_error()
+            })?;
+
+        fs::write(&target, data).await.map_err(|e| {
+            theseus::ErrorKind::FSError(format!("Failed to write {name}: {e}")).as_error()
+        })?;
+    }
+
+    Ok(())
+}
+
 async fn start_easytier_core(
     state: &RwLock<LinkState>,
     as_host: bool,
     mc_port: u16,
 ) -> theseus::Result<(Child, u16)> {
+    ensure_easytier_binaries().await?;
+
     let (network_name, password) = {
         let state = state.read().await;
         let payload = state.payload.as_ref().ok_or_else(|| {
@@ -282,10 +380,6 @@ async fn start_easytier_core(
 
     let dir = easytier_dir().await?;
     let core = dir.join("easytier-core.exe");
-
-    if !core.exists() {
-        return Err(theseus::ErrorKind::FSError("EasyTier core not found".to_string()).as_error());
-    }
 
     let rpc_port = find_free_port().await?;
 
@@ -328,8 +422,7 @@ async fn start_easytier_core(
                 .arg(mc_port.to_string());
         }
     } else {
-        cmd.arg("-d")
-            .arg("--hostname")
+        cmd.arg("--hostname")
             .arg(uuid::Uuid::new_v4().to_string())
             .arg("--tcp-whitelist")
             .arg("0")
