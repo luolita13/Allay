@@ -88,7 +88,6 @@ import PromotionWrapper from '@/components/ui/PromotionWrapper.vue'
 import QuickInstanceSwitcher from '@/components/ui/QuickInstanceSwitcher.vue'
 import SplashScreen from '@/components/ui/SplashScreen.vue'
 import StartupNoticeModal from '@/components/ui/StartupNoticeModal.vue'
-import VersionUpdateModal from '@/components/ui/VersionUpdateModal.vue'
 import WindowControls from '@/components/ui/WindowControls.vue'
 import { useCheckDisableMouseover } from '@/composables/macCssFix.js'
 import { config } from '@/config'
@@ -279,8 +278,6 @@ const criticalErrorMessage = ref()
 
 const isMaximized = ref(false)
 
-const versionUpdateModal = ref()
-
 const authUnreachableDebug = useDebugLogger('AuthReachableChecker')
 const authServerQuery = useQuery({
 	queryKey: ['authServerReachability'],
@@ -309,13 +306,6 @@ onMounted(async () => {
 	document.querySelector('body').addEventListener('auxclick', handleAuxClick)
 
 	checkUpdates()
-
-	// Check for custom edition update from remote version.json
-	try {
-		await versionUpdateModal.value?.checkForUpdate()
-	} catch (e) {
-		console.error('Custom update check failed:', e)
-	}
 })
 
 onUnmounted(async () => {
@@ -1850,7 +1840,6 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	<InstallToPlayModal ref="installToPlayModal" />
 	<UpdateToPlayModal ref="updateToPlayModal" />
 	<StartupNoticeModal />
-	<VersionUpdateModal ref="versionUpdateModal" />
 </template>
 
 <style lang="scss" scoped>
