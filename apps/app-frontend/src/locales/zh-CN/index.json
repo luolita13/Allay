@@ -2524,5 +2524,62 @@
   },
   "unknown-pack-warning-modal.warning.title": {
     "message": "未知文件警告"
+  },
+  "minecraft-login-modal.title": {
+    "message": "登录 Minecraft"
+  },
+  "minecraft-login-modal.description": {
+    "message": "选择你想要的登录方式。"
+  },
+  "minecraft-login-modal.microsoft-label": {
+    "message": "Microsoft"
+  },
+  "minecraft-login-modal.microsoft-description": {
+    "message": "使用 Microsoft 账户登录（官方正版）。"
+  },
+  "minecraft-login-modal.offline-label": {
+    "message": "离线模式"
+  },
+  "minecraft-login-modal.offline-description": {
+    "message": "无需验证即可游玩。部分皮肤和需要验证的服务器将无法使用。"
+  },
+  "minecraft-login-modal.yggdrasil-label": {
+    "message": "第三方登录（Yggdrasil）"
+  },
+  "minecraft-login-modal.yggdrasil-description": {
+    "message": "登录到支持 authlib-injector 的验证服务器（例如 LittleSkin）。"
+  },
+  "minecraft-login-modal.username-label": {
+    "message": "用户名"
+  },
+  "minecraft-login-modal.username-placeholder": {
+    "message": "请输入用户名"
+  },
+  "minecraft-login-modal.username-error": {
+    "message": "用户名必须为 3-16 个字符，只能包含字母、数字或下划线。"
+  },
+  "minecraft-login-modal.server-url-label": {
+    "message": "服务器地址"
+  },
+  "minecraft-login-modal.server-url-placeholder": {
+    "message": "https://example.com/api/yggdrasil"
+  },
+  "minecraft-login-modal.password-label": {
+    "message": "密码"
+  },
+  "minecraft-login-modal.password-placeholder": {
+    "message": "请输入密码"
+  },
+  "minecraft-login-modal.proceed-label": {
+    "message": "登录"
+  },
+  "minecraft-login-modal.microsoft-help": {
+    "message": "将打开浏览器窗口以完成登录。"
+  },
+  "minecraft-login-modal.offline-help": {
+    "message": "无需网络连接。适用于离线游玩或离线模式的局域网联机。"
+  },
+  "minecraft-login-modal.yggdrasil-help": {
+    "message": "支持任何 authlib-injector 兼容服务器。首次启动时将自动下载 authlib-injector。"
   }
 }
