@@ -20,8 +20,9 @@ import { computed, ref } from 'vue'
 
 import { ChatIcon } from '@/assets/icons'
 import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
+import MinecraftLoginModal from '@/components/ui/modal/MinecraftLoginModal.vue'
 import { trackEvent } from '@/helpers/analytics'
-import { login as login_flow, set_default_user } from '@/helpers/auth.js'
+import { set_default_user } from '@/helpers/auth.js'
 import { install_existing_instance } from '@/helpers/install'
 import { cancel_directory_change } from '@/helpers/settings.ts'
 import { handleSevereError } from '@/store/error.js'
@@ -129,7 +130,7 @@ const messages = defineMessages({
 	signInToPlayDesc: {
 		id: 'app.error-modal.sign-in-to-play.description',
 		defaultMessage:
-			"To play this instance, you must sign in through Microsoft below. If you don't have a Minecraft account, you can purchase the game on the Minecraft website.",
+			"To play this instance, you must sign in to a Minecraft account below. If you don't have a Minecraft account, you can purchase the game on the Minecraft website.",
 	},
 	signInToMinecraft: {
 		id: 'app.error-modal.sign-in-to-minecraft',
@@ -175,6 +176,7 @@ const messages = defineMessages({
 })
 
 const errorModal = ref()
+const loginModal = ref()
 const error = ref()
 const closable = ref(true)
 const errorCollapsed = ref(false)
@@ -242,22 +244,14 @@ defineExpose({
 })
 
 const loadingMinecraft = ref(false)
-async function loginMinecraft() {
-	try {
-		loadingMinecraft.value = true
-		const loggedIn = await login_flow()
+function loginMinecraft() {
+	loginModal.value?.show('microsoft')
+	trackEvent('AccountLogIn', { source: 'ErrorModal' })
+}
 
-		if (loggedIn) {
-			await set_default_user(loggedIn.profile.id).catch(handleError)
-		}
-
-		await trackEvent('AccountLogIn', { source: 'ErrorModal' })
-		loadingMinecraft.value = false
-		errorModal.value.hide()
-	} catch (err) {
-		loadingMinecraft.value = false
-		handleSevereError(err)
-	}
+async function onLoginSuccess(credential) {
+	await set_default_user(credential.profile.id).catch(handleError)
+	errorModal.value.hide()
 }
 
 async function cancelDirectoryChange() {
@@ -465,6 +459,8 @@ async function copyToClipboard(text) {
 			</template>
 		</div>
 	</ModalWrapper>
+
+	<MinecraftLoginModal ref="loginModal" @success="onLoginSuccess" />
 </template>
 
 <style>

@@ -699,7 +699,7 @@
     "message": "登录 Minecraft"
   },
   "app.error-modal.sign-in-to-play.description": {
-    "message": "要游玩此实例，你必须通过下方的 Microsoft 登录。如果你没有 Minecraft 账号，可以在 Minecraft 官网购买游戏。"
+    "message": "要游玩此实例，你必须先登录一个 Minecraft 账号。如果你没有 Minecraft 账号，可以在 Minecraft 官网购买游戏。"
   },
   "app.error-modal.state-init.description": {
     "message": "Modrinth App 加载失败。这可能是因为文件损坏或缺少关键文件。"
