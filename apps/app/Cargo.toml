@@ -9,6 +9,7 @@ license = "GPL-3.0-only"
 
 [dependencies]
 async_zip = { workspace = true, features = ["deflate", "tokio-fs"] }
+base64 = { workspace = true }
 chrono = { workspace = true }
 daedalus = { workspace = true }
 dashmap = { workspace = true }
@@ -34,7 +35,7 @@ tauri-plugin-updater = { workspace = true }
 tauri-plugin-window-state = { workspace = true }
 theseus = { workspace = true, features = ["tauri"] }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["time"] }
+tokio = { workspace = true, features = ["time", "process", "net"] }
 tracing = { workspace = true }
 tracing-error = { workspace = true }
 url = { workspace = true }

@@ -27,6 +27,7 @@ import {
 	ServerStackIcon,
 	SettingsIcon,
 	UserIcon,
+	UsersIcon,
 	WorldIcon,
 	XIcon,
 } from '@modrinth/assets'
@@ -353,6 +354,10 @@ const messages = defineMessages({
 	navSkins: {
 		id: 'app.nav.skins',
 		defaultMessage: 'Skin selector',
+	},
+	navGameLink: {
+		id: 'app.nav.gamelink',
+		defaultMessage: 'LAN Multiplayer',
 	},
 	navLibrary: {
 		id: 'app.nav.library',
@@ -1531,6 +1536,9 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			</NavButton>
 			<NavButton v-tooltip.right="formatMessage(messages.navSkins)" to="/skins">
 				<ChangeSkinIcon />
+			</NavButton>
+			<NavButton v-tooltip.right="formatMessage(messages.navGameLink)" to="/gamelink">
+				<UsersIcon />
 			</NavButton>
 			<NavButton
 				v-tooltip.right="formatMessage(messages.navLibrary)"

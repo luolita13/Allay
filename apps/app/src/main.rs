@@ -237,6 +237,7 @@ fn main() {
         .plugin(api::instance::init())
         .plugin(api::logs::init())
         .plugin(api::jre::init())
+        .plugin(api::link::init())
         .plugin(api::metadata::init())
         .plugin(api::minecraft_skins::init())
         .plugin(api::process::init())

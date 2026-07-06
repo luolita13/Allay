@@ -2581,5 +2581,92 @@
   },
   "minecraft-login-modal.yggdrasil-help": {
     "message": "支持任何 authlib-injector 兼容服务器。首次启动时将自动下载 authlib-injector。"
+  },
+  "app.nav.gamelink": {
+    "message": "局域网联机"
+  },
+  "app.gamelink.title": {
+    "message": "局域网联机"
+  },
+  "app.gamelink.description": {
+    "message": "通过 EasyTier 虚拟局域网与好友一起游玩本地 Minecraft 世界。"
+  },
+  "app.gamelink.create.title": {
+    "message": "创建大厅"
+  },
+  "app.gamelink.create.description": {
+    "message": "在 Minecraft 中将世界开放至局域网，然后创建大厅并把大厅码分享给好友。"
+  },
+  "app.gamelink.join.title": {
+    "message": "加入大厅"
+  },
+  "app.gamelink.join.description": {
+    "message": "粘贴房主分享的大厅码，连接到对方的世界。"
+  },
+  "app.gamelink.network-name.label": {
+    "message": "网络名称"
+  },
+  "app.gamelink.network-name.placeholder": {
+    "message": "我的私人网络"
+  },
+  "app.gamelink.password.label": {
+    "message": "密码"
+  },
+  "app.gamelink.password.placeholder": {
+    "message": "至少 6 位字符"
+  },
+  "app.gamelink.mc-port.label": {
+    "message": "Minecraft 局域网端口"
+  },
+  "app.gamelink.mc-port.placeholder": {
+    "message": "例如 61234"
+  },
+  "app.gamelink.create.button": {
+    "message": "创建大厅"
+  },
+  "app.gamelink.lobby-code.label": {
+    "message": "大厅码"
+  },
+  "app.gamelink.lobby-code.placeholder": {
+    "message": "在此粘贴大厅码"
+  },
+  "app.gamelink.join.button": {
+    "message": "加入大厅"
+  },
+  "app.gamelink.copy-code.button": {
+    "message": "复制大厅码"
+  },
+  "app.gamelink.leave.button": {
+    "message": "离开大厅"
+  },
+  "app.gamelink.status.idle": {
+    "message": "未连接"
+  },
+  "app.gamelink.status.host": {
+    "message": "正在主持大厅"
+  },
+  "app.gamelink.status.client": {
+    "message": "已连接到大厅"
+  },
+  "app.gamelink.status.error": {
+    "message": "连接错误"
+  },
+  "app.gamelink.peers.label": {
+    "message": "节点数"
+  },
+  "app.gamelink.local-port.label": {
+    "message": "本地代理端口"
+  },
+  "app.gamelink.virtual-ip.label": {
+    "message": "虚拟 IP"
+  },
+  "app.gamelink.connect-hint": {
+    "message": "在 Minecraft 中使用「直接连接」并输入 {address}"
+  },
+  "app.gamelink.copied.notification": {
+    "message": "大厅码已复制到剪贴板"
+  },
+  "app.gamelink.windows-only": {
+    "message": "局域网联机功能目前仅在 Windows 上可用。"
   }
 }

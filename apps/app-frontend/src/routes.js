@@ -109,6 +109,14 @@ export default new createRouter({
 			},
 		},
 		{
+			path: '/gamelink',
+			name: 'LAN Multiplayer',
+			component: Pages.GameLink,
+			meta: {
+				breadcrumb: [{ name: 'LAN Multiplayer' }],
+			},
+		},
+		{
 			path: '/create',
 			name: 'CreateInstance',
 			component: Pages.CreateInstance,
