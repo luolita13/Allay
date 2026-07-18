@@ -162,6 +162,10 @@ pub fn get_jvm_arguments(
 
     parsed_arguments.push(format!("-Xmx{}M", memory.maximum));
 
+    // PCL-CE: allocate young generation (-Xmn) at 15% of max heap (-Xmx)
+    let xmn = (memory.maximum as f64 * 0.15).round() as u32;
+    parsed_arguments.push(format!("-Xmn{}M", xmn.max(64)));
+
     if let Some(LoggingConfiguration::Log4j2Xml { argument, file }) = log_config
     {
         let full_path = log_configs_path.join(&file.id);

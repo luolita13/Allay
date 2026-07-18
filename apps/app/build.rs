@@ -352,19 +352,20 @@ fn main() {
                 "link",
                 InlinedPlugin::new()
                     .commands(&[
+                        "link_get_active_username",
                         "link_create_lobby",
                         "link_join_lobby",
                         "link_leave_lobby",
-                        "link_get_lobby_status",
-                        "link_check_easytier_ready",
-                        "link_discover_local_worlds",
+                        "link_get_state",
                         "link_get_players",
+                        "link_get_lobby_code",
+                        "link_get_connection_info",
+                        "link_is_host",
+                        "link_discover_worlds",
+                        "link_check_mod_compat",
                         "link_get_host_mods",
-                        "link_check_protocols",
-                        "link_get_mc_port",
-                        "link_set_host_mods",
+                        "link_is_minecraft_running",
                         "link_update_mc_port",
-                        "link_set_local_player_name",
                     ])
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,

@@ -609,6 +609,7 @@ where
         extra_launch_args: input.extra_launch_args,
         custom_env_vars: input.custom_env_vars,
         memory: input.memory,
+        memory_allocation_mode: None,
         force_fullscreen: input.force_fullscreen,
         game_resolution: input.game_resolution,
         hooks: input.hooks,

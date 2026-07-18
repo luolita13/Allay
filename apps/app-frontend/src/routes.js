@@ -110,10 +110,10 @@ export default new createRouter({
 		},
 		{
 			path: '/gamelink',
-			name: 'LAN Multiplayer',
+			name: 'GameLink',
 			component: Pages.GameLink,
 			meta: {
-				breadcrumb: [{ name: 'LAN Multiplayer' }],
+				breadcrumb: [{ name: 'Game Link' }],
 			},
 		},
 		{
@@ -134,7 +134,7 @@ export default new createRouter({
 			children: [
 				{
 					path: '',
-					name: 'Overview',
+					name: 'LibraryOverview',
 					component: Library.Overview,
 				},
 				{
@@ -275,30 +275,6 @@ export default new createRouter({
 						breadcrumb: [
 							{ name: '?Instance', link: '/instance/{id}/' },
 							{ name: 'Screenshots' },
-						],
-					},
-				},
-				{
-					path: 'resource-packs',
-					name: 'InstanceResourcePacks',
-					component: Instance.ResourcePacks,
-					meta: {
-						useRootContext: true,
-						breadcrumb: [
-							{ name: '?Instance', link: '/instance/{id}/' },
-							{ name: 'Resource packs' },
-						],
-					},
-				},
-				{
-					path: 'shader-packs',
-					name: 'InstanceShaderPacks',
-					component: Instance.ShaderPacks,
-					meta: {
-						useRootContext: true,
-						breadcrumb: [
-							{ name: '?Instance', link: '/instance/{id}/' },
-							{ name: 'Shader packs' },
 						],
 					},
 				},

@@ -149,6 +149,24 @@
   "app.appearance-settings.show-play-time.title": {
     "message": "显示总游玩时间"
   },
+  "app.appearance-settings.background-blur.description": {
+    "message": "调整应用到背景图的模糊程度。"
+  },
+  "app.appearance-settings.background-blur.title": {
+    "message": "背景模糊"
+  },
+  "app.appearance-settings.background-image.clear-button": {
+    "message": "清除"
+  },
+  "app.appearance-settings.background-image.description": {
+    "message": "为启动器设置自定义背景图。"
+  },
+  "app.appearance-settings.background-image.select-button": {
+    "message": "选择图片"
+  },
+  "app.appearance-settings.background-image.title": {
+    "message": "背景图"
+  },
   "app.appearance-settings.skip-non-essential-warnings.description": {
     "message": "自动跳过低风险确认，包括重复安装整合包、常规内容删除、批量更新、解除整合包关联及修复提示。危险警告仍会显示。"
   },
@@ -230,14 +248,8 @@
   "app.browse.server.installing": {
     "message": "安装中"
   },
-  "app.browse.source.curseforge": {
-    "message": "CurseForge"
-  },
-  "app.browse.source.modrinth": {
-    "message": "Modrinth"
-  },
   "app.browse.worlds-modrinth-empty": {
-    "message": "Modrinth 不托管存档文件。请切换到 CurseForge 以浏览存档。"
+    "message": "Modrinth 不托管存档文件。"
   },
   "app.content-install.no-compatible-versions": {
     "message": "没有与 {compatibilityLabel} 匹配的可用版本。如果仍要安装，请选择一个版本。依赖项将不会自动安装。"
@@ -592,6 +604,18 @@
   },
   "app.downloads.resume": {
     "message": "继续"
+  },
+  "app.downloads.tab.active": {
+    "message": "下载中"
+  },
+  "app.downloads.tab.active-count": {
+    "message": "下载中 ({count})"
+  },
+  "app.downloads.tab.finished": {
+    "message": "已完成"
+  },
+  "app.downloads.tab.finished-count": {
+    "message": "已完成 ({count})"
   },
   "app.downloads.retry": {
     "message": "重试"
@@ -1337,14 +1361,8 @@
   "app.instance.tab.overview": {
     "message": "概览"
   },
-  "app.instance.tab.resource-packs": {
-    "message": "资源包"
-  },
   "app.instance.tab.screenshots": {
     "message": "截图"
-  },
-  "app.instance.tab.shader-packs": {
-    "message": "光影包"
   },
   "app.instance.tab.worlds": {
     "message": "世界"
@@ -1448,14 +1466,29 @@
   "app.library.custom": {
     "message": "自定义"
   },
+  "app.library.jump-back-in": {
+    "message": "继续游玩"
+  },
   "app.library.modpacks": {
     "message": "整合包"
   },
   "app.library.no-instances": {
     "message": "未找到实例"
   },
+  "app.library.no-search-results": {
+    "message": "没有匹配的实例"
+  },
+  "app.library.overview.subtitle": {
+    "message": "管理和启动你的 Minecraft 实例。"
+  },
+  "app.library.overview.title": {
+    "message": "你的实例库"
+  },
   "app.library.saved": {
     "message": "已收藏"
+  },
+  "app.library.search.placeholder": {
+    "message": "搜索实例..."
   },
   "app.library.servers": {
     "message": "服务器"
@@ -1465,6 +1498,183 @@
   },
   "app.library.title": {
     "message": "库"
+  },
+  "app.game-link.breadcrumb": {
+    "message": "联机"
+  },
+  "app.game-link.title": {
+    "message": "联机"
+  },
+  "app.game-link.description": {
+    "message": "创建或加入虚拟网络大厅，通过互联网与好友一起玩 Minecraft。由 EasyTier 点对点网络提供支持。"
+  },
+  "app.game-link.state.idle": {
+    "message": "未连接"
+  },
+  "app.game-link.state.creating": {
+    "message": "正在创建大厅..."
+  },
+  "app.game-link.state.joining": {
+    "message": "正在加入大厅..."
+  },
+  "app.game-link.state.connected": {
+    "message": "已连接"
+  },
+  "app.game-link.state.leaving": {
+    "message": "正在离开..."
+  },
+  "app.game-link.state.error": {
+    "message": "错误"
+  },
+  "app.game-link.playing-as": {
+    "message": "当前玩家"
+  },
+  "app.game-link.no-account": {
+    "message": "未登录 Minecraft 账户"
+  },
+  "app.game-link.host.title": {
+    "message": "创建大厅"
+  },
+  "app.game-link.host.subtitle": {
+    "message": "在局域网开放世界，然后扫描并创建"
+  },
+  "app.game-link.host.scan": {
+    "message": "扫描局域网世界"
+  },
+  "app.game-link.host.scanning": {
+    "message": "正在扫描..."
+  },
+  "app.game-link.host.select-world": {
+    "message": "选择世界"
+  },
+  "app.game-link.host.no-worlds": {
+    "message": "未找到局域网世界。打开 Minecraft，加载一个世界并点击“对局域网开放”。"
+  },
+  "app.game-link.host.create": {
+    "message": "创建大厅"
+  },
+  "app.game-link.host.creating": {
+    "message": "创建中..."
+  },
+  "app.game-link.join.title": {
+    "message": "加入大厅"
+  },
+  "app.game-link.join.subtitle": {
+    "message": "输入大厅码以连接"
+  },
+  "app.game-link.lobby-code.label": {
+    "message": "大厅码"
+  },
+  "app.game-link.join.button": {
+    "message": "加入大厅"
+  },
+  "app.game-link.join.joining": {
+    "message": "加入中..."
+  },
+  "app.game-link.copy": {
+    "message": "复制"
+  },
+  "app.game-link.role.host": {
+    "message": "主机"
+  },
+  "app.game-link.role.client": {
+    "message": "客户端"
+  },
+  "app.game-link.leave": {
+    "message": "离开大厅"
+  },
+  "app.game-link.players.title": {
+    "message": "玩家 ({count})"
+  },
+  "app.game-link.refresh": {
+    "message": "刷新"
+  },
+  "app.game-link.connection.title": {
+    "message": "连接信息"
+  },
+  "app.game-link.connection.latency": {
+    "message": "延迟"
+  },
+  "app.game-link.connection.quality": {
+    "message": "质量"
+  },
+  "app.game-link.connection.type": {
+    "message": "连接类型"
+  },
+  "app.game-link.mod-compat.title": {
+    "message": "Mod 兼容性"
+  },
+  "app.game-link.mod-compat.check": {
+    "message": "检查兼容性"
+  },
+  "app.game-link.mod-compat.ok": {
+    "message": "Mod 兼容"
+  },
+  "app.game-link.mod-compat.mismatch": {
+    "message": "检测到 Mod 不匹配"
+  },
+  "app.game-link.mod-compat.missing": {
+    "message": "缺少的 Mod ({count})"
+  },
+  "app.game-link.mod-compat.extra": {
+    "message": "多余的 Mod ({count})"
+  },
+  "app.game-link.mod-compat.version-mismatch": {
+    "message": "版本不一致 ({count})"
+  },
+  "app.game-link.worlds.title": {
+    "message": "本地世界"
+  },
+  "app.game-link.worlds.scan": {
+    "message": "扫描"
+  },
+  "app.game-link.worlds.none": {
+    "message": "未找到世界。请确保 Minecraft 已运行并已对局域网开放。"
+  },
+  "app.game-link.diagnostics.title": {
+    "message": "网络诊断"
+  },
+  "app.game-link.diagnostics.mc-running": {
+    "message": "Minecraft 运行中"
+  },
+  "app.game-link.diagnostics.mc-port": {
+    "message": "MC 端口"
+  },
+  "app.game-link.diagnostics.role": {
+    "message": "角色"
+  },
+  "app.game-link.diagnostics.check-mc": {
+    "message": "检查 MC 进程"
+  },
+  "app.game-link.host-shutdown": {
+    "message": "主机已关闭大厅。"
+  },
+  "app.game-link.quality.good": {
+    "message": "良好"
+  },
+  "app.game-link.quality.fair": {
+    "message": "一般"
+  },
+  "app.game-link.quality.poor": {
+    "message": "较差"
+  },
+  "app.game-link.way.local": {
+    "message": "本地"
+  },
+  "app.game-link.way.p2p": {
+    "message": "点对点"
+  },
+  "app.game-link.way.relay": {
+    "message": "中继"
+  },
+  "app.game-link.way.unknown": {
+    "message": "未知"
+  },
+  "app.game-link.yes": {
+    "message": "是"
+  },
+  "app.game-link.no": {
+    "message": "否"
   },
   "app.minecraft-auth.contact-support": {
     "message": "联系支持"
@@ -1561,6 +1771,9 @@
   },
   "app.nav.downloads": {
     "message": "下载"
+  },
+  "app.nav.game-link": {
+    "message": "联机"
   },
   "app.nav.home": {
     "message": "首页"
@@ -2590,203 +2803,5 @@
   },
   "minecraft-login-modal.yggdrasil-help": {
     "message": "支持任何 authlib-injector 兼容服务器。首次启动时将自动下载 authlib-injector。"
-  },
-  "app.nav.gamelink": {
-    "message": "局域网联机"
-  },
-  "app.gamelink.title": {
-    "message": "局域网联机"
-  },
-  "app.gamelink.description": {
-    "message": "通过 EasyTier 虚拟局域网与好友一起游玩本地 Minecraft 世界。"
-  },
-  "app.gamelink.create.title": {
-    "message": "创建大厅"
-  },
-  "app.gamelink.create.description": {
-    "message": "启动一个 Minecraft 实例，在游戏内开放至局域网，然后创建大厅并把大厅码分享给好友。"
-  },
-  "app.gamelink.join.title": {
-    "message": "加入大厅"
-  },
-  "app.gamelink.join.description": {
-    "message": "粘贴房主分享的大厅码，连接到对方的世界。"
-  },
-  "app.gamelink.network-name.label": {
-    "message": "网络名称"
-  },
-  "app.gamelink.network-name.placeholder": {
-    "message": "我的私人网络"
-  },
-  "app.gamelink.password.label": {
-    "message": "密码"
-  },
-  "app.gamelink.password.placeholder": {
-    "message": "至少 6 位字符"
-  },
-  "app.gamelink.mc-port.label": {
-    "message": "Minecraft 局域网端口"
-  },
-  "app.gamelink.mc-port.placeholder": {
-    "message": "例如 61234"
-  },
-  "app.gamelink.create.button": {
-    "message": "创建大厅"
-  },
-  "app.gamelink.lobby-code.label": {
-    "message": "大厅码"
-  },
-  "app.gamelink.lobby-code.placeholder": {
-    "message": "在此粘贴大厅码"
-  },
-  "app.gamelink.join.button": {
-    "message": "加入大厅"
-  },
-  "app.gamelink.copy-code.button": {
-    "message": "复制大厅码"
-  },
-  "app.gamelink.leave.button": {
-    "message": "离开大厅"
-  },
-  "app.gamelink.status.idle": {
-    "message": "未连接"
-  },
-  "app.gamelink.status.host": {
-    "message": "正在主持大厅"
-  },
-  "app.gamelink.status.client": {
-    "message": "已连接到大厅"
-  },
-  "app.gamelink.status.error": {
-    "message": "连接错误"
-  },
-  "app.gamelink.peers.label": {
-    "message": "节点数"
-  },
-  "app.gamelink.local-port.label": {
-    "message": "本地代理端口"
-  },
-  "app.gamelink.virtual-ip.label": {
-    "message": "虚拟 IP"
-  },
-  "app.gamelink.connect-hint": {
-    "message": "在 Minecraft 中使用「直接连接」并输入 {address}"
-  },
-  "app.gamelink.copied.notification": {
-    "message": "大厅码已复制到剪贴板"
-  },
-  "app.gamelink.windows-only": {
-    "message": "局域网联机功能目前仅在 Windows 上可用。"
-  },
-  "app.gamelink.your-skin.title": {
-    "message": "你的皮肤"
-  },
-  "app.gamelink.your-skin.description": {
-    "message": "这是你加入大厅时其他玩家看到的皮肤。"
-  },
-  "app.gamelink.sign-in-hint": {
-    "message": "登录后显示你的皮肤"
-  },
-  "app.gamelink.transition.creating": {
-    "message": "正在创建大厅..."
-  },
-  "app.gamelink.transition.joining": {
-    "message": "正在加入大厅..."
-  },
-  "app.gamelink.transition.hint": {
-    "message": "正在建立虚拟局域网连接"
-  },
-  "app.gamelink.transition.complete": {
-    "message": "已连接！"
-  },
-  "app.gamelink.players-in-lobby": {
-    "message": "大厅中的玩家"
-  },
-  "app.gamelink.you-label": {
-    "message": "你"
-  },
-  "app.gamelink.host-label": {
-    "message": "房主"
-  },
-  "app.gamelink.waiting-for-peers": {
-    "message": "等待其他玩家加入..."
-  },
-  "app.gamelink.preparing-easytier": {
-    "message": "正在准备 EasyTier VPN..."
-  },
-  "app.gamelink.downloading-easytier": {
-    "message": "正在下载 EasyTier VPN 核心..."
-  },
-  "app.gamelink.guest-label": {
-    "message": "客人"
-  },
-  "app.gamelink.instances.section": {
-    "message": "1. 选择一个 Minecraft 实例"
-  },
-  "app.gamelink.instances.hint": {
-    "message": "选择你想要和好友共享的实例。"
-  },
-  "app.gamelink.launch-instance": {
-    "message": "启动"
-  },
-  "app.gamelink.launch-hint": {
-    "message": "Minecraft 启动后，在游戏内暂停菜单点击「对局域网开放」以暴露世界。"
-  },
-  "app.gamelink.no-instances": {
-    "message": "暂无可用实例，请先创建一个。"
-  },
-  "app.gamelink.selected": {
-    "message": "已选"
-  },
-  "app.gamelink.lan-discovery.section": {
-    "message": "2. 将 Minecraft 世界开放至局域网"
-  },
-  "app.gamelink.lan-discovery.hint": {
-    "message": "在局域网广播的本地 Minecraft 世界会被自动发现。请选择一个，或手动输入端口号。"
-  },
-  "app.gamelink.scanning": {
-    "message": "正在扫描..."
-  },
-  "app.gamelink.no-local-worlds": {
-    "message": "尚未检测到本地世界。请在 Minecraft 中点击「对局域网开放」，或使用下方的延迟模式。"
-  },
-  "app.gamelink.delayed-mode": {
-    "message": "延迟模式（立即创建大厅，稍后自动检测 MC 端口）"
-  },
-  "app.gamelink.delayed-mode-hint": {
-    "message": "适用于尚未在 Minecraft 中开放局域网的情况。大厅会持续监听 MC 局域网广播并自动转发。"
-  },
-  "app.gamelink.mc-port-status.label": {
-    "message": "MC 端口"
-  },
-  "app.gamelink.mc-port-waiting": {
-    "message": "等待 MC 开放局域网..."
-  },
-  "app.gamelink.instance-launched-hint": {
-    "message": "实例已启动，请记得在游戏内开放至局域网。"
-  },
-  "app.gamelink.invalid-port-error": {
-    "message": "请输入有效的 Minecraft 局域网端口 (1-65535)。"
-  },
-  "app.gamelink.port-required-error": {
-    "message": "请选择一个本地世界、输入端口号，或启用延迟模式。"
-  },
-  "app.gamelink.code-required-error": {
-    "message": "请输入大厅码。"
-  },
-  "app.gamelink.stage.preparing": {
-    "message": "正在准备 EasyTier VPN..."
-  },
-  "app.gamelink.stage.downloading": {
-    "message": "正在下载 EasyTier 核心..."
-  },
-  "app.gamelink.stage.connecting": {
-    "message": "正在建立虚拟局域网..."
-  },
-  "app.gamelink.stage.ready": {
-    "message": "正在协商 Scaffolding 协议..."
-  },
-  "app.gamelink.stage.complete": {
-    "message": "一切就绪！欢迎来到大厅。"
   }
 }

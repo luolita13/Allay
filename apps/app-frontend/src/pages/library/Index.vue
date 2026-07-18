@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { PlusIcon } from '@modrinth/assets'
-import { ButtonStyled, defineMessages, injectNotificationManager, NavTabs, useVIntl } from '@modrinth/ui'
-import { inject, onUnmounted, ref, shallowRef } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/ui'
+import { onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
-import { NewInstanceImage } from '@/assets/icons'
 import { instance_listener } from '@/helpers/events.js'
 import { list } from '@/helpers/instance'
+import type { GameInstance } from '@/helpers/types'
 import { useBreadcrumbs } from '@/store/breadcrumbs.js'
 
 const { handleError } = injectNotificationManager()
@@ -14,34 +13,23 @@ const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
 	libraryTitle: { id: 'app.library.title', defaultMessage: 'Library' },
-	allInstances: { id: 'app.library.all-instances', defaultMessage: 'All instances' },
-	modpacks: { id: 'app.library.modpacks', defaultMessage: 'Modpacks' },
-	servers: { id: 'app.library.servers', defaultMessage: 'Servers' },
-	custom: { id: 'app.library.custom', defaultMessage: 'Custom' },
-	sharedWithMe: { id: 'app.library.shared-with-me', defaultMessage: 'Shared with me' },
-	saved: { id: 'app.library.saved', defaultMessage: 'Saved' },
-	noInstances: { id: 'app.library.no-instances', defaultMessage: 'No instances found' },
-	createNewInstance: { id: 'app.library.create-new-instance', defaultMessage: 'Create new instance' },
 })
 
 const route = useRoute()
-const router = useRouter()
 const breadcrumbs = useBreadcrumbs()
 
 breadcrumbs.setRootContext({ name: formatMessage(messages.libraryTitle), link: route.path })
 
-const instances = shallowRef(await list().catch(handleError))
+const instances = ref<GameInstance[]>([])
 
-const offline = ref(!navigator.onLine)
-window.addEventListener('offline', () => {
-	offline.value = true
-})
-window.addEventListener('online', () => {
-	offline.value = false
-})
+async function fetchInstances() {
+	instances.value = (await list().catch(handleError)) ?? []
+}
+
+await fetchInstances()
 
 const unlistenInstance = await instance_listener(async () => {
-	instances.value = await list().catch(handleError)
+	await fetchInstances()
 })
 onUnmounted(() => {
 	unlistenInstance()
@@ -49,55 +37,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div class="p-6 flex flex-col gap-3">
+	<div class="p-6 flex flex-col gap-3 h-full">
 		<h1 class="m-0 text-2xl hidden">{{ formatMessage(messages.libraryTitle) }}</h1>
-		<NavTabs
-			:links="[
-				{ label: formatMessage(messages.allInstances), href: `/library` },
-				{ label: formatMessage(messages.modpacks), href: `/library/modpacks` },
-				{ label: formatMessage(messages.servers), href: `/library/servers` },
-				{ label: formatMessage(messages.custom), href: `/library/custom` },
-				{ label: formatMessage(messages.sharedWithMe), href: `/library/shared`, shown: false },
-				{ label: formatMessage(messages.saved), href: `/library/saved`, shown: false },
-			]"
-		/>
-		<template v-if="instances && instances.length > 0">
-			<RouterView v-if="route.path.startsWith('/library')" :instances="instances" />
-		</template>
-		<div v-else class="no-instance">
-			<div class="icon">
-				<NewInstanceImage />
-			</div>
-			<h3>{{ formatMessage(messages.noInstances) }}</h3>
-			<ButtonStyled color="brand">
-				<button :disabled="offline" @click="router.push('/create')">
-					<PlusIcon />
-					{{ formatMessage(messages.createNewInstance) }}
-				</button>
-			</ButtonStyled>
+		<div class="flex-1 min-h-0">
+			<RouterView v-slot="{ Component }">
+				<component :is="Component" :key="route.path" :instances="instances ?? []" />
+			</RouterView>
 		</div>
 	</div>
 </template>
 
 <style lang="scss" scoped>
-.no-instance {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 100%;
-	gap: var(--gap-md);
-
-	p,
-	h3 {
-		margin: 0;
-	}
-
-	.icon {
-		svg {
-			width: 10rem;
-			height: 10rem;
-		}
-	}
-}
 </style>

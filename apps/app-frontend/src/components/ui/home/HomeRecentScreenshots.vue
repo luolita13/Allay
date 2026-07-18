@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ImagesIcon } from '@modrinth/assets'
 import { defineMessages, HeadingLink, injectNotificationManager, useVIntl } from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
-import { readDir, stat } from '@tauri-apps/plugin-fs'
+import { readDir, readFile, stat } from '@tauri-apps/plugin-fs'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { get_full_path, list } from '@/helpers/instance'
 import { openPath } from '@/helpers/utils.js'
@@ -35,8 +34,34 @@ const loading = ref(true)
 const MAX_SCREENSHOTS = 12
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'bmp', 'webp', 'tiff']
 
+const MIME_TYPES: Record<string, string> = {
+	png: 'image/png',
+	jpg: 'image/jpeg',
+	jpeg: 'image/jpeg',
+	bmp: 'image/bmp',
+	webp: 'image/webp',
+	tiff: 'image/tiff',
+}
+
 function normalizePath(p: string): string {
 	return p.replace(/\\/g, '/')
+}
+
+function revokeScreenshotUrls() {
+	for (const shot of screenshots.value) {
+		URL.revokeObjectURL(shot.url)
+	}
+}
+
+async function fileToObjectUrl(path: string, ext: string): Promise<string | null> {
+	try {
+		const bytes = await readFile(path)
+		const blob = new Blob([bytes], { type: MIME_TYPES[ext] || 'image/png' })
+		return URL.createObjectURL(blob)
+	} catch (e) {
+		console.warn('[HomeRecentScreenshots] failed to read screenshot:', path, e)
+		return null
+	}
 }
 
 async function fetchScreenshots() {
@@ -44,11 +69,12 @@ async function fetchScreenshots() {
 	try {
 		const instances = await list().catch(handleError)
 		if (!instances || instances.length === 0) {
+			revokeScreenshotUrls()
 			screenshots.value = []
 			return
 		}
 
-		const all: Screenshot[] = []
+		const all: Omit<Screenshot, 'url'>[] = []
 		await Promise.all(
 			instances.map(async (inst) => {
 				try {
@@ -77,7 +103,6 @@ async function fetchScreenshots() {
 						all.push({
 							name: entry.name,
 							path: absPath,
-							url: convertFileSrc(absPath),
 							modified: mtime,
 							instanceId: inst.id,
 							instanceName: inst.name,
@@ -90,11 +115,25 @@ async function fetchScreenshots() {
 		)
 
 		all.sort((a, b) => b.modified - a.modified)
-		screenshots.value = all.slice(0, MAX_SCREENSHOTS)
+		const top = all.slice(0, MAX_SCREENSHOTS)
+
+		const loaded = await Promise.all(
+			top.map(async (shot) => {
+				const ext = shot.name.split('.').pop()?.toLowerCase() ?? ''
+				const url = await fileToObjectUrl(shot.path, ext)
+				if (!url) return null
+				return { ...shot, url } as Screenshot
+			}),
+		)
+
+		revokeScreenshotUrls()
+		screenshots.value = loaded.filter((s): s is Screenshot => s !== null)
 	} finally {
 		loading.value = false
 	}
 }
+
+onUnmounted(revokeScreenshotUrls)
 
 const hasScreenshots = computed(() => screenshots.value.length > 0)
 

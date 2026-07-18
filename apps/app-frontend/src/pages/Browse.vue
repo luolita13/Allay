@@ -41,13 +41,6 @@ import {
 	get_search_results_v3,
 	get_version_many,
 } from '@/helpers/cache.js'
-import {
-	cf_get_file,
-	cf_install_file,
-	cf_search,
-	type CfSearchHit,
-	type CfSearchResults,
-} from '@/helpers/curseforge'
 import { instance_listener } from '@/helpers/events.js'
 import {
 	get as getInstance,
@@ -456,18 +449,9 @@ const messages = defineMessages({
 	dataPacksLabel: { id: 'app.browse.project-type.data-packs', defaultMessage: 'Data Packs' },
 	shadersLabel: { id: 'app.browse.project-type.shaders', defaultMessage: 'Shaders' },
 	worldsLabel: { id: 'app.browse.project-type.worlds', defaultMessage: 'Worlds' },
-	sourceModrinth: {
-		id: 'app.browse.source.modrinth',
-		defaultMessage: 'Modrinth',
-	},
-	sourceCurseForge: {
-		id: 'app.browse.source.curseforge',
-		defaultMessage: 'CurseForge',
-	},
 	worldsModrinthEmpty: {
 		id: 'app.browse.worlds-modrinth-empty',
-		defaultMessage:
-			'Modrinth does not host worlds. Switch to CurseForge to browse world saves.',
+		defaultMessage: 'Modrinth does not host worlds.',
 	},
 })
 
@@ -566,8 +550,6 @@ const selectableProjectTypes = computed(() => {
 	if (route.query.from) params.from = route.query.from
 	if (route.query.sid) params.sid = route.query.sid
 	if (effectiveServerWorldId.value) params.wid = effectiveServerWorldId.value
-	// Always include the source param so switching project types preserves Modrinth/CurseForge selection.
-	params.src = source.value === 'curseforge' ? 'cf' : 'mr'
 
 	const queryString = new URLSearchParams(params as Record<string, string>).toString()
 	const suffix = queryString ? `?${queryString}` : ''
@@ -729,19 +711,12 @@ function getCardActions(
 	}
 
 	// Non-server project actions
-	const projectResult = result as (Labrinth.Search.v2.ResultSearchProject &
-		Labrinth.Search.v3.ResultSearchProject) & {
-		installed?: boolean
-		installing?: boolean
-		_cf_mod_id?: number
-	}
+	const projectResult = result as Labrinth.Search.v2.ResultSearchProject &
+		Labrinth.Search.v3.ResultSearchProject & {
+			installed?: boolean
+			installing?: boolean
+		}
 
-	// CurseForge results use a different install path: download the file
-	// directly via the InstallJob system rather than resolving a Modrinth
-	// version plan.
-	if (projectResult._cf_mod_id !== undefined) {
-		return getCfCardActions(projectResult, currentProjectType)
-	}
 	const isInstalled =
 		projectResult.installed ||
 		allInstalledIds.value.has(projectResult.project_id || '') ||
@@ -889,85 +864,6 @@ function getCardActions(
 	]
 }
 
-/**
- * Build card actions for CurseForge search results.
- *
- * CurseForge results carry a `_cf_mod_id` field (set by the backend
- * converter). The install button downloads the latest matching file via
- * the InstallJob system so the progress popup is shown.
- *
- * If no instance is selected, the button is disabled because CurseForge
- * installs require a target instance (unlike Modrinth, which can pop up
- * an instance-selection modal).
- */
-function getCfCardActions(
-	projectResult: (Labrinth.Search.v2.ResultSearchProject &
-		Labrinth.Search.v3.ResultSearchProject) & {
-		installed?: boolean
-		installing?: boolean
-		_cf_mod_id?: number
-	},
-	currentProjectType: string,
-): CardAction[] {
-	const modId = projectResult._cf_mod_id
-	const projectId = projectResult.project_id
-	const isInstalled =
-		projectResult.installed || allInstalledIds.value.has(projectId || '')
-	const isInstalling = installingProjectIds.value.has(projectId)
-	const hasInstance = !!instance.value
-
-	// CurseForge's "world" content type maps to "world" on the backend.
-	const contentType = currentProjectType === 'shader' ? 'shader' : currentProjectType
-
-	return [
-		{
-			key: 'install',
-			label: formatMessage(
-				isInstalling
-					? messages.installingToServer
-					: isInstalled
-						? commonMessages.installedLabel
-						: hasInstance
-							? commonMessages.installButton
-							: messages.addToAnInstance,
-			),
-			icon: isInstalling ? SpinnerIcon : isInstalled ? CheckIcon : PlusIcon,
-			iconClass: isInstalling ? 'animate-spin' : undefined,
-			disabled: isInstalled || isInstalling || !hasInstance,
-			color: 'brand',
-			type: 'outlined',
-			onClick: async () => {
-				if (!instance.value || !modId) return
-				setProjectInstalling(projectId, true)
-				try {
-					// Fetch the latest file to get the download URL and file name.
-					const fileIdStr = projectResult.version_id
-					const fileId = parseInt(fileIdStr, 10)
-					if (!Number.isFinite(fileId)) {
-						throw new Error('CurseForge file ID missing from search result')
-					}
-					const file = await cf_get_file(modId, fileId)
-					await cf_install_file(
-						instance.value.id,
-						modId,
-						file.id,
-						file.file_name,
-						file.download_url,
-						contentType,
-						projectResult.title || projectResult.name || 'CurseForge project',
-						projectResult.icon_url ?? null,
-					)
-					onSearchResultInstalled(projectId)
-				} catch (err) {
-					handleError(err)
-				} finally {
-					setProjectInstalling(projectId, false)
-				}
-			},
-		},
-	]
-}
-
 function onSearchResultInstalled(id: string) {
 	if (isServerContext.value) {
 		markServerProjectInstalled(id)
@@ -989,17 +885,13 @@ function onSearchResultsInstalled(ids: string[]) {
 }
 
 async function search(requestParams: string) {
-	debugLog('searching', { requestParams, source: source.value })
+	debugLog('searching', { requestParams })
 	const isServer = projectType.value === 'server'
 
 	// Modrinth does not host world saves. Return an empty result set so the
 	// UI shows the worldsModrinthEmpty notice (rendered above the layout).
-	if (projectType.value === 'world' && source.value === 'modrinth') {
+	if (projectType.value === 'world') {
 		return { projectHits: [], serverHits: [], total_hits: 0, per_page: 20 }
-	}
-
-	if (source.value === 'curseforge' && !isServer) {
-		return await searchCurseForge(requestParams)
 	}
 
 	debugLog('searching v3', requestParams)
@@ -1059,106 +951,6 @@ async function search(requestParams: string) {
 	}
 }
 
-/**
- * Parse a Modrinth-style request params string (e.g. `?limit=20&query=...`)
- * into its component values for CurseForge search.
- */
-function parseModrinthRequestParams(requestParams: string) {
-	const qs = requestParams.startsWith('?') ? requestParams.slice(1) : requestParams
-	const params = new URLSearchParams(qs)
-	return {
-		query: params.get('query') ?? '',
-		index: params.get('index') ?? 'relevance',
-		limit: parseInt(params.get('limit') ?? '20', 10),
-		offset: parseInt(params.get('offset') ?? '0', 10),
-		newFilters: params.get('new_filters') ?? '',
-	}
-}
-
-/**
- * Extract game version and loader from a Modrinth `new_filters` string.
- * Examples: `game_versions = "1.20.1" AND loaders = "fabric"`
- */
-function extractCfFilters(newFilters: string): {
-	gameVersion: string | null
-	loader: string | null
-} {
-	let gameVersion: string | null = null
-	let loader: string | null = null
-
-	const gvMatch = newFilters.match(/game_versions\s*=\s*"([^"]+)"/)
-	if (gvMatch) gameVersion = gvMatch[1]
-
-	const loaderMatch = newFilters.match(/loaders\s*=\s*"([^"]+)"/)
-	if (loaderMatch) loader = loaderMatch[1]
-
-	return { gameVersion, loader }
-}
-
-/**
- * Search CurseForge and map results into the same shape the Browse UI
- * expects (Modrinth v2 search hits with `title`/`description` aliases).
- */
-async function searchCurseForge(requestParams: string) {
-	const parsed = parseModrinthRequestParams(requestParams)
-	const { gameVersion, loader } = extractCfFilters(parsed.newFilters)
-
-	// CurseForge does not have a 'server' project type; map it to 'mod' fallback.
-	const projectTypeForCf = projectType.value === 'server' ? 'mod' : projectType.value
-
-	// 'world' is only available on CurseForge.
-	const cfParams = {
-		projectType: projectTypeForCf,
-		searchFilter: parsed.query || null,
-		gameVersion,
-		loader,
-		sort: parsed.index,
-		page: Math.floor(parsed.offset / Math.max(parsed.limit, 1)),
-		pageSize: parsed.limit,
-	}
-
-	try {
-		const queryKey = ['search', 'cf', JSON.stringify(cfParams)]
-		const rawResults = await queryClient.fetchQuery({
-			queryKey,
-			queryFn: () => cf_search(cfParams) as Promise<CfSearchResults>,
-			staleTime: 30_000,
-		})
-
-		const cfHits = rawResults.result.hits ?? []
-		const installedIds = instance.value
-			? new Set([...newlyInstalled.value, ...(installedProjectIds.value ?? [])])
-			: null
-
-		const hits = cfHits.map((hit: CfSearchHit) => {
-			const mapped = {
-				...hit,
-				title: hit.name,
-				description: hit.summary,
-				project_type: hit.project_types?.[0] ?? projectTypeForCf,
-			} as unknown as Labrinth.Search.v2.ResultSearchProject &
-				Labrinth.Search.v3.ResultSearchProject & { installed?: boolean; _cf?: boolean }
-
-			if (installedIds) {
-				mapped.installed = installedIds.has(hit.project_id)
-			}
-
-			return mapped
-		})
-
-		return {
-			projectHits: hits,
-			serverHits: [],
-			total_hits: rawResults.result.total_hits,
-			per_page: rawResults.result.limit,
-		}
-	} catch (err) {
-		console.error('CurseForge search failed:', err)
-		handleError(err as Error)
-		throw err
-	}
-}
-
 const isServerFilterContext = computed(() => isServerContext.value || isServerInstance.value)
 
 const lockedFilterMessages = computed(() => ({
@@ -1179,62 +971,22 @@ const lockedFilterMessages = computed(() => ({
 	),
 }))
 
-// Source: 'modrinth' (default) or 'curseforge'. Persisted in URL as ?src=cf.
-// Use a computed so the source is always derived from the current route query.
-// This prevents the source from drifting out of sync when switching project types.
-type BrowseSource = 'modrinth' | 'curseforge'
-const source = computed<BrowseSource>({
-	get: () => (route.query.src === 'cf' ? 'curseforge' : 'modrinth'),
-	set: (next) => {
-		if (next === source.value) return
-		void router.replace({
-			path: route.path,
-			query: { ...route.query, src: next === 'curseforge' ? 'cf' : 'mr' },
-		})
-	},
-})
-
 const searchState = useBrowseSearch({
 	projectType,
 	tags,
 	providedFilters: combinedProvidedFilters,
 	search,
-	persistentQueryParams: ['i', 'ai', 'shi', 'sid', 'wid', 'from', 'src'],
+	persistentQueryParams: ['i', 'ai', 'shi', 'sid', 'wid', 'from'],
 	getExtraQueryParams: () => ({
 		sid: serverIdQuery.value || undefined,
 		wid: effectiveServerWorldId.value || undefined,
 		ai: instanceHideInstalled.value ? 'true' : undefined,
 		shi: serverHideInstalled.value ? 'true' : undefined,
-		src: source.value === 'curseforge' ? 'cf' : 'mr',
 	}),
 })
 
-function setSource(next: BrowseSource) {
-	if (next === source.value) return
-	source.value = next
-}
-
-watch(source, () => {
-	// When switching sources, reset to page 1 and trigger a refresh.
-	searchState.currentPage.value = 1
-	void searchState.refreshSearch()
-})
-
-// Show the Modrinth/CurseForge switcher only for non-server project types
-// outside of server install/setup contexts.
-const showSourceSwitcher = computed(
-	() => !isServerContext.value && projectType.value !== 'server',
-)
-
 // Modrinth has no world saves; show a notice instead of empty results.
-const showWorldsModrinthEmpty = computed(
-	() => projectType.value === 'world' && source.value === 'modrinth',
-)
-
-const sourceOptions: { value: BrowseSource; label: string }[] = [
-	{ value: 'modrinth', label: formatMessage(messages.sourceModrinth) },
-	{ value: 'curseforge', label: formatMessage(messages.sourceCurseForge) },
-]
+const showWorldsModrinthEmpty = computed(() => projectType.value === 'world')
 
 watch(
 	[
@@ -1322,15 +1074,6 @@ const WorldsModrinthEmpty = defineComponent({
 						{ class: 'm-0 max-w-md text-base text-contrast' },
 						formatMessage(messages.worldsModrinthEmpty),
 					),
-					h(
-						'button',
-						{
-							class:
-								'rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90',
-							onClick: () => setSource('curseforge'),
-						},
-						formatMessage(messages.sourceCurseForge),
-					),
 				],
 			)
 	},
@@ -1394,27 +1137,6 @@ provideBrowseManager({
 
 <template>
 	<div class="flex flex-col gap-3 p-6">
-		<div
-			v-if="showSourceSwitcher"
-			class="flex items-center gap-2"
-		>
-			<div class="flex gap-1 rounded-full bg-surface-2 p-1">
-				<button
-					v-for="opt in sourceOptions"
-					:key="opt.value"
-					:class="[
-						'px-4 py-1.5 text-sm font-medium rounded-full transition-colors',
-						source === opt.value
-							? 'bg-brand text-white'
-							: 'text-secondary hover:text-contrast',
-					]"
-					@click="setSource(opt.value)"
-				>
-					{{ opt.label }}
-				</button>
-			</div>
-		</div>
-
 		<BrowsePageLayout>
 			<template #after>
 				<ContextMenu ref="contextMenuRef" @option-clicked="handleOptionsClick">

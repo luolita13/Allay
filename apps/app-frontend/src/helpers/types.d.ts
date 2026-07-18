@@ -31,6 +31,7 @@ export type GameInstance = {
 	custom_env_vars?: [string, string][]
 
 	memory?: MemorySettings
+	memory_allocation_mode?: number
 	force_fullscreen?: boolean
 	game_resolution?: [number, number]
 	hooks: Hooks

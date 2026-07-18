@@ -1,1453 +1,1409 @@
 <script setup lang="ts">
-import {
-	CopyIcon,
-	GlobeIcon,
-	LinkIcon,
-	PlayIcon,
-	UsersIcon,
-	XIcon,
-	SpinnerIcon,
-	UserIcon,
-	SearchIcon,
-	RefreshCwIcon,
-} from '@modrinth/assets'
-import {
-	Avatar,
-	ButtonStyled,
-	Card,
-	StyledInput,
-	defineMessages,
-	injectNotificationManager,
-	SkinPreviewRenderer,
-	useVIntl,
-} from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
+import { defineMessages, useVIntl } from '@modrinth/ui'
+import { invoke } from '@tauri-apps/api/core'
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-
-import { get_default_user, users } from '@/helpers/auth'
-import * as instanceApi from '@/helpers/instance'
-import { instance_listener, process_listener } from '@/helpers/events'
-import {
-	check_easytier_ready,
-	create_lobby,
-	discover_local_worlds,
-	get_lobby_status,
-	get_players,
-	join_lobby,
-	leave_lobby,
-	type LobbyStatus,
-	type LocalWorld,
-	type PlayerProfile,
-} from '@/helpers/link'
-import { get_available_skins, get_normalized_skin_texture } from '@/helpers/skins'
 import { useBreadcrumbs } from '@/store/breadcrumbs'
-import type { GameInstance } from '@/helpers/types'
+import { get_default_user, users } from '@/helpers/auth'
 
 const { formatMessage } = useVIntl()
-const { handleError, addNotification } = injectNotificationManager()
+
+// ---------------------------------------------------------------------------
+// Types (mirror of Rust types in link/types.rs)
+// ---------------------------------------------------------------------------
+
+type LobbyState =
+  | 'idle'
+  | 'initializing'
+  | 'initialized'
+  | 'discovering'
+  | 'creating'
+  | 'joining'
+  | 'connected'
+  | 'leaving'
+  | 'error'
+
+type ConnectionWay = 'local' | 'p2p' | 'relay' | 'unknown'
+
+type ConnectionQuality = 'Poor' | 'Fair' | 'Good'
+
+interface ConnectionInfo {
+  way: ConnectionWay
+  quality: ConnectionQuality
+  latency_ms: number
+}
+
+type PlayerKind = 'host' | 'client'
+
+interface PlayerProfile {
+  name: string
+  machine_id: string
+  vendor: string
+  kind: PlayerKind | null
+  latency_ms: number | null
+}
+
+interface HostModInfo {
+  mod_id: string
+  version: string
+  name: string
+}
+
+interface ModCompatibilityResult {
+  is_compatible: boolean
+  local_only: HostModInfo[]
+  host_only: HostModInfo[]
+  version_mismatch: [HostModInfo, HostModInfo][]
+}
+
+interface FoundWorld {
+  name: string
+  port: number
+}
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
 const breadcrumbs = useBreadcrumbs()
 
 const messages = defineMessages({
-	title: {
-		id: 'app.gamelink.title',
-		defaultMessage: 'LAN Multiplayer',
-	},
-	description: {
-		id: 'app.gamelink.description',
-		defaultMessage:
-			'Play local Minecraft worlds with friends over the internet using EasyTier virtual LAN.',
-	},
-	yourSkinTitle: {
-		id: 'app.gamelink.your-skin.title',
-		defaultMessage: 'Your skin',
-	},
-	yourSkinDescription: {
-		id: 'app.gamelink.your-skin.description',
-		defaultMessage: 'This is what other players will see when you join a lobby.',
-	},
-	signInHint: {
-		id: 'app.gamelink.sign-in-hint',
-		defaultMessage: 'Sign in to display your skin',
-	},
-	createLobbyTitle: {
-		id: 'app.gamelink.create.title',
-		defaultMessage: 'Create lobby',
-	},
-	createLobbyDescription: {
-		id: 'app.gamelink.create.description',
-		defaultMessage:
-			'Launch a Minecraft instance, open it to LAN in-game, then create a lobby and share the code with your friends.',
-	},
-	joinLobbyTitle: {
-		id: 'app.gamelink.join.title',
-		defaultMessage: 'Join lobby',
-	},
-	joinLobbyDescription: {
-		id: 'app.gamelink.join.description',
-		defaultMessage: 'Paste a lobby code shared by the host and connect to their world.',
-	},
-	instancesSection: {
-		id: 'app.gamelink.instances.section',
-		defaultMessage: '1. Pick a Minecraft instance',
-	},
-	instancesHint: {
-		id: 'app.gamelink.instances.hint',
-		defaultMessage: 'Choose the instance you want to share with friends.',
-	},
-	launchInstance: {
-		id: 'app.gamelink.launch-instance',
-		defaultMessage: 'Launch',
-	},
-	launchHint: {
-		id: 'app.gamelink.launch-hint',
-		defaultMessage:
-			'After Minecraft opens, click "Open to LAN" in the in-game pause menu to expose the world.',
-	},
-	noInstances: {
-		id: 'app.gamelink.no-instances',
-		defaultMessage: 'No instances available. Create one first.',
-	},
-	selected: {
-		id: 'app.gamelink.selected',
-		defaultMessage: 'Selected',
-	},
-	lanDiscoverySection: {
-		id: 'app.gamelink.lan-discovery.section',
-		defaultMessage: '2. Open Minecraft world to LAN',
-	},
-	lanDiscoveryHint: {
-		id: 'app.gamelink.lan-discovery.hint',
-		defaultMessage:
-			'Local Minecraft worlds broadcasting on LAN are auto-discovered. Pick one or enter the port manually.',
-	},
-	scanning: {
-		id: 'app.gamelink.scanning',
-		defaultMessage: 'Scanning...',
-	},
-	noLocalWorlds: {
-		id: 'app.gamelink.no-local-worlds',
-		defaultMessage:
-			'No local worlds detected yet. Open "Open to LAN" in Minecraft, or use delayed mode below.',
-	},
-	mcPortLabel: {
-		id: 'app.gamelink.mc-port.label',
-		defaultMessage: 'Minecraft LAN port',
-	},
-	mcPortPlaceholder: {
-		id: 'app.gamelink.mc-port.placeholder',
-		defaultMessage: 'e.g. 54321',
-	},
-	delayedMode: {
-		id: 'app.gamelink.delayed-mode',
-		defaultMessage: 'Delayed mode (create lobby now, detect MC port later)',
-	},
-	delayedModeHint: {
-		id: 'app.gamelink.delayed-mode-hint',
-		defaultMessage:
-			'Useful if you have not opened Minecraft to LAN yet. The lobby will watch for MC LAN broadcasts and forward automatically.',
-	},
-	createButton: {
-		id: 'app.gamelink.create.button',
-		defaultMessage: 'Create lobby',
-	},
-	lobbyCodeLabel: {
-		id: 'app.gamelink.lobby-code.label',
-		defaultMessage: 'Lobby code',
-	},
-	lobbyCodePlaceholder: {
-		id: 'app.gamelink.lobby-code.placeholder',
-		defaultMessage: 'Paste lobby code here',
-	},
-	joinButton: {
-		id: 'app.gamelink.join.button',
-		defaultMessage: 'Join lobby',
-	},
-	copyCodeButton: {
-		id: 'app.gamelink.copy-code.button',
-		defaultMessage: 'Copy code',
-	},
-	leaveButton: {
-		id: 'app.gamelink.leave.button',
-		defaultMessage: 'Leave lobby',
-	},
-	statusIdle: {
-		id: 'app.gamelink.status.idle',
-		defaultMessage: 'Not connected',
-	},
-	statusHost: {
-		id: 'app.gamelink.status.host',
-		defaultMessage: 'Hosting lobby',
-	},
-	statusClient: {
-		id: 'app.gamelink.status.client',
-		defaultMessage: 'Connected to lobby',
-	},
-	statusError: {
-		id: 'app.gamelink.status.error',
-		defaultMessage: 'Connection error',
-	},
-	peersLabel: {
-		id: 'app.gamelink.peers.label',
-		defaultMessage: 'Peers',
-	},
-	localPortLabel: {
-		id: 'app.gamelink.local-port.label',
-		defaultMessage: 'Local proxy port',
-	},
-	virtualIpLabel: {
-		id: 'app.gamelink.virtual-ip.label',
-		defaultMessage: 'Virtual IP',
-	},
-	mcPortStatusLabel: {
-		id: 'app.gamelink.mc-port-status.label',
-		defaultMessage: 'MC port',
-	},
-	mcPortWaiting: {
-		id: 'app.gamelink.mc-port-waiting',
-		defaultMessage: 'Waiting for MC LAN...',
-	},
-	connectHint: {
-		id: 'app.gamelink.connect-hint',
-		defaultMessage: 'In Minecraft, use Direct Connect and enter {address}',
-	},
-	copiedNotification: {
-		id: 'app.gamelink.copied.notification',
-		defaultMessage: 'Lobby code copied to clipboard',
-	},
-	instanceLaunchedHint: {
-		id: 'app.gamelink.instance-launched-hint',
-		defaultMessage: 'Instance launched. Remember to open it to LAN in-game.',
-	},
-	invalidPortError: {
-		id: 'app.gamelink.invalid-port-error',
-		defaultMessage: 'Please enter a valid Minecraft LAN port (1-65535).',
-	},
-	portRequiredError: {
-		id: 'app.gamelink.port-required-error',
-		defaultMessage: 'Please pick a local world, enter a port, or enable delayed mode.',
-	},
-	codeRequiredError: {
-		id: 'app.gamelink.code-required-error',
-		defaultMessage: 'Please enter a lobby code.',
-	},
-	windowsOnlyWarning: {
-		id: 'app.gamelink.windows-only',
-		defaultMessage: 'LAN Multiplayer is currently only available on Windows.',
-	},
-	transitionCreating: {
-		id: 'app.gamelink.transition.creating',
-		defaultMessage: 'Creating lobby...',
-	},
-	transitionJoining: {
-		id: 'app.gamelink.transition.joining',
-		defaultMessage: 'Joining lobby...',
-	},
-	transitionComplete: {
-		id: 'app.gamelink.transition.complete',
-		defaultMessage: 'Connected!',
-	},
-	playersInLobby: {
-		id: 'app.gamelink.players-in-lobby',
-		defaultMessage: 'Players in lobby',
-	},
-	youLabel: {
-		id: 'app.gamelink.you-label',
-		defaultMessage: 'You',
-	},
-	hostLabel: {
-		id: 'app.gamelink.host-label',
-		defaultMessage: 'Host',
-	},
-	guestLabel: {
-		id: 'app.gamelink.guest-label',
-		defaultMessage: 'Guest',
-	},
-	waitingForPeers: {
-		id: 'app.gamelink.waiting-for-peers',
-		defaultMessage: 'Waiting for other players to join...',
-	},
-	// 5-stage transition labels
-	stagePreparing: {
-		id: 'app.gamelink.stage.preparing',
-		defaultMessage: 'Preparing EasyTier VPN...',
-	},
-	stageDownloading: {
-		id: 'app.gamelink.stage.downloading',
-		defaultMessage: 'Downloading EasyTier core...',
-	},
-	stageConnecting: {
-		id: 'app.gamelink.stage.connecting',
-		defaultMessage: 'Establishing virtual LAN network...',
-	},
-	stageReady: {
-		id: 'app.gamelink.stage.ready',
-		defaultMessage: 'Negotiating Scaffolding protocol...',
-	},
-	stageComplete: {
-		id: 'app.gamelink.stage.complete',
-		defaultMessage: 'All set! Welcome to the lobby.',
-	},
+  breadcrumbName: { id: 'app.game-link.breadcrumb', defaultMessage: 'Game Link' },
+  title: { id: 'app.game-link.title', defaultMessage: 'Game Link' },
+  description: {
+    id: 'app.game-link.description',
+    defaultMessage:
+      'Create or join a virtual network lobby to play Minecraft with friends over the internet, powered by EasyTier peer-to-peer networking.',
+  },
+  stateIdle: { id: 'app.game-link.state.idle', defaultMessage: 'Not connected' },
+  stateCreating: { id: 'app.game-link.state.creating', defaultMessage: 'Creating lobby...' },
+  stateJoining: { id: 'app.game-link.state.joining', defaultMessage: 'Joining lobby...' },
+  stateConnected: { id: 'app.game-link.state.connected', defaultMessage: 'Connected' },
+  stateLeaving: { id: 'app.game-link.state.leaving', defaultMessage: 'Leaving...' },
+  stateError: { id: 'app.game-link.state.error', defaultMessage: 'Error' },
+  playingAs: { id: 'app.game-link.playing-as', defaultMessage: 'Playing as' },
+  noAccount: {
+    id: 'app.game-link.no-account',
+    defaultMessage: 'No Minecraft account logged in',
+  },
+  hostLobbyTitle: { id: 'app.game-link.host.title', defaultMessage: 'Host a lobby' },
+  hostLobbySubtitle: {
+    id: 'app.game-link.host.subtitle',
+    defaultMessage: 'Open a world to LAN, then scan and create',
+  },
+  scanButton: { id: 'app.game-link.host.scan', defaultMessage: 'Scan for LAN worlds' },
+  scanningButton: { id: 'app.game-link.host.scanning', defaultMessage: 'Scanning...' },
+  selectWorld: { id: 'app.game-link.host.select-world', defaultMessage: 'Select world' },
+  noWorldsHint: {
+    id: 'app.game-link.host.no-worlds',
+    defaultMessage: 'No LAN worlds found. Open Minecraft, load a world, and click "Open to LAN".',
+  },
+  createLobbyButton: { id: 'app.game-link.host.create', defaultMessage: 'Create lobby' },
+  creatingLobbyButton: { id: 'app.game-link.host.creating', defaultMessage: 'Creating...' },
+  joinLobbyTitle: { id: 'app.game-link.join.title', defaultMessage: 'Join a lobby' },
+  joinLobbySubtitle: {
+    id: 'app.game-link.join.subtitle',
+    defaultMessage: 'Enter a lobby code to connect',
+  },
+  lobbyCodeLabel: { id: 'app.game-link.lobby-code.label', defaultMessage: 'Lobby code' },
+  joinLobbyButton: { id: 'app.game-link.join.button', defaultMessage: 'Join lobby' },
+  joiningLobbyButton: { id: 'app.game-link.join.joining', defaultMessage: 'Joining...' },
+  copyTitle: { id: 'app.game-link.copy', defaultMessage: 'Copy' },
+  roleHost: { id: 'app.game-link.role.host', defaultMessage: 'Host' },
+  roleClient: { id: 'app.game-link.role.client', defaultMessage: 'Client' },
+  leaveLobbyButton: { id: 'app.game-link.leave', defaultMessage: 'Leave lobby' },
+  playersTitle: {
+    id: 'app.game-link.players.title',
+    defaultMessage: 'Players ({count})',
+  },
+  refreshButton: { id: 'app.game-link.refresh', defaultMessage: 'Refresh' },
+  connectionInfoTitle: { id: 'app.game-link.connection.title', defaultMessage: 'Connection info' },
+  latencyLabel: { id: 'app.game-link.connection.latency', defaultMessage: 'Latency' },
+  qualityLabel: { id: 'app.game-link.connection.quality', defaultMessage: 'Quality' },
+  connectionTypeLabel: {
+    id: 'app.game-link.connection.type',
+    defaultMessage: 'Connection type',
+  },
+  modCompatTitle: { id: 'app.game-link.mod-compat.title', defaultMessage: 'Mod compatibility' },
+  checkCompatButton: {
+    id: 'app.game-link.mod-compat.check',
+    defaultMessage: 'Check compatibility',
+  },
+  modsCompatible: { id: 'app.game-link.mod-compat.ok', defaultMessage: 'Mods are compatible' },
+  modMismatch: {
+    id: 'app.game-link.mod-compat.mismatch',
+    defaultMessage: 'Mod mismatch detected',
+  },
+  missingModsTitle: {
+    id: 'app.game-link.mod-compat.missing',
+    defaultMessage: 'Missing mods ({count})',
+  },
+  extraModsTitle: { id: 'app.game-link.mod-compat.extra', defaultMessage: 'Extra mods ({count})' },
+  versionMismatchesTitle: {
+    id: 'app.game-link.mod-compat.version-mismatch',
+    defaultMessage: 'Version mismatches ({count})',
+  },
+  localWorldsTitle: { id: 'app.game-link.worlds.title', defaultMessage: 'Local worlds' },
+  scanWorldsButton: { id: 'app.game-link.worlds.scan', defaultMessage: 'Scan' },
+  noWorldsConnectedHint: {
+    id: 'app.game-link.worlds.none',
+    defaultMessage: 'No worlds found. Make sure Minecraft is running with LAN open.',
+  },
+  networkDiagnosticsTitle: {
+    id: 'app.game-link.diagnostics.title',
+    defaultMessage: 'Network diagnostics',
+  },
+  mcRunningLabel: { id: 'app.game-link.diagnostics.mc-running', defaultMessage: 'Minecraft running' },
+  mcPortLabel: { id: 'app.game-link.diagnostics.mc-port', defaultMessage: 'MC port' },
+  roleLabel: { id: 'app.game-link.diagnostics.role', defaultMessage: 'Role' },
+  checkMcProcessButton: {
+    id: 'app.game-link.diagnostics.check-mc',
+    defaultMessage: 'Check MC process',
+  },
+  hostShutdownMessage: {
+    id: 'app.game-link.host-shutdown',
+    defaultMessage: 'Host has shut down the lobby.',
+  },
+  qualityGood: { id: 'app.game-link.quality.good', defaultMessage: 'Good' },
+  qualityFair: { id: 'app.game-link.quality.fair', defaultMessage: 'Fair' },
+  qualityPoor: { id: 'app.game-link.quality.poor', defaultMessage: 'Poor' },
+  wayLocal: { id: 'app.game-link.way.local', defaultMessage: 'local' },
+  wayP2p: { id: 'app.game-link.way.p2p', defaultMessage: 'p2p' },
+  wayRelay: { id: 'app.game-link.way.relay', defaultMessage: 'relay' },
+  wayUnknown: { id: 'app.game-link.way.unknown', defaultMessage: 'unknown' },
+  yes: { id: 'app.game-link.yes', defaultMessage: 'Yes' },
+  no: { id: 'app.game-link.no', defaultMessage: 'No' },
 })
 
-breadcrumbs.setRootContext({ name: formatMessage(messages.title), link: '/gamelink' })
-
-const isWindows = computed(
-	() => typeof navigator !== 'undefined' && navigator.userAgent.includes('Windows'),
-)
-
-// ===== Lobby state =====
-const status = ref<LobbyStatus | null>(null)
-const players = ref<PlayerProfile[]>([])
-const localWorlds = ref<LocalWorld[]>([])
-const instances = ref<GameInstance[]>([])
-const loading = ref(false)
-const initializing = ref(true)
-const scanningLocal = ref(false)
-
-// ===== Form inputs =====
-const selectedInstanceId = ref<string | null>(null)
-const selectedLocalPort = ref<number | null>(null)
-const manualPortInput = ref('')
-const useDelayedMode = ref(false)
-const lobbyCodeInput = ref('')
-
-// ===== 5-stage transition animation =====
-const showTransition = ref(false)
-const transitionPhase = ref<'preparing' | 'downloading' | 'connecting' | 'ready' | 'complete'>(
-	'preparing',
-)
-const transitionMode = ref<'create' | 'join'>('create')
-const transitionProgress = ref(0)
-
-// ===== Skin preview =====
-const skinTexture = ref('')
-const skinVariant = ref<'SLIM' | 'CLASSIC' | 'UNKNOWN'>('CLASSIC')
 const username = ref('')
-const skinLoaded = ref(false)
+const lobbyCode = ref('')
+const joinCodeInput = ref('')
+const selectedWorld = ref<FoundWorld | null>(null)
+const mcPort = ref(0)
 
-// ===== Polling handles =====
-let statusPoll: number | null = null
-let localWorldsPoll: number | null = null
-let playersPoll: number | null = null
-let progressTimer: number | null = null
-let unlistenProcess: (() => void) | null = null
-let unlistenInstance: (() => void) | null = null
+const state = ref<LobbyState>('idle')
+const isHost = ref(false)
+const players = ref<PlayerProfile[]>([])
+const connectionInfo = ref<ConnectionInfo>({
+  way: 'unknown',
+  quality: 'Good',
+  latency_ms: 0,
+})
+const hostMods = ref<HostModInfo[]>([])
+const modCompatResult = ref<ModCompatibilityResult | null>(null)
+const foundWorlds = ref<FoundWorld[]>([])
+const mcRunning = ref(false)
+const errorMsg = ref('')
 
-async function loadUserSkin() {
-	try {
-		const defaultId = await get_default_user()
-		if (defaultId) {
-			const allAccounts = await users()
-			const user = allAccounts.find((acc) => acc.profile.id === defaultId)
-			if (user) {
-				username.value = user.profile.name ?? ''
-			}
-		}
+// Collapsible section states (default collapsed, except players when connected)
+const showPlayers = ref(false)
+const showConnection = ref(false)
+const showModCompat = ref(false)
+const showNetworkDiagnostics = ref(false)
+const showWorlds = ref(false)
 
-		const skins = (await get_available_skins()) ?? []
-		const equipped = skins.find((s) => s.is_equipped) ?? skins[0]
-		if (equipped) {
-			skinTexture.value = await get_normalized_skin_texture(equipped)
-			skinVariant.value = equipped.variant
-			skinLoaded.value = true
-		}
-	} catch (e) {
-		console.warn('[GameLink] Failed to load user skin:', e)
-		skinLoaded.value = false
-	}
+const isBusy = ref(false)
+const isScanning = ref(false)
+
+// Event unlisteners
+const unlisteners: UnlistenFn[] = []
+
+// ---------------------------------------------------------------------------
+// Computed
+// ---------------------------------------------------------------------------
+
+const isConnected = computed(() => state.value === 'connected')
+const hasUsername = computed(() => username.value.trim().length > 0)
+const canCreate = computed(() => !isBusy.value && hasUsername.value && selectedWorld.value !== null && state.value === 'idle')
+const canJoin = computed(() => !isBusy.value && hasUsername.value && joinCodeInput.value.trim().length > 0 && state.value === 'idle')
+const canLeave = computed(() => !isBusy.value && state.value !== 'idle')
+
+const stateLabel = computed(() => {
+  switch (state.value) {
+    case 'idle': return formatMessage(messages.stateIdle)
+    case 'creating': return formatMessage(messages.stateCreating)
+    case 'joining': return formatMessage(messages.stateJoining)
+    case 'connected': return formatMessage(messages.stateConnected)
+    case 'leaving': return formatMessage(messages.stateLeaving)
+    case 'error': return formatMessage(messages.stateError)
+    default: return state.value
+  }
+})
+
+const stateColor = computed(() => {
+  switch (state.value) {
+    case 'connected': return 'var(--color-brand)'
+    case 'creating':
+    case 'joining': return 'var(--color-orange)'
+    case 'error': return 'var(--color-red)'
+    default: return 'var(--color-base)'
+  }
+})
+
+const connectionQualityColor = computed(() => {
+  switch (connectionInfo.value.quality) {
+    case 'Good': return 'var(--color-brand)'
+    case 'Fair': return 'var(--color-orange)'
+    case 'Poor': return 'var(--color-red)'
+    default: return 'var(--color-base)'
+  }
+})
+
+function formatConnectionWay(way: ConnectionWay): string {
+  switch (way) {
+    case 'local': return formatMessage(messages.wayLocal)
+    case 'p2p': return formatMessage(messages.wayP2p)
+    case 'relay': return formatMessage(messages.wayRelay)
+    default: return formatMessage(messages.wayUnknown)
+  }
 }
 
-async function loadInstances() {
-	try {
-		instances.value = await instanceApi.list()
-		// default-select the most recently played instance
-		if (!selectedInstanceId.value && instances.value.length > 0) {
-			const sorted = [...instances.value].sort(
-				(a, b) =>
-					new Date(b.last_played ?? 0).getTime() - new Date(a.last_played ?? 0).getTime(),
-			)
-			selectedInstanceId.value = sorted[0].id
-		}
-	} catch (e) {
-		console.warn('[GameLink] Failed to load instances:', e)
-		instances.value = []
-	}
+function formatConnectionQuality(quality: ConnectionQuality): string {
+  switch (quality) {
+    case 'Good': return formatMessage(messages.qualityGood)
+    case 'Fair': return formatMessage(messages.qualityFair)
+    case 'Poor': return formatMessage(messages.qualityPoor)
+  }
 }
 
-async function refreshStatus() {
-	try {
-		status.value = await get_lobby_status()
-		if (status.value?.state === 'host' || status.value?.state === 'client') {
-			try {
-				players.value = await get_players()
-			} catch {
-				players.value = []
-			}
-		} else {
-			players.value = []
-		}
-	} catch (e) {
-		console.error('[GameLink] Failed to get lobby status:', e)
-	} finally {
-		initializing.value = false
-	}
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+
+async function createLobby() {
+  if (!canCreate.value) return
+  isBusy.value = true
+  errorMsg.value = ''
+  try {
+    const port = selectedWorld.value?.port ?? mcPort.value
+    const code = await invoke<string>('plugin:link|link_create_lobby', {
+      mcPort: port,
+      username: username.value,
+    })
+    lobbyCode.value = code
+    mcPort.value = port
+    showPlayers.value = true
+  } catch (e: any) {
+    errorMsg.value = String(e)
+    state.value = 'error'
+  } finally {
+    isBusy.value = false
+  }
 }
 
-async function refreshLocalWorlds() {
-	if (status.value?.state === 'client') return
-	scanningLocal.value = true
-	try {
-		localWorlds.value = await discover_local_worlds()
-	} catch (e) {
-		console.warn('[GameLink] Failed to discover local worlds:', e)
-		localWorlds.value = []
-	} finally {
-		scanningLocal.value = false
-	}
+async function joinLobby() {
+  if (!canJoin.value) return
+  isBusy.value = true
+  errorMsg.value = ''
+  try {
+    await invoke<boolean>('plugin:link|link_join_lobby', {
+      lobbyCode: joinCodeInput.value.trim(),
+      username: username.value,
+    })
+    lobbyCode.value = joinCodeInput.value.trim()
+    showPlayers.value = true
+  } catch (e: any) {
+    errorMsg.value = String(e)
+    state.value = 'error'
+  } finally {
+    isBusy.value = false
+  }
 }
 
-async function launchInstance() {
-	if (!selectedInstanceId.value) return
-	try {
-		await instanceApi.run(selectedInstanceId.value)
-		addNotification({
-			title: formatMessage(messages.title),
-			description: formatMessage(messages.instanceLaunchedHint),
-			type: 'success',
-		})
-		// Give MC a moment to boot, then start scanning for LAN broadcasts
-		setTimeout(() => {
-			refreshLocalWorlds()
-		}, 4000)
-	} catch (e) {
-		handleError(e as Error)
-	}
+function selectWorld(world: FoundWorld) {
+  selectedWorld.value = world
+  mcPort.value = world.port
 }
 
-async function handleCreate() {
-	let port = 0
-	if (!useDelayedMode.value) {
-		if (selectedLocalPort.value && selectedLocalPort.value > 0) {
-			port = selectedLocalPort.value
-		} else if (manualPortInput.value) {
-			port = parseInt(manualPortInput.value, 10)
-			if (Number.isNaN(port) || port <= 0 || port > 65535) {
-				addNotification({
-					title: formatMessage(messages.title),
-					description: formatMessage(messages.invalidPortError),
-					type: 'error',
-				})
-				return
-			}
-		} else {
-			addNotification({
-				title: formatMessage(messages.title),
-				description: formatMessage(messages.portRequiredError),
-				type: 'error',
-			})
-			return
-		}
-	}
-
-	loading.value = true
-	transitionMode.value = 'create'
-	transitionPhase.value = 'preparing'
-	transitionProgress.value = 5
-	showTransition.value = true
-	startProgressTimer()
-
-	try {
-		// Stage 1: preparing
-		await stageDelay(900)
-		// Stage 2: downloading (if needed)
-		transitionPhase.value = 'downloading'
-		transitionProgress.value = 25
-		await check_easytier_ready()
-		// Stage 3: connecting - start EasyTier
-		transitionPhase.value = 'connecting'
-		transitionProgress.value = 50
-		const code = await create_lobby(port, username.value || 'Player')
-		console.log('[GameLink] Lobby created with code:', code)
-		// Stage 4: ready - Scaffolding server up, waiting for players / MC LAN
-		transitionPhase.value = 'ready'
-		transitionProgress.value = 80
-		await refreshStatus()
-		await stageDelay(1200)
-		// Stage 5: complete
-		transitionPhase.value = 'complete'
-		transitionProgress.value = 100
-		stopProgressTimer()
-		await stageDelay(900)
-	} catch (e) {
-		console.error('[GameLink] Failed to create lobby:', e)
-		handleError(e as Error)
-	} finally {
-		showTransition.value = false
-		loading.value = false
-	}
+async function leaveLobby() {
+  if (!canLeave.value) return
+  isBusy.value = true
+  errorMsg.value = ''
+  try {
+    await invoke('plugin:link|link_leave_lobby')
+    resetState()
+  } catch (e: any) {
+    errorMsg.value = String(e)
+  } finally {
+    isBusy.value = false
+  }
 }
 
-async function handleJoin() {
-	const code = lobbyCodeInput.value.trim()
-	if (!code) {
-		addNotification({
-			title: formatMessage(messages.title),
-			description: formatMessage(messages.codeRequiredError),
-			type: 'error',
-		})
-		return
-	}
-
-	loading.value = true
-	transitionMode.value = 'join'
-	transitionPhase.value = 'preparing'
-	transitionProgress.value = 5
-	showTransition.value = true
-	startProgressTimer()
-
-	try {
-		// Stage 1: preparing
-		await stageDelay(700)
-		// Stage 2: downloading (if needed)
-		transitionPhase.value = 'downloading'
-		transitionProgress.value = 25
-		await check_easytier_ready()
-		// Stage 3: connecting - start EasyTier + join network
-		transitionPhase.value = 'connecting'
-		transitionProgress.value = 50
-		await join_lobby(code, username.value || 'Player')
-		// Stage 4: ready - wait for Scaffolding handshake + port-forward
-		transitionPhase.value = 'ready'
-		transitionProgress.value = 80
-		let waited = 0
-		while (waited < 10000) {
-			await refreshStatus()
-			if (status.value?.scaffoldingReady && status.value.localPort) break
-			await stageDelay(500)
-			waited += 500
-		}
-		// Stage 5: complete
-		transitionPhase.value = 'complete'
-		transitionProgress.value = 100
-		stopProgressTimer()
-		await stageDelay(900)
-	} catch (e) {
-		console.error('[GameLink] Failed to join lobby:', e)
-		handleError(e as Error)
-	} finally {
-		showTransition.value = false
-		loading.value = false
-	}
+async function refreshPlayers() {
+  try {
+    players.value = await invoke<PlayerProfile[]>('plugin:link|link_get_players')
+  } catch (e: any) {
+    errorMsg.value = String(e)
+  }
 }
 
-function startProgressTimer() {
-	stopProgressTimer()
-	progressTimer = window.setInterval(() => {
-		// Smoothly drift toward a cap depending on the stage
-		const caps: Record<typeof transitionPhase.value, number> = {
-			preparing: 22,
-			downloading: 48,
-			connecting: 75,
-			ready: 95,
-			complete: 100,
-		}
-		const cap = caps[transitionPhase.value] ?? 95
-		if (transitionProgress.value < cap) {
-			transitionProgress.value = Math.min(cap, transitionProgress.value + 0.6)
-		}
-	}, 60)
+async function refreshConnectionInfo() {
+  try {
+    connectionInfo.value = await invoke<ConnectionInfo>('plugin:link|link_get_connection_info')
+  } catch (e: any) {
+    errorMsg.value = String(e)
+  }
 }
 
-function stopProgressTimer() {
-	if (progressTimer) {
-		clearInterval(progressTimer)
-		progressTimer = null
-	}
+async function checkModCompat() {
+  try {
+    // Pass empty instance path — the backend handles host case by returning compatible
+    modCompatResult.value = await invoke<ModCompatibilityResult>('plugin:link|link_check_mod_compat', {
+      instancePath: '',
+    })
+  } catch (e: any) {
+    errorMsg.value = String(e)
+  }
 }
 
-function stageDelay(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+async function discoverWorlds() {
+  isScanning.value = true
+  errorMsg.value = ''
+  try {
+    foundWorlds.value = await invoke<FoundWorld[]>('plugin:link|link_discover_worlds')
+    // Auto-select the first discovered world if none selected.
+    if (selectedWorld.value === null && foundWorlds.value.length > 0) {
+      selectWorld(foundWorlds.value[0])
+    }
+  } catch (e: any) {
+    errorMsg.value = String(e)
+  } finally {
+    isScanning.value = false
+  }
 }
 
-async function handleLeave() {
-	loading.value = true
-	console.log('[GameLink] Leaving lobby...')
-	try {
-		await leave_lobby()
-		console.log('[GameLink] Left lobby')
-		await refreshStatus()
-		players.value = []
-	} catch (e) {
-		console.error('[GameLink] Failed to leave lobby:', e)
-		handleError(e as Error)
-	} finally {
-		loading.value = false
-	}
+async function checkMcRunning() {
+  try {
+    mcRunning.value = await invoke<boolean>('plugin:link|link_is_minecraft_running')
+  } catch {
+    mcRunning.value = false
+  }
 }
 
-async function copyCode() {
-	if (!status.value?.lobbyCode) return
-	try {
-		await navigator.clipboard.writeText(status.value.lobbyCode)
-		addNotification({
-			title: formatMessage(messages.title),
-			description: formatMessage(messages.copiedNotification),
-			type: 'success',
-		})
-	} catch (e) {
-		handleError(e as Error)
-	}
+async function copyLobbyCode() {
+  if (!lobbyCode.value) return
+  try {
+    await navigator.clipboard.writeText(lobbyCode.value)
+  } catch {
+    // ignore
+  }
 }
 
-function selectLocalWorld(world: LocalWorld) {
-	selectedLocalPort.value = world.port
-	manualPortInput.value = String(world.port)
-	useDelayedMode.value = false
+function resetState() {
+  lobbyCode.value = ''
+  joinCodeInput.value = ''
+  state.value = 'idle'
+  isHost.value = false
+  players.value = []
+  connectionInfo.value = { way: 'unknown', quality: 'Good', latency_ms: 0 }
+  hostMods.value = []
+  modCompatResult.value = null
+  foundWorlds.value = []
+  showPlayers.value = false
+  showConnection.value = false
+  showModCompat.value = false
+  showNetworkDiagnostics.value = false
+  showWorlds.value = false
 }
 
-function clearLocalWorldSelection() {
-	// When the user manually edits the port input, deselect any picked local world.
-	// Do NOT clear manualPortInput here — that would wipe the user's keystrokes.
-	selectedLocalPort.value = null
+// ---------------------------------------------------------------------------
+// Event listeners
+// ---------------------------------------------------------------------------
+
+async function setupListeners() {
+  unlisteners.push(
+    await listen<LobbyState>('link_state_changed', (event) => {
+      state.value = event.payload
+      // When entering connected state, sync isHost from backend.
+      if (event.payload === 'connected') {
+        invoke<boolean>('plugin:link|link_is_host').then((h) => {
+          isHost.value = h
+        }).catch(() => {})
+        invoke<string | null>('plugin:link|link_get_lobby_code').then((code) => {
+          if (code) lobbyCode.value = code
+        }).catch(() => {})
+      }
+    }),
+  )
+  unlisteners.push(
+    await listen<PlayerProfile[]>('link_players_changed', (event) => {
+      players.value = event.payload
+    }),
+  )
+  unlisteners.push(
+    await listen<number>('link_heartbeat', (event) => {
+      connectionInfo.value.latency_ms = event.payload
+      if (event.payload < 100) {
+        connectionInfo.value.quality = 'Good'
+      } else if (event.payload < 200) {
+        connectionInfo.value.quality = 'Fair'
+      } else {
+        connectionInfo.value.quality = 'Poor'
+      }
+    }),
+  )
+  unlisteners.push(
+    await listen('link_server_shutdown', () => {
+      errorMsg.value = formatMessage(messages.hostShutdownMessage)
+      resetState()
+    }),
+  )
+  unlisteners.push(
+    await listen<HostModInfo[]>('link_mod_compat_result', (event) => {
+      hostMods.value = event.payload
+    }),
+  )
+  unlisteners.push(
+    await listen<number>('link_server_port', (event) => {
+      mcPort.value = event.payload
+    }),
+  )
 }
 
-function selectInstance(inst: GameInstance) {
-	selectedInstanceId.value = inst.id
-}
-
-const selectedInstance = computed(() =>
-	instances.value.find((i) => i.id === selectedInstanceId.value) ?? null,
-)
+// ---------------------------------------------------------------------------
+// Lifecycle
+// ---------------------------------------------------------------------------
 
 onMounted(async () => {
-	await loadUserSkin()
-	await loadInstances()
-	await refreshStatus()
-	await refreshLocalWorlds()
+  breadcrumbs.setName(formatMessage(messages.breadcrumbName))
+  await setupListeners()
 
-	statusPoll = window.setInterval(refreshStatus, 3000)
-	localWorldsPoll = window.setInterval(refreshLocalWorlds, 3000)
-	playersPoll = window.setInterval(async () => {
-		if (status.value?.state === 'host' || status.value?.state === 'client') {
-			try {
-				players.value = await get_players()
-			} catch {
-				/* ignore */
-			}
-		}
-	}, 5000)
+  // Load current default Minecraft username (same source as the AccountsCard).
+  try {
+    const defaultId = await get_default_user()
+    const accountList = await users()
+    const defaultAccount = accountList?.find((acc: any) => acc.profile?.id === defaultId)
+    if (defaultAccount?.profile?.name) {
+      username.value = defaultAccount.profile.name
+    }
+  } catch {
+    // ignore
+  }
 
-	unlistenProcess = await process_listener(async () => {
-		// Process events could be used to detect MC launch / exit
-	})
-	unlistenInstance = await instance_listener(async () => {
-		await loadInstances()
-	})
+  // Sync current state
+  try {
+    state.value = await invoke<LobbyState>('plugin:link|link_get_state')
+    isHost.value = await invoke<boolean>('plugin:link|link_is_host')
+    const code = await invoke<string | null>('plugin:link|link_get_lobby_code')
+    if (code) lobbyCode.value = code
+    if (state.value === 'connected') {
+      showPlayers.value = true
+      await refreshPlayers()
+      await refreshConnectionInfo()
+    }
+  } catch {
+    // link module may not be initialized yet
+  }
 })
 
 onUnmounted(() => {
-	if (statusPoll) clearInterval(statusPoll)
-	if (localWorldsPoll) clearInterval(localWorldsPoll)
-	if (playersPoll) clearInterval(playersPoll)
-	if (progressTimer) clearInterval(progressTimer)
-	unlistenProcess?.()
-	unlistenInstance?.()
-})
-
-// ====== Computed ======
-
-const isInLobby = computed(() =>
-	status.value ? status.value.state === 'host' || status.value.state === 'client' : false,
-)
-
-const connectAddress = computed(() => {
-	if (status.value?.localPort) return `localhost:${status.value.localPort}`
-	return ''
-})
-
-const transitionStages = computed(() => [
-	{ key: 'preparing', label: formatMessage(messages.stagePreparing) },
-	{ key: 'downloading', label: formatMessage(messages.stageDownloading) },
-	{ key: 'connecting', label: formatMessage(messages.stageConnecting) },
-	{ key: 'ready', label: formatMessage(messages.stageReady) },
-	{ key: 'complete', label: formatMessage(messages.stageComplete) },
-] as const)
-
-const transitionTitle = computed(() => {
-	if (transitionPhase.value === 'complete') {
-		return formatMessage(messages.transitionComplete)
-	}
-	return transitionMode.value === 'create'
-		? formatMessage(messages.transitionCreating)
-		: formatMessage(messages.transitionJoining)
-})
-
-const transitionSubtitle = computed(() => {
-	const stage = transitionStages.value.find((s) => s.key === transitionPhase.value)
-	return stage?.label ?? ''
-})
-
-const transitionStageIndex = computed(() =>
-	transitionStages.value.findIndex((s) => s.key === transitionPhase.value),
-)
-
-const statusBadgeText = computed(() => {
-	if (!status.value) return formatMessage(messages.statusIdle)
-	switch (status.value.state) {
-		case 'host':
-			return formatMessage(messages.statusHost)
-		case 'client':
-			return formatMessage(messages.statusClient)
-		case 'error':
-			return formatMessage(messages.statusError)
-		default:
-			return formatMessage(messages.statusIdle)
-	}
-})
-
-const statusBadgeColor = computed(() => {
-	if (!status.value) return 'bg-surface-5'
-	switch (status.value.state) {
-		case 'host':
-		case 'client':
-			return 'bg-green'
-		case 'error':
-			return 'bg-red'
-		default:
-			return 'bg-surface-5'
-	}
-})
-
-const sortedPlayers = computed(() => {
-	// Host first, then guests
-	return [...players.value].sort((a, b) => {
-		if (a.kind === 'HOST' && b.kind !== 'HOST') return -1
-		if (a.kind !== 'HOST' && b.kind === 'HOST') return 1
-		return a.name.localeCompare(b.name)
-	})
+  unlisteners.forEach((fn) => fn())
 })
 </script>
 
 <template>
-	<div class="flex flex-col h-full">
-		<!-- Main content -->
-		<div class="p-6 flex flex-col gap-4 flex-1 overflow-y-auto">
-			<div class="flex items-center justify-between flex-wrap gap-3">
-				<div>
-					<h1 class="text-2xl font-bold text-contrast m-0">
-						{{ formatMessage(messages.title) }}
-					</h1>
-					<p class="text-secondary m-0 mt-1">{{ formatMessage(messages.description) }}</p>
-				</div>
-				<div
-					v-if="!initializing && status"
-					class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-3"
-				>
-					<span class="size-2 rounded-full" :class="statusBadgeColor" />
-					<span class="text-sm font-medium text-contrast">{{ statusBadgeText }}</span>
-				</div>
-			</div>
+  <div class="game-link-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-header">
+        <h1 class="hero-title">{{ formatMessage(messages.title) }}</h1>
+        <div class="state-badge" :style="{ color: stateColor, borderColor: stateColor }">
+          {{ stateLabel }}
+        </div>
+      </div>
+      <p class="hero-description">
+        {{ formatMessage(messages.description) }}
+      </p>
 
-			<div v-if="initializing" class="p-4 rounded-xl bg-surface-3 text-secondary">Loading...</div>
+      <!-- Error display -->
+      <div v-if="errorMsg" class="error-banner">
+        <span>{{ errorMsg }}</span>
+        <button class="error-dismiss" @click="errorMsg = ''">x</button>
+      </div>
 
-			<template v-else>
-				<div v-if="!isWindows" class="p-4 rounded-xl bg-bg-orange text-orange">
-					{{ formatMessage(messages.windowsOnlyWarning) }}
-				</div>
+      <!-- Idle: show create/join controls -->
+      <div v-if="state === 'idle'" class="hero-controls">
+        <div class="user-banner">
+          <span class="user-banner-label">{{ formatMessage(messages.playingAs) }}</span>
+          <span v-if="hasUsername" class="user-banner-name">{{ username }}</span>
+          <span v-else class="user-banner-name user-banner-name--missing">{{ formatMessage(messages.noAccount) }}</span>
+        </div>
 
-				<div class="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-4">
-					<!-- ===== Left column: 3D skin preview (always visible) + player list when in lobby ===== -->
-					<div class="flex flex-col gap-4">
-						<Card class="flex flex-col">
-							<div class="flex items-center gap-3 mb-3">
-								<div class="p-2 rounded-xl bg-brand-highlight">
-									<UserIcon class="size-5 text-brand" />
-								</div>
-								<div>
-									<h2 class="text-lg font-bold text-contrast m-0">
-										{{ formatMessage(messages.yourSkinTitle) }}
-									</h2>
-									<p class="text-sm text-secondary m-0">
-										{{ formatMessage(messages.yourSkinDescription) }}
-									</p>
-								</div>
-							</div>
+        <div class="action-row">
+          <!-- Create lobby -->
+          <div class="action-card action-card--host">
+            <div class="action-card-header">
+              <span class="action-card-icon">H</span>
+              <div>
+                <div class="action-card-title">{{ formatMessage(messages.hostLobbyTitle) }}</div>
+                <div class="action-card-subtitle">{{ formatMessage(messages.hostLobbySubtitle) }}</div>
+              </div>
+            </div>
 
-							<div
-								v-if="skinLoaded && skinTexture"
-								class="relative flex-1 min-h-[360px] rounded-xl overflow-hidden bg-surface-2"
-							>
-								<SkinPreviewRenderer
-									:texture-src="skinTexture"
-									:variant="skinVariant"
-									:nametag="username || undefined"
-									:initial-rotation="Math.PI / 8"
-								/>
-							</div>
-							<div
-								v-else
-								class="flex-1 min-h-[360px] rounded-xl bg-surface-2 flex items-center justify-center"
-							>
-								<div class="text-center">
-									<UserIcon class="size-16 mx-auto text-secondary opacity-50 mb-3" />
-									<p class="text-secondary m-0">
-										{{ formatMessage(messages.signInHint) }}
-									</p>
-								</div>
-							</div>
-						</Card>
+            <button
+              class="btn btn-ghost"
+              :disabled="isScanning || isBusy"
+              @click="discoverWorlds"
+            >
+              {{ isScanning ? formatMessage(messages.scanningButton) : formatMessage(messages.scanButton) }}
+            </button>
 
-						<!-- Player list card (only visible when in lobby) -->
-						<Card v-if="isInLobby">
-							<div class="flex items-center gap-3 mb-3">
-								<div class="p-2 rounded-xl bg-brand-highlight">
-									<UsersIcon class="size-5 text-brand" />
-								</div>
-								<div class="flex-1">
-									<h2 class="text-lg font-bold text-contrast m-0">
-										{{ formatMessage(messages.playersInLobby) }}
-									</h2>
-									<p class="text-sm text-secondary m-0">
-										{{ status?.playerCount ?? 0 }} player(s) connected
-									</p>
-								</div>
-							</div>
-							<div class="flex flex-col gap-2">
-								<div
-									v-for="p in sortedPlayers"
-									:key="p.machine_id || p.name"
-									class="flex items-center gap-3 p-3 rounded-lg bg-surface-2"
-								>
-									<div class="size-9 rounded-full bg-brand-highlight flex items-center justify-center shrink-0">
-										<UserIcon class="size-5 text-brand" />
-									</div>
-									<div class="flex-1 min-w-0">
-										<div class="text-sm font-medium text-contrast truncate">
-											{{ p.name }}
-											<span
-												v-if="p.name === username"
-												class="text-xs text-secondary ml-1"
-											>
-												({{ formatMessage(messages.youLabel) }})
-											</span>
-										</div>
-										<div class="text-xs text-secondary truncate">
-											{{ p.vendor || 'Unknown client' }}
-										</div>
-									</div>
-									<span
-										v-if="p.kind === 'HOST'"
-										class="px-2 py-0.5 rounded-md text-xs font-semibold border border-solid border-brand bg-brand-highlight text-contrast"
-									>
-										{{ formatMessage(messages.hostLabel) }}
-									</span>
-									<span
-										v-else
-										class="px-2 py-0.5 rounded-md text-xs font-semibold bg-surface-3 text-secondary"
-									>
-										{{ formatMessage(messages.guestLabel) }}
-									</span>
-								</div>
-								<div
-									v-if="sortedPlayers.length === 0"
-									class="p-4 rounded-lg bg-surface-2 text-center text-sm text-secondary"
-								>
-									{{ formatMessage(messages.waitingForPeers) }}
-								</div>
-							</div>
-						</Card>
-					</div>
+            <div v-if="foundWorlds.length > 0" class="world-select">
+              <div class="input-label">{{ formatMessage(messages.selectWorld) }}</div>
+              <div
+                v-for="world in foundWorlds"
+                :key="world.port"
+                class="world-option"
+                :class="selectedWorld?.port === world.port ? 'world-option--selected' : ''"
+                @click="selectWorld(world)"
+              >
+                <span class="world-option-name">{{ world.name }}</span>
+                <span class="world-option-port">:{{ world.port }}</span>
+              </div>
+            </div>
+            <p v-else-if="!isScanning" class="empty-hint">
+              {{ formatMessage(messages.noWorldsHint) }}
+            </p>
 
-					<!-- ===== Right column: lobby controls ===== -->
-					<div class="flex flex-col gap-4">
-						<!-- ===== HOST VIEW ===== -->
-						<template v-if="status?.state === 'host'">
-							<Card>
-								<div class="flex items-center gap-3 mb-4">
-									<div class="p-2 rounded-xl bg-brand-highlight">
-										<GlobeIcon class="size-5 text-brand" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-contrast m-0">
-											{{ formatMessage(messages.createLobbyTitle) }}
-										</h2>
-										<p class="text-sm text-secondary m-0">
-											{{ formatMessage(messages.createLobbyDescription) }}
-										</p>
-									</div>
-								</div>
+            <button class="btn btn-brand" :disabled="!canCreate" @click="createLobby">
+              {{ isBusy ? formatMessage(messages.creatingLobbyButton) : formatMessage(messages.createLobbyButton) }}
+            </button>
+          </div>
 
-								<div class="space-y-4">
-									<!-- Lobby code + copy -->
-									<div>
-										<label class="text-sm font-medium text-primary block mb-1.5">
-											{{ formatMessage(messages.lobbyCodeLabel) }}
-										</label>
-										<div class="flex gap-2">
-											<StyledInput
-												:model-value="status.lobbyCode ?? ''"
-												:disabled="true"
-												class="flex-1"
-											/>
-											<ButtonStyled type="brand">
-												<button :disabled="loading" @click="copyCode">
-													<CopyIcon />
-													{{ formatMessage(messages.copyCodeButton) }}
-												</button>
-											</ButtonStyled>
-										</div>
-									</div>
+          <!-- Join lobby -->
+          <div class="action-card action-card--client">
+            <div class="action-card-header">
+              <span class="action-card-icon action-card-icon--client">C</span>
+              <div>
+                <div class="action-card-title">{{ formatMessage(messages.joinLobbyTitle) }}</div>
+                <div class="action-card-subtitle">{{ formatMessage(messages.joinLobbySubtitle) }}</div>
+              </div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">{{ formatMessage(messages.lobbyCodeLabel) }}</label>
+              <input
+                v-model="joinCodeInput"
+                type="text"
+                class="text-input"
+                placeholder="U/XXXX-XXXX-XXXX-XXXX"
+                :disabled="isBusy"
+              />
+            </div>
+            <button class="btn btn-primary" :disabled="!canJoin" @click="joinLobby">
+              {{ isBusy ? formatMessage(messages.joiningLobbyButton) : formatMessage(messages.joinLobbyButton) }}
+            </button>
+          </div>
+        </div>
+      </div>
 
-									<!-- Status info grid -->
-									<div class="grid grid-cols-2 gap-3 text-sm">
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.virtualIpLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.virtualIp ?? '-' }}
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.peersLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.peerCount }}
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.mcPortStatusLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												<template v-if="status.mcPort && status.mcPort > 0">
-													{{ status.mcPort }}
-												</template>
-												<template v-else>
-													<span class="text-orange">
-														{{ formatMessage(messages.mcPortWaiting) }}
-													</span>
-												</template>
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.localPortLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.localPort ?? status.scfPort ?? '-' }}
-											</div>
-										</div>
-									</div>
+      <!-- Connected: show lobby code and leave -->
+      <div v-else-if="isConnected" class="hero-connected">
+        <div class="lobby-code-display">
+          <div class="lobby-code-label">{{ formatMessage(messages.lobbyCodeLabel) }}</div>
+          <div class="lobby-code-value">
+            <code>{{ lobbyCode }}</code>
+            <button class="btn btn-icon" :title="formatMessage(messages.copyTitle)" @click="copyLobbyCode">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="role-badge" :class="isHost ? 'role-badge--host' : 'role-badge--client'">
+          {{ isHost ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}
+        </div>
+        <button class="btn btn-danger" :disabled="!canLeave" @click="leaveLobby">
+          {{ formatMessage(messages.leaveLobbyButton) }}
+        </button>
+      </div>
 
-									<div
-										v-if="!status.mcPort || status.mcPort === 0"
-										class="p-3 rounded-lg bg-bg-orange text-orange text-sm"
-									>
-										{{ formatMessage(messages.delayedModeHint) }}
-									</div>
+      <!-- Busy states -->
+      <div v-else-if="state === 'creating' || state === 'joining' || state === 'leaving'" class="hero-busy">
+        <div class="spinner" />
+        <span>{{ stateLabel }}</span>
+      </div>
+    </section>
 
-									<ButtonStyled type="red">
-										<button :disabled="loading" class="w-full" @click="handleLeave">
-											<XIcon />
-											{{ formatMessage(messages.leaveButton) }}
-										</button>
-									</ButtonStyled>
-								</div>
-							</Card>
-						</template>
+    <!-- Collapsible: Players -->
+    <section v-if="isConnected" class="collapsible-section">
+      <button class="section-header" @click="showPlayers = !showPlayers">
+        <span class="section-title">{{ formatMessage(messages.playersTitle, { count: players.length }) }}</span>
+        <span class="section-chevron" :class="{ 'section-chevron--open': showPlayers }">v</span>
+      </button>
+      <div v-if="showPlayers" class="section-body">
+        <div class="player-list">
+          <div
+            v-for="player in players"
+            :key="player.machine_id"
+            class="player-card"
+            :class="player.kind === 'host' ? 'player-card--host' : 'player-card--client'"
+          >
+            <div class="player-avatar">{{ player.name.charAt(0).toUpperCase() }}</div>
+            <div class="player-info">
+              <div class="player-name">{{ player.name }}</div>
+              <div class="player-role">{{ player.kind === 'host' ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}</div>
+            </div>
+            <div v-if="player.latency_ms !== null" class="player-latency">
+              {{ player.latency_ms }}ms
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" @click="refreshPlayers">{{ formatMessage(messages.refreshButton) }}</button>
+      </div>
+    </section>
 
-						<!-- ===== CLIENT VIEW ===== -->
-						<template v-else-if="status?.state === 'client'">
-							<Card>
-								<div class="flex items-center gap-3 mb-4">
-									<div class="p-2 rounded-xl bg-brand-highlight">
-										<UsersIcon class="size-5 text-brand" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-contrast m-0">
-											{{ formatMessage(messages.joinLobbyTitle) }}
-										</h2>
-										<p class="text-sm text-secondary m-0">
-											{{ formatMessage(messages.joinLobbyDescription) }}
-										</p>
-									</div>
-								</div>
+    <!-- Collapsible: Connection Info -->
+    <section v-if="isConnected" class="collapsible-section">
+      <button class="section-header" @click="showConnection = !showConnection">
+        <span class="section-title">{{ formatMessage(messages.connectionInfoTitle) }}</span>
+        <span class="section-chevron" :class="{ 'section-chevron--open': showConnection }">v</span>
+      </button>
+      <div v-if="showConnection" class="section-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.latencyLabel) }}</span>
+            <span class="info-value" :style="{ color: connectionQualityColor }">
+              {{ connectionInfo.latency_ms }} ms
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.qualityLabel) }}</span>
+            <span class="info-value" :style="{ color: connectionQualityColor }">
+              {{ formatConnectionQuality(connectionInfo.quality) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.connectionTypeLabel) }}</span>
+            <span class="info-value">{{ formatConnectionWay(connectionInfo.way) }}</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost" @click="refreshConnectionInfo">{{ formatMessage(messages.refreshButton) }}</button>
+      </div>
+    </section>
 
-								<div class="space-y-4">
-									<div class="grid grid-cols-2 gap-3 text-sm">
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.localPortLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.localPort ?? '-' }}
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.peersLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.peerCount }}
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.virtualIpLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.virtualIp ?? '-' }}
-											</div>
-										</div>
-										<div class="p-3 rounded-lg bg-surface-2">
-											<div class="text-secondary text-xs mb-1">
-												{{ formatMessage(messages.mcPortStatusLabel) }}
-											</div>
-											<div class="text-contrast font-mono">
-												{{ status.mcPort ?? '-' }}
-											</div>
-										</div>
-									</div>
+    <!-- Collapsible: Mod compatibility -->
+    <section v-if="isConnected && !isHost" class="collapsible-section">
+      <button class="section-header" @click="showModCompat = !showModCompat">
+        <span class="section-title">{{ formatMessage(messages.modCompatTitle) }}</span>
+        <span class="section-chevron" :class="{ 'section-chevron--open': showModCompat }">v</span>
+      </button>
+      <div v-if="showModCompat" class="section-body">
+        <button class="btn btn-primary" @click="checkModCompat">{{ formatMessage(messages.checkCompatButton) }}</button>
+        <div v-if="modCompatResult" class="mod-compat-result">
+          <div
+            class="compat-status"
+            :class="modCompatResult.is_compatible ? 'compat-status--ok' : 'compat-status--warn'"
+          >
+            {{ modCompatResult.is_compatible ? formatMessage(messages.modsCompatible) : formatMessage(messages.modMismatch) }}
+          </div>
+          <div v-if="modCompatResult.host_only.length > 0" class="compat-group">
+            <div class="compat-group-title">{{ formatMessage(messages.missingModsTitle, { count: modCompatResult.host_only.length }) }}</div>
+            <div
+              v-for="mod in modCompatResult.host_only"
+              :key="mod.mod_id"
+              class="compat-mod-item"
+            >
+              <span class="mod-name">{{ mod.name || mod.mod_id }}</span>
+              <span class="mod-version">{{ mod.version }}</span>
+            </div>
+          </div>
+          <div v-if="modCompatResult.local_only.length > 0" class="compat-group">
+            <div class="compat-group-title">{{ formatMessage(messages.extraModsTitle, { count: modCompatResult.local_only.length }) }}</div>
+            <div
+              v-for="mod in modCompatResult.local_only"
+              :key="mod.mod_id"
+              class="compat-mod-item"
+            >
+              <span class="mod-name">{{ mod.name || mod.mod_id }}</span>
+              <span class="mod-version">{{ mod.version }}</span>
+            </div>
+          </div>
+          <div v-if="modCompatResult.version_mismatch.length > 0" class="compat-group">
+            <div class="compat-group-title">{{ formatMessage(messages.versionMismatchesTitle, { count: modCompatResult.version_mismatch.length }) }}</div>
+            <div
+              v-for="(pair, idx) in modCompatResult.version_mismatch"
+              :key="idx"
+              class="compat-mod-item"
+            >
+              <span class="mod-name">{{ pair[0].name || pair[0].mod_id }}</span>
+              <span class="mod-version mod-version--mismatch">{{ pair[0].version }} vs {{ pair[1].version }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-									<div
-										v-if="connectAddress"
-										class="p-3 rounded-lg bg-bg-blue text-blue text-sm"
-									>
-										{{
-											formatMessage(messages.connectHint, {
-												address: connectAddress,
-											})
-										}}
-									</div>
+    <!-- Collapsible: World discovery -->
+    <section v-if="isConnected" class="collapsible-section">
+      <button class="section-header" @click="showWorlds = !showWorlds">
+        <span class="section-title">{{ formatMessage(messages.localWorldsTitle) }}</span>
+        <span class="section-chevron" :class="{ 'section-chevron--open': showWorlds }">v</span>
+      </button>
+      <div v-if="showWorlds" class="section-body">
+        <button class="btn btn-ghost" @click="discoverWorlds">{{ formatMessage(messages.scanWorldsButton) }}</button>
+        <div v-if="foundWorlds.length > 0" class="world-list">
+          <div v-for="(world, idx) in foundWorlds" :key="idx" class="world-item">
+            <span class="world-name">{{ world.name }}</span>
+            <span class="world-port">:{{ world.port }}</span>
+          </div>
+        </div>
+        <p v-else class="empty-hint">{{ formatMessage(messages.noWorldsConnectedHint) }}</p>
+      </div>
+    </section>
 
-									<div
-										v-if="!status.scaffoldingReady"
-										class="p-3 rounded-lg bg-bg-orange text-orange text-sm flex items-center gap-2"
-									>
-										<SpinnerIcon class="size-4 animate-spin" />
-										{{ formatMessage(messages.waitingForPeers) }}
-									</div>
-
-									<ButtonStyled type="red">
-										<button :disabled="loading" class="w-full" @click="handleLeave">
-											<XIcon />
-											{{ formatMessage(messages.leaveButton) }}
-										</button>
-									</ButtonStyled>
-								</div>
-							</Card>
-						</template>
-
-						<!-- ===== IDLE VIEW: Create + Join panels ===== -->
-						<template v-else>
-							<!-- Create lobby: full host flow -->
-							<Card>
-								<div class="flex items-center gap-3 mb-4">
-									<div class="p-2 rounded-xl bg-brand-highlight">
-										<GlobeIcon class="size-5 text-brand" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-contrast m-0">
-											{{ formatMessage(messages.createLobbyTitle) }}
-										</h2>
-										<p class="text-sm text-secondary m-0">
-											{{ formatMessage(messages.createLobbyDescription) }}
-										</p>
-									</div>
-								</div>
-
-								<!-- Step 1: instance selection -->
-								<div class="space-y-3 mb-4">
-									<div class="flex items-center justify-between">
-										<label class="text-sm font-medium text-primary">
-											{{ formatMessage(messages.instancesSection) }}
-										</label>
-									</div>
-									<p class="text-xs text-secondary m-0">
-										{{ formatMessage(messages.instancesHint) }}
-									</p>
-
-									<div
-										v-if="instances.length === 0"
-										class="p-4 rounded-lg bg-surface-2 text-center text-sm text-secondary"
-									>
-										{{ formatMessage(messages.noInstances) }}
-									</div>
-									<div v-else class="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
-										<button
-											v-for="inst in instances"
-											:key="inst.id"
-											type="button"
-											class="flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors"
-											:class="
-												selectedInstanceId === inst.id
-													? 'border border-solid border-brand bg-brand-highlight text-contrast'
-													: 'bg-surface-2 hover:bg-surface-3'
-											"
-											:disabled="loading || !isWindows"
-											@click="selectInstance(inst)"
-										>
-											<Avatar
-													size="36px"
-													:src="inst.icon_path ? convertFileSrc(inst.icon_path) : null"
-													:tint-by="inst.id"
-													:alt="inst.name"
-													class="shrink-0"
-												/>
-											<div class="flex-1 min-w-0">
-												<div class="text-sm font-medium truncate">{{ inst.name }}</div>
-												<div class="text-xs opacity-70 truncate">
-													{{ inst.game_version }} · {{ inst.loader }}
-												</div>
-											</div>
-											<span
-												v-if="selectedInstanceId === inst.id"
-												class="text-xs font-semibold px-2 py-0.5 rounded-md bg-brand text-[rgba(0,0,0,0.9)]"
-											>
-												{{ formatMessage(messages.selected) }}
-											</span>
-										</button>
-									</div>
-
-									<ButtonStyled
-										v-if="selectedInstance"
-										type="brand"
-										class="w-full"
-									>
-										<button
-											type="button"
-											:disabled="loading || !isWindows"
-											class="w-full"
-											@click="launchInstance"
-										>
-											<PlayIcon class="translate-x-[1px]" />
-											{{ formatMessage(messages.launchInstance) }}
-										</button>
-									</ButtonStyled>
-									<p class="text-xs text-secondary m-0">
-										{{ formatMessage(messages.launchHint) }}
-									</p>
-								</div>
-
-								<!-- Step 2: LAN port discovery -->
-								<div class="space-y-3 mb-4">
-									<div class="flex items-center justify-between">
-										<label class="text-sm font-medium text-primary">
-											{{ formatMessage(messages.lanDiscoverySection) }}
-										</label>
-										<ButtonStyled type="transparent" circular>
-											<button
-												type="button"
-												:disabled="scanningLocal || loading"
-												@click="refreshLocalWorlds"
-											>
-												<RefreshCwIcon :class="scanningLocal ? 'animate-spin' : ''" />
-											</button>
-										</ButtonStyled>
-									</div>
-									<p class="text-xs text-secondary m-0">
-										{{ formatMessage(messages.lanDiscoveryHint) }}
-									</p>
-
-									<div
-										v-if="scanningLocal && localWorlds.length === 0"
-										class="p-3 rounded-lg bg-surface-2 text-center text-sm text-secondary flex items-center justify-center gap-2"
-									>
-										<SpinnerIcon class="size-4 animate-spin" />
-										{{ formatMessage(messages.scanning) }}
-									</div>
-									<div
-										v-else-if="localWorlds.length === 0"
-										class="p-3 rounded-lg bg-surface-2 text-center text-sm text-secondary"
-									>
-										{{ formatMessage(messages.noLocalWorlds) }}
-									</div>
-									<div v-else class="flex flex-col gap-1.5">
-										<button
-											v-for="(world, idx) in localWorlds"
-											:key="`${world.port}-${idx}`"
-											type="button"
-											class="flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors"
-											:class="
-												selectedLocalPort === world.port
-													? 'border border-solid border-brand bg-brand-highlight text-contrast'
-													: 'bg-surface-2 hover:bg-surface-3'
-											"
-											:disabled="loading || !isWindows"
-											@click="selectLocalWorld(world)"
-										>
-											<div
-												class="size-9 rounded-md bg-surface-3 flex items-center justify-center shrink-0"
-											>
-												<SearchIcon class="size-5 text-brand" />
-											</div>
-											<div class="flex-1 min-w-0">
-												<div class="text-sm font-medium truncate">{{ world.motd }}</div>
-												<div class="text-xs opacity-70">Port {{ world.port }}</div>
-											</div>
-										</button>
-									</div>
-
-									<!-- Manual port input -->
-									<div>
-										<label class="text-xs text-secondary block mb-1">
-											{{ formatMessage(messages.mcPortLabel) }}
-										</label>
-										<StyledInput
-											v-model="manualPortInput"
-											type="number"
-											:placeholder="formatMessage(messages.mcPortPlaceholder)"
-											:disabled="loading || !isWindows || useDelayedMode"
-											@input="clearLocalWorldSelection"
-										/>
-									</div>
-
-									<!-- Delayed mode toggle -->
-									<label
-										class="flex items-start gap-2 p-3 rounded-lg bg-surface-2 cursor-pointer hover:bg-surface-3 transition-colors"
-									>
-										<input
-											v-model="useDelayedMode"
-											type="checkbox"
-											class="mt-0.5"
-											:disabled="loading || !isWindows"
-										/>
-										<div class="flex-1">
-											<div class="text-sm font-medium text-contrast">
-												{{ formatMessage(messages.delayedMode) }}
-											</div>
-											<div class="text-xs text-secondary mt-0.5">
-												{{ formatMessage(messages.delayedModeHint) }}
-											</div>
-										</div>
-									</label>
-								</div>
-
-								<form @submit.prevent="handleCreate">
-									<ButtonStyled type="brand">
-										<button
-											type="submit"
-											:disabled="loading || !isWindows"
-											class="w-full"
-										>
-											<LinkIcon />
-											{{ formatMessage(messages.createButton) }}
-										</button>
-									</ButtonStyled>
-								</form>
-							</Card>
-
-							<!-- Join lobby -->
-							<Card>
-								<div class="flex items-center gap-3 mb-4">
-									<div class="p-2 rounded-xl bg-brand-highlight">
-										<UsersIcon class="size-5 text-brand" />
-									</div>
-									<div>
-										<h2 class="text-lg font-bold text-contrast m-0">
-											{{ formatMessage(messages.joinLobbyTitle) }}
-										</h2>
-										<p class="text-sm text-secondary m-0">
-											{{ formatMessage(messages.joinLobbyDescription) }}
-										</p>
-									</div>
-								</div>
-
-								<form class="space-y-3" @submit.prevent="handleJoin">
-									<div>
-										<label
-											class="text-sm font-medium text-primary block mb-1.5"
-										>
-											{{ formatMessage(messages.lobbyCodeLabel) }}
-										</label>
-										<StyledInput
-											v-model="lobbyCodeInput"
-											:placeholder="formatMessage(messages.lobbyCodePlaceholder)"
-											:disabled="loading || !isWindows"
-										/>
-									</div>
-									<ButtonStyled type="brand">
-										<button
-											type="submit"
-											:disabled="loading || !isWindows"
-											class="w-full"
-										>
-											<LinkIcon />
-											{{ formatMessage(messages.joinButton) }}
-										</button>
-									</ButtonStyled>
-								</form>
-							</Card>
-						</template>
-
-						<!-- Error display -->
-						<Card v-if="status?.error" class="border border-red">
-							<div class="flex items-start gap-2">
-								<XIcon class="size-5 text-red shrink-0 mt-0.5" />
-								<div>
-									<div class="text-sm font-medium text-red">
-										{{ formatMessage(messages.statusError) }}
-									</div>
-									<div class="text-sm text-secondary mt-1">
-										{{ status.error }}
-									</div>
-								</div>
-							</div>
-						</Card>
-					</div>
-				</div>
-			</template>
-		</div>
-
-		<!-- ===== 5-stage transition animation overlay ===== -->
-		<Transition name="gamelink-fade">
-			<div
-				v-if="showTransition"
-				class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
-			>
-				<div class="flex flex-col items-center gap-6 max-w-2xl w-full px-6">
-					<!-- Player skins row: local user center, others fade in -->
-					<div class="flex items-end justify-center gap-4 sm:gap-8">
-						<!-- Placeholder: guest 2 -->
-						<div
-							class="hidden sm:flex flex-col items-center gap-2 transition-all duration-700"
-							:class="
-								transitionStageIndex >= 3
-									? 'opacity-80 translate-y-0'
-									: 'opacity-20 translate-y-3'
-							"
-						>
-							<div
-								class="w-24 h-32 rounded-lg bg-surface-3 flex items-center justify-center overflow-hidden"
-							>
-								<UserIcon class="size-12 text-secondary" />
-							</div>
-							<span class="text-xs text-secondary">?</span>
-						</div>
-
-						<!-- Local user skin (center, always visible) -->
-						<div class="flex flex-col items-center gap-2">
-							<div
-								v-if="skinLoaded && skinTexture"
-								class="w-48 h-64 sm:w-56 sm:h-72 rounded-xl overflow-hidden bg-surface-2 relative transition-transform duration-500"
-								:class="transitionPhase === 'complete' ? 'scale-105' : 'scale-100'"
-							>
-								<SkinPreviewRenderer
-									:texture-src="skinTexture"
-									:variant="skinVariant"
-									:nametag="username || undefined"
-									:initial-rotation="Math.PI / 8"
-								/>
-							</div>
-							<div
-								v-else
-								class="w-48 h-64 sm:w-56 sm:h-72 rounded-xl bg-surface-2 flex items-center justify-center"
-							>
-								<UserIcon class="size-16 text-secondary opacity-50" />
-							</div>
-							<div
-								class="px-3 py-1 rounded-md text-sm font-medium"
-								:class="
-									transitionPhase === 'complete'
-										? 'bg-bg-green text-green'
-										: 'border border-solid border-brand bg-brand-highlight text-contrast'
-								"
-							>
-								{{ username || formatMessage(messages.youLabel) }}
-							</div>
-						</div>
-
-						<!-- Placeholder: guest 1 -->
-						<div
-							class="hidden sm:flex flex-col items-center gap-2 transition-all duration-700"
-							:class="
-								transitionStageIndex >= 2
-									? 'opacity-80 translate-y-0'
-									: 'opacity-20 translate-y-3'
-							"
-						>
-							<div
-								class="w-24 h-32 rounded-lg bg-surface-3 flex items-center justify-center overflow-hidden"
-							>
-								<UserIcon class="size-12 text-secondary" />
-							</div>
-							<span class="text-xs text-secondary">?</span>
-						</div>
-					</div>
-
-					<!-- Stage indicator: 5 dots + labels -->
-					<div class="flex items-center justify-center gap-2 w-full max-w-md">
-						<template v-for="(stage, idx) in transitionStages" :key="stage.key">
-							<div class="flex flex-col items-center gap-1 flex-1">
-								<div
-									class="size-2.5 rounded-full transition-all duration-300"
-									:class="
-										idx <= transitionStageIndex
-											? 'bg-brand scale-125 shadow-[0_0_8px_var(--color-brand)]'
-											: 'bg-surface-3'
-									"
-								/>
-								<span
-									class="text-[10px] text-center transition-colors"
-									:class="
-										idx === transitionStageIndex
-											? 'text-brand font-semibold'
-											: idx < transitionStageIndex
-												? 'text-secondary'
-												: 'text-secondary opacity-50'
-									"
-								>
-									{{ stage.label.split('...')[0] }}
-								</span>
-							</div>
-							<div
-								v-if="idx < transitionStages.length - 1"
-								class="h-px flex-1 -mt-4"
-								:class="idx < transitionStageIndex ? 'bg-brand' : 'bg-surface-3'"
-							/>
-						</template>
-					</div>
-
-					<!-- Progress bar -->
-					<div class="w-full max-w-md">
-						<div class="h-1.5 rounded-full bg-surface-3 overflow-hidden">
-							<div
-								class="h-full bg-brand transition-all duration-300 ease-out"
-								:style="{ width: `${transitionProgress}%` }"
-							/>
-						</div>
-						<div class="text-xs text-secondary text-right mt-1">
-							{{ Math.round(transitionProgress) }}%
-						</div>
-					</div>
-
-					<!-- Status text -->
-					<div class="text-center">
-						<h2 class="text-xl font-bold text-contrast m-0 mb-2">
-							{{ transitionTitle }}
-						</h2>
-						<p class="text-secondary m-0">{{ transitionSubtitle }}</p>
-						<SpinnerIcon
-							v-if="transitionPhase !== 'complete'"
-							class="size-5 animate-spin text-brand mx-auto mt-3"
-						/>
-					</div>
-				</div>
-			</div>
-		</Transition>
-	</div>
+    <!-- Collapsible: Network diagnostics -->
+    <section v-if="isConnected" class="collapsible-section">
+      <button class="section-header" @click="showNetworkDiagnostics = !showNetworkDiagnostics">
+        <span class="section-title">{{ formatMessage(messages.networkDiagnosticsTitle) }}</span>
+        <span class="section-chevron" :class="{ 'section-chevron--open': showNetworkDiagnostics }">v</span>
+      </button>
+      <div v-if="showNetworkDiagnostics" class="section-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.mcRunningLabel) }}</span>
+            <span class="info-value">{{ mcRunning ? formatMessage(messages.yes) : formatMessage(messages.no) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.mcPortLabel) }}</span>
+            <span class="info-value">{{ mcPort }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">{{ formatMessage(messages.roleLabel) }}</span>
+            <span class="info-value">{{ isHost ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost" @click="checkMcRunning">{{ formatMessage(messages.checkMcProcessButton) }}</button>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>
-.gamelink-fade-enter-active,
-.gamelink-fade-leave-active {
-	transition: opacity 0.3s ease;
+.game-link-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.gamelink-fade-enter-from,
-.gamelink-fade-leave-to {
-	opacity: 0;
+/* Hero section */
+.hero-section {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hero-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.state-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+}
+
+.hero-description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Error banner */
+.error-banner {
+  background-color: var(--color-red-bg);
+  border: 1px solid var(--color-red);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--color-red);
+  font-size: 0.9rem;
+}
+
+.error-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.error-dismiss:hover {
+  opacity: 1;
+}
+
+/* Controls */
+.hero-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.user-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.user-banner-label {
+  color: var(--color-text-secondary);
+}
+
+.user-banner-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.user-banner-name--missing {
+  color: var(--color-orange);
+}
+
+.world-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.world-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.world-option:hover {
+  border-color: var(--color-brand);
+}
+
+.world-option--selected {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand-bg);
+}
+
+.world-option-name {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.world-option-port {
+  color: var(--color-text-secondary);
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.text-input {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.text-input:focus {
+  border-color: var(--color-brand);
+}
+
+.text-input--small {
+  max-width: 120px;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .action-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.action-card {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-card--host {
+  border-top: 3px solid var(--color-brand);
+}
+
+.action-card--client {
+  border-top: 3px solid var(--color-blue);
+}
+
+.action-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.action-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-brand);
+  color: var(--color-button-text-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.action-card-icon--client {
+  background-color: var(--color-blue);
+}
+
+.action-card-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.action-card-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-brand {
+  background-color: var(--color-brand);
+  color: var(--color-button-text-active);
+}
+
+.btn-brand:hover:not(:disabled) {
+  background-color: var(--color-brand-highlight);
+}
+
+.btn-primary {
+  background-color: var(--color-blue);
+  color: var(--color-button-text-active);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background-color: var(--color-red);
+  color: var(--color-button-text-active);
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-button-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--color-button-bg-hover);
+}
+
+.btn-icon {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  padding: 0.35rem;
+  border: 1px solid var(--color-button-border);
+}
+
+.btn-icon:hover {
+  color: var(--color-text);
+  background-color: var(--color-button-bg-hover);
+}
+
+/* Connected hero */
+.hero-connected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lobby-code-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.lobby-code-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.lobby-code-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lobby-code-value code {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  background-color: var(--color-bg);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-button-border);
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+.role-badge--host {
+  background-color: var(--color-brand);
+  color: var(--color-button-text-active);
+}
+
+.role-badge--client {
+  background-color: var(--color-blue);
+  color: var(--color-button-text-active);
+}
+
+/* Busy state */
+.hero-busy {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-button-border);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Collapsible sections */
+.collapsible-section {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.section-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.section-header:hover {
+  background-color: var(--color-button-bg-hover);
+}
+
+.section-chevron {
+  transition: transform 0.2s;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.section-chevron--open {
+  transform: rotate(180deg);
+}
+
+.section-body {
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Player list */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+}
+
+.player-card--host {
+  border-left: 3px solid var(--color-brand);
+}
+
+.player-card--client {
+  border-left: 3px solid var(--color-blue);
+}
+
+.player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-button-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.player-role {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+.player-latency {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-family: 'Fira Code', monospace;
+}
+
+/* Info grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+}
+
+.info-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+
+/* Mod compatibility */
+.mod-compat-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.compat-status {
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.compat-status--ok {
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand);
+}
+
+.compat-status--warn {
+  background-color: var(--color-orange-bg);
+  color: var(--color-orange);
+}
+
+.compat-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.compat-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.compat-mod-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.mod-name {
+  color: var(--color-text);
+}
+
+.mod-version {
+  color: var(--color-text-secondary);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+}
+
+.mod-version--mismatch {
+  color: var(--color-orange);
+}
+
+/* World list */
+.world-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.world-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.world-name {
+  color: var(--color-text);
+}
+
+.world-port {
+  color: var(--color-text-secondary);
+  font-family: 'Fira Code', monospace;
+}
+
+.empty-hint {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
 }
 </style>

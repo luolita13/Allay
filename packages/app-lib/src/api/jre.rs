@@ -338,6 +338,15 @@ pub fn system_memory_bytes() -> u64 {
     .total_memory()
 }
 
+/// Available physical memory in bytes.
+pub fn available_memory_bytes() -> u64 {
+    sysinfo::System::new_with_specifics(
+        RefreshKind::nothing()
+            .with_memory(MemoryRefreshKind::nothing().with_ram()),
+    )
+    .available_memory()
+}
+
 /// Recommended default max heap (MiB) for new instances based on system RAM.
 pub fn default_memory_max_mb() -> u32 {
     const BYTES_PER_GIB: u64 = 1024 * 1024 * 1024;

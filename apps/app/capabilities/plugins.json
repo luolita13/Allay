@@ -114,7 +114,20 @@
 		"ads:default",
 		"friends:default",
 		"worlds:default",
-		"link:default",
-		"curseforge:default"
+		"curseforge:default",
+		"link:allow-link-get-active-username",
+		"link:allow-link-create-lobby",
+		"link:allow-link-join-lobby",
+		"link:allow-link-leave-lobby",
+		"link:allow-link-get-state",
+		"link:allow-link-get-players",
+		"link:allow-link-get-lobby-code",
+		"link:allow-link-get-connection-info",
+		"link:allow-link-is-host",
+		"link:allow-link-discover-worlds",
+		"link:allow-link-check-mod-compat",
+		"link:allow-link-get-host-mods",
+		"link:allow-link-is-minecraft-running",
+		"link:allow-link-update-mc-port"
 	]
 }

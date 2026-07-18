@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 
 let systemThemeMq: MediaQueryList | null = null
 
+const LS_KEY_BG_PATH = 'modrinth-app-background-image-path'
+const LS_KEY_BG_BLUR = 'modrinth-app-background-blur'
+
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
 	page_path: false,
@@ -40,6 +43,9 @@ export type ThemeStore = {
 
 	devMode: boolean
 	featureFlags: FeatureFlags
+
+	backgroundImagePath: string | null
+	backgroundBlur: number
 }
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
@@ -50,10 +56,25 @@ export const DEFAULT_THEME_STORE: ThemeStore = {
 
 	devMode: false,
 	featureFlags: DEFAULT_FEATURE_FLAGS,
+
+	backgroundImagePath: null,
+	backgroundBlur: 20,
 }
 
 export const useTheming = defineStore('themeStore', {
-	state: () => DEFAULT_THEME_STORE,
+	state: () => {
+		const stored = { ...DEFAULT_THEME_STORE }
+		// Restore background image from localStorage
+		const savedPath = localStorage.getItem(LS_KEY_BG_PATH)
+		if (savedPath) {
+			stored.backgroundImagePath = savedPath
+		}
+		const savedBlur = localStorage.getItem(LS_KEY_BG_BLUR)
+		if (savedBlur) {
+			stored.backgroundBlur = parseInt(savedBlur, 10) || 20
+		}
+		return stored
+	},
 	actions: {
 		setThemeState(newTheme: ColorTheme) {
 			if (THEME_OPTIONS.includes(newTheme)) {
@@ -87,6 +108,18 @@ export const useTheming = defineStore('themeStore', {
 		},
 		getThemeOptions() {
 			return THEME_OPTIONS
+		},
+		setBackgroundImagePath(path: string | null) {
+			this.backgroundImagePath = path
+			if (path) {
+				localStorage.setItem(LS_KEY_BG_PATH, path)
+			} else {
+				localStorage.removeItem(LS_KEY_BG_PATH)
+			}
+		},
+		setBackgroundBlur(blur: number) {
+			this.backgroundBlur = blur
+			localStorage.setItem(LS_KEY_BG_BLUR, String(blur))
 		},
 	},
 })

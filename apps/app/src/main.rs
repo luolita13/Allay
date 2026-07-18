@@ -226,6 +226,9 @@ fn main() {
                 tracing::warn!("Failed to set window shadow: {e}");
             }
 
+            // Initialize link module state so commands can access it.
+            app.manage(api::link::LinkGlobalState::new());
+
             Ok(())
         });
 
@@ -237,7 +240,6 @@ fn main() {
         .plugin(api::instance::init())
         .plugin(api::logs::init())
         .plugin(api::jre::init())
-        .plugin(api::link::init())
         .plugin(api::metadata::init())
         .plugin(api::minecraft_skins::init())
         .plugin(api::process::init())
@@ -252,6 +254,7 @@ fn main() {
         .plugin(api::friends::init())
         .plugin(api::worlds::init())
         .plugin(api::curseforge::init())
+        .plugin(api::link::init())
         .manage(PendingUpdateData::default())
         .invoke_handler(tauri::generate_handler![
             initialize_state,

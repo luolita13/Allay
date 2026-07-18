@@ -20,6 +20,7 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { computed, onUnmounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { install_job_listener } from '@/helpers/events'
 import {
@@ -60,6 +61,22 @@ const messages = defineMessages({
 	refresh: {
 		id: 'app.downloads.refresh',
 		defaultMessage: 'Refresh',
+	},
+	tabActive: {
+		id: 'app.downloads.tab.active',
+		defaultMessage: 'Active',
+	},
+	tabFinished: {
+		id: 'app.downloads.tab.finished',
+		defaultMessage: 'Finished',
+	},
+	tabActiveCount: {
+		id: 'app.downloads.tab.active-count',
+		defaultMessage: 'Active ({count})',
+	},
+	tabFinishedCount: {
+		id: 'app.downloads.tab.finished-count',
+		defaultMessage: 'Finished ({count})',
 	},
 	cancel: {
 		id: 'app.downloads.cancel',
@@ -212,6 +229,17 @@ const statusTypeMap: Record<InstallJobStatus, string> = {
 const jobs = ref<InstallJobSnapshot[]>([])
 const instanceNames = ref<Record<string, string>>({})
 const loading = ref(false)
+const route = useRoute()
+const router = useRouter()
+
+const activeTab = computed<'active' | 'finished'>({
+	get() {
+		return route.query.tab === 'finished' ? 'finished' : 'active'
+	},
+	set(value) {
+		router.replace({ query: { ...route.query, tab: value } })
+	},
+})
 
 function getJobTitle(job: InstallJobSnapshot): string {
 	if (job.display?.title) return job.display.title
@@ -252,18 +280,21 @@ function formatRelativeTime(dateStr: string): string {
 	return dayjs(dateStr).fromNow()
 }
 
-// 按状态分组：活跃任务在前，已完成任务在后
-const sortedJobs = computed(() => {
+const activeJobs = computed(() => {
 	const active = jobs.value.filter((j) => !isInstallJobFinished(j.status))
-	const finished = jobs.value.filter((j) => isInstallJobFinished(j.status))
-
 	active.sort((a, b) => a.created.localeCompare(b.created))
-	finished.sort((a, b) => b.modified.localeCompare(a.modified))
-
-	return [...active, ...finished]
+	return active
 })
 
-const hasJobs = computed(() => sortedJobs.value.length > 0)
+const finishedJobs = computed(() => {
+	const finished = jobs.value.filter((j) => isInstallJobFinished(j.status))
+	finished.sort((a, b) => b.modified.localeCompare(a.modified))
+	return finished
+})
+
+const currentJobs = computed(() => (activeTab.value === 'active' ? activeJobs.value : finishedJobs.value))
+
+const hasCurrentJobs = computed(() => currentJobs.value.length > 0)
 
 async function refreshMetadata() {
 	const instanceIds = Array.from(
@@ -384,9 +415,27 @@ await refresh()
 			</ButtonStyled>
 		</div>
 
+		<!-- Tab switcher -->
+		<div v-if="jobs.length > 0" class="tab-bar">
+			<button
+				class="tab-button"
+				:class="{ 'tab-button--active': activeTab === 'active' }"
+				@click="activeTab = 'active'"
+			>
+				{{ formatMessage(messages.tabActiveCount, { count: activeJobs.length }) }}
+			</button>
+			<button
+				class="tab-button"
+				:class="{ 'tab-button--active': activeTab === 'finished' }"
+				@click="activeTab = 'finished'"
+			>
+				{{ formatMessage(messages.tabFinishedCount, { count: finishedJobs.length }) }}
+			</button>
+		</div>
+
 		<!-- 任务列表 -->
-		<template v-if="hasJobs">
-			<Card v-for="job in sortedJobs" :key="job.job_id" class="job-card">
+		<template v-if="hasCurrentJobs">
+			<Card v-for="job in currentJobs" :key="job.job_id" class="job-card">
 				<div class="job-header">
 					<div class="job-header-left">
 						<Avatar
@@ -407,13 +456,19 @@ await refresh()
 					</div>
 				</div>
 
-				<!-- 当前阶段 -->
-				<div class="job-phase">
+				<!-- 当前阶段：仅活跃任务显示 -->
+				<div v-if="!isInstallJobFinished(job.status)" class="job-phase">
 					{{ getPhaseLabel(job.phase) }}
 				</div>
 
-				<!-- 进度条 -->
-				<div v-if="getProgressFraction(job) !== null || job.status === 'running' || job.status === 'paused'" class="job-progress">
+				<!-- 进度条：仅活跃任务显示 -->
+				<div
+					v-if="
+						!isInstallJobFinished(job.status) &&
+						(getProgressFraction(job) !== null || job.status === 'running' || job.status === 'paused')
+					"
+					class="job-progress"
+				>
 					<ProgressBar
 						:progress="getProgressFraction(job) ?? 0"
 						:show-progress="getProgressFraction(job) !== null"
@@ -534,6 +589,43 @@ await refresh()
 </template>
 
 <style lang="scss" scoped>
+.tab-bar {
+	display: flex;
+	gap: var(--gap-sm, 0.5rem);
+	border-bottom: 2px solid var(--color-button-bg);
+}
+
+.tab-button {
+	position: relative;
+	padding: 0.75rem 1rem;
+	background: transparent;
+	border: none;
+	color: var(--color-text);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.15s ease;
+
+	&:hover {
+		color: var(--color-contrast);
+	}
+
+	&--active {
+		color: var(--color-contrast);
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: -2px;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: var(--color-brand);
+			border-radius: 2px 2px 0 0;
+		}
+	}
+}
+
 .job-card {
 	display: flex;
 	flex-direction: column;

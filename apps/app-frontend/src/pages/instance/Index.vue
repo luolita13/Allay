@@ -348,8 +348,6 @@ const messages = defineMessages({
 	tabFiles: { id: 'app.instance.tab.files', defaultMessage: 'Files' },
 	tabWorlds: { id: 'app.instance.tab.worlds', defaultMessage: 'Worlds' },
 	tabScreenshots: { id: 'app.instance.tab.screenshots', defaultMessage: 'Screenshots' },
-	tabResourcePacks: { id: 'app.instance.tab.resource-packs', defaultMessage: 'Resource packs' },
-	tabShaderPacks: { id: 'app.instance.tab.shader-packs', defaultMessage: 'Shader packs' },
 	tabLogs: { id: 'app.instance.tab.logs', defaultMessage: 'Logs' },
 	neverPlayed: { id: 'app.instance.never-played', defaultMessage: 'Never played' },
 	linkedTo: { id: 'app.instance.linked-to', defaultMessage: 'Linked to' },
@@ -574,16 +572,6 @@ const tabs = computed(() => [
 	{
 		label: formatMessage(messages.tabScreenshots),
 		href: `${basePath.value}/screenshots`,
-		icon: ImageIcon,
-	},
-	{
-		label: formatMessage(messages.tabResourcePacks),
-		href: `${basePath.value}/resource-packs`,
-		icon: PackageIcon,
-	},
-	{
-		label: formatMessage(messages.tabShaderPacks),
-		href: `${basePath.value}/shader-packs`,
 		icon: ImageIcon,
 	},
 	{

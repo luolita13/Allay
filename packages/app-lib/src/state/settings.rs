@@ -722,6 +722,7 @@ impl Default for PreferredIpStack {
 pub enum MemoryAllocationMode {
 	Auto = 0,
 	Custom = 1,
+	FollowGlobal = 2,
 }
 
 impl MemoryAllocationMode {
@@ -729,6 +730,7 @@ impl MemoryAllocationMode {
 		match val {
 			0 => Self::Auto,
 			1 => Self::Custom,
+			2 => Self::FollowGlobal,
 			_ => Self::Custom,
 		}
 	}

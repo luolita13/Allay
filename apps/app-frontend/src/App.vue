@@ -14,6 +14,7 @@ import {
 	CompassIcon,
 	DownloadIcon,
 	ExternalIcon,
+	GlobeIcon,
 	HomeIcon,
 	LeftArrowIcon,
 	LibraryIcon,
@@ -27,7 +28,6 @@ import {
 	ServerStackIcon,
 	SettingsIcon,
 	UserIcon,
-	UsersIcon,
 	WorldIcon,
 	XIcon,
 } from '@modrinth/assets'
@@ -59,7 +59,7 @@ import {
 import { renderString } from '@modrinth/utils'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getVersion } from '@tauri-apps/api/app'
-import { invoke } from '@tauri-apps/api/core'
+import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -356,8 +356,8 @@ const messages = defineMessages({
 		defaultMessage: 'Skin selector',
 	},
 	navGameLink: {
-		id: 'app.nav.gamelink',
-		defaultMessage: 'LAN Multiplayer',
+		id: 'app.nav.game-link',
+		defaultMessage: 'Online Multiplayer',
 	},
 	navLibrary: {
 		id: 'app.nav.library',
@@ -1477,13 +1477,30 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 </script>
 
 <template>
-	<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
-	<div id="teleports"></div>
 	<div
-		v-if="stateInitialized"
-		class="app-grid-layout relative"
-		:class="{ 'disable-advanced-rendering': !themeStore.advancedRendering }"
+		class="app-root"
+		:class="{ 'has-background-image': !!themeStore.backgroundImagePath }"
 	>
+		<div
+			v-if="themeStore.backgroundImagePath"
+			class="app-global-background"
+		>
+			<img
+				:src="convertFileSrc(themeStore.backgroundImagePath)"
+				class="app-global-background-image"
+			/>
+			<div
+				class="app-global-background-overlay"
+				:style="{ backdropFilter: `blur(${themeStore.backgroundBlur}px)` }"
+			/>
+		</div>
+		<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
+		<div id="teleports"></div>
+		<div
+			v-if="stateInitialized"
+			class="app-grid-layout relative"
+			:class="{ 'disable-advanced-rendering': !themeStore.advancedRendering }"
+		>
 		<Transition name="fade">
 			<div
 				v-if="restarting"
@@ -1537,8 +1554,12 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			<NavButton v-tooltip.right="formatMessage(messages.navSkins)" to="/skins">
 				<ChangeSkinIcon />
 			</NavButton>
-			<NavButton v-tooltip.right="formatMessage(messages.navGameLink)" to="/gamelink">
-				<UsersIcon />
+			<NavButton
+				v-tooltip.right="formatMessage(messages.navGameLink)"
+				to="/gamelink"
+				:is-primary="(r) => r.path === '/gamelink'"
+			>
+				<GlobeIcon />
 			</NavButton>
 			<NavButton
 				v-tooltip.right="formatMessage(messages.navLibrary)"
@@ -1847,15 +1868,44 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	/>
 	<InstallToPlayModal ref="installToPlayModal" />
 	<UpdateToPlayModal ref="updateToPlayModal" />
-	<StartupNoticeModal />
+		<StartupNoticeModal />
+	</div>
 </template>
 
 <style lang="scss" scoped>
+.app-root {
+	position: relative;
+	min-height: 100vh;
+	overflow: hidden;
+}
+
 .app-grid-layout,
 .app-contents {
 	--top-bar-height: 3rem;
 	--left-bar-width: 4rem;
 	--right-bar-width: 300px;
+}
+
+.app-global-background {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	user-select: none;
+}
+
+.app-global-background-image {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.app-global-background-overlay {
+	position: absolute;
+	inset: 0;
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .app-grid-layout {
@@ -1867,6 +1917,21 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	//z-index: 0;
 	background-color: var(--color-raised-bg);
 	height: 100vh;
+}
+
+.app-root.has-background-image {
+	.app-grid-layout {
+		background-color: color-mix(in srgb, var(--color-raised-bg), transparent 50%);
+	}
+
+	.app-grid-navbar,
+	.app-grid-statusbar {
+		background-color: color-mix(in srgb, var(--color-bg-raised), transparent 50%);
+	}
+
+	.app-contents {
+		background-color: color-mix(in srgb, var(--color-bg), transparent 50%);
+	}
 }
 
 .app-grid-navbar {

@@ -5,6 +5,8 @@ version = "1.0.0-local"
 edition.workspace = true
 
 [dependencies]
+easytier = { workspace = true }
+cidr = { workspace = true }
 ariadne = { workspace = true }
 async-minecraft-ping = { workspace = true, features = ["srv"] }
 async-recursion = { workspace = true }

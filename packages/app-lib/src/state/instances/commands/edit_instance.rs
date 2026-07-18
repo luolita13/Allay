@@ -3,8 +3,8 @@ use crate::state::instances::{
     adapters::sqlite::{content_rows, instance_rows},
 };
 use crate::state::{
-    Hooks, InstanceInstallStage, LauncherFeatureVersion, MemorySettings,
-    ModLoader, ReleaseChannel, WindowSize,
+    Hooks, InstanceInstallStage, LauncherFeatureVersion, MemoryAllocationMode,
+    MemorySettings, ModLoader, ReleaseChannel, WindowSize,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -62,6 +62,12 @@ pub struct InstanceLaunchOverridesPatch {
         with = "serde_with::rust::double_option"
     )]
     pub memory: Option<Option<MemorySettings>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "serde_with::rust::double_option"
+    )]
+    pub memory_allocation_mode: Option<Option<MemoryAllocationMode>>,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -245,6 +251,9 @@ fn apply_launch_overrides_patch(
     }
     if let Some(memory) = patch.memory {
         overrides.memory = memory;
+    }
+    if let Some(memory_allocation_mode) = patch.memory_allocation_mode {
+        overrides.memory_allocation_mode = memory_allocation_mode;
     }
     if let Some(force_fullscreen) = patch.force_fullscreen {
         overrides.force_fullscreen = force_fullscreen;

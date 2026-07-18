@@ -117,17 +117,24 @@ async fn run_credentials(
         .clone()
         .or(settings.hooks.wrapper.clone())
         .filter(|hook_command| !hook_command.is_empty());
-    let memory = context.launch_overrides.memory.unwrap_or_else(|| {
-        if settings.memory_allocation_mode == MemoryAllocationMode::Auto {
-            MemorySettings {
-                maximum: calculate_auto_memory(&state, &context).unwrap_or(
-                    settings.memory.maximum,
-                ),
-            }
-        } else {
-            settings.memory
+    // Resolve effective memory allocation mode:
+    // instance override (Auto/Custom) takes precedence; FollowGlobal or unset falls back to global.
+    let effective_mode = match context.launch_overrides.memory_allocation_mode {
+        Some(MemoryAllocationMode::FollowGlobal) | None => {
+            settings.memory_allocation_mode
         }
-    });
+        Some(mode) => mode,
+    };
+
+    let memory = match effective_mode {
+        MemoryAllocationMode::Auto => MemorySettings {
+            maximum: calculate_auto_memory(&state, &context)
+                .unwrap_or(settings.memory.maximum),
+        },
+        MemoryAllocationMode::Custom | MemoryAllocationMode::FollowGlobal => {
+            context.launch_overrides.memory.unwrap_or(settings.memory)
+        }
+    };
     let resolution = context
         .launch_overrides
         .game_resolution
@@ -317,17 +324,18 @@ pub async fn try_update_playtime_by_instance_id(
     res
 }
 
-/// Calculate automatic memory allocation based on system RAM, instance type, and mod count.
-/// Implements a simplified version of PCL-CE's algorithm.
+/// Calculate automatic memory allocation based on available RAM, instance type, and mod count.
+/// Port of PCL-CE's GetRam algorithm. Returns the allocation in MiB.
 fn calculate_auto_memory(
     state: &State,
     context: &crate::state::InstanceLaunchContext,
 ) -> Option<u32> {
-    const BYTES_PER_MIB: u64 = 1024 * 1024;
+    const BYTES_PER_GIB: f64 = 1024.0 * 1024.0 * 1024.0;
 
-    let system_memory_mib =
-        crate::api::jre::system_memory_bytes() / BYTES_PER_MIB;
-    let system_gib = system_memory_mib / 1024;
+    let ram_available_gb = {
+        let bytes = crate::api::jre::available_memory_bytes();
+        (bytes as f64 / BYTES_PER_GIB * 10.0).round() / 10.0
+    };
 
     let instance_path = state
         .directories
@@ -343,43 +351,64 @@ fn calculate_auto_memory(
                         .map(|t| t.is_file())
                         .unwrap_or(false)
                 })
-                .filter(|e| {
-                    e.file_name()
-                        .to_str()
-                        .map(|name| name.ends_with(".jar"))
-                        .unwrap_or(false)
-                })
                 .count() as u32
         })
         .unwrap_or(0);
+
+    let has_optifine = std::fs::read_dir(&mods_dir)
+        .map(|dir| {
+            dir.filter_map(|e| e.ok())
+                .filter(|e| {
+                    e.file_type()
+                        .map(|t| t.is_file())
+                        .unwrap_or(false)
+                })
+                .any(|e| {
+                    e.file_name()
+                        .to_str()
+                        .map(|name| name.to_lowercase().contains("optifine"))
+                        .unwrap_or(false)
+                })
+        })
+        .unwrap_or(false);
 
     let is_modded = !matches!(
         context.applied_content_set.loader,
         crate::state::ModLoader::Vanilla
     );
 
-    let (min, target1, target2, target3) = if is_modded {
+    let mod_count_f = mod_count as f64;
+    let (ram_minimum_gb, ram_target1_gb, ram_target2_gb, ram_target3_gb) = if is_modded {
         (
-            512u32,
-            1536 + mod_count * 1024 / 90,
-            2764 + mod_count * 1024 / 50,
-            4608 + mod_count * 1024 / 25,
+            0.5 + mod_count_f / 150.0,
+            1.5 + mod_count_f / 90.0,
+            2.7 + mod_count_f / 50.0,
+            4.5 + mod_count_f / 25.0,
         )
+    } else if has_optifine {
+        (0.5, 1.5, 3.0, 5.0)
     } else {
-        (512u32, 1536, 2560, 4096)
+        (0.5, 1.5, 2.5, 4.0)
     };
 
-    let target = if system_gib >= 16 {
-        target3
-    } else if system_gib >= 8 {
-        target2
-    } else if system_gib >= 4 {
-        target1
-    } else {
-        min
-    };
+    let mut ram_give_gb = 0.0;
+    let mut ram_available_gb = ram_available_gb;
 
-    // Don't exceed 75% of system memory
-    let max_allowed = (system_memory_mib as u32 * 3 / 4).min(6144);
-    Some(target.min(max_allowed).max(512))
+    let stages = [
+        (ram_target1_gb, 1.0),
+        (ram_target2_gb - ram_target1_gb, 0.7),
+        (ram_target3_gb - ram_target2_gb, 0.4),
+        (ram_target3_gb, 0.15),
+    ];
+
+    for (delta, ratio) in stages {
+        ram_give_gb += (ram_available_gb * ratio).min(delta);
+        ram_available_gb -= delta / ratio;
+        if ram_available_gb < 0.1 {
+            break;
+        }
+    }
+
+    let ram_give_gb = (ram_give_gb.max(ram_minimum_gb) * 10.0).round() / 10.0;
+    Some((ram_give_gb * 1024.0) as u32)
 }

@@ -1,5 +1,6 @@
 use crate::state::{
-    ContentSet, Hooks, Instance, InstanceLink, MemorySettings, WindowSize,
+    ContentSet, Hooks, Instance, InstanceLink, MemoryAllocationMode,
+    MemorySettings, WindowSize,
 };
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +11,7 @@ pub struct InstanceLaunchOverrides {
     pub extra_launch_args: Option<Vec<String>>,
     pub custom_env_vars: Option<Vec<(String, String)>>,
     pub memory: Option<MemorySettings>,
+    pub memory_allocation_mode: Option<MemoryAllocationMode>,
     pub force_fullscreen: Option<bool>,
     pub game_resolution: Option<WindowSize>,
     pub hooks: Hooks,
@@ -23,6 +25,7 @@ impl InstanceLaunchOverrides {
             extra_launch_args: None,
             custom_env_vars: None,
             memory: None,
+            memory_allocation_mode: None,
             force_fullscreen: None,
             game_resolution: None,
             hooks: Hooks {
@@ -45,6 +48,8 @@ pub(crate) struct InstanceLaunchOverridesData {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub memory: Option<MemorySettings>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub memory_allocation_mode: Option<MemoryAllocationMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub force_fullscreen: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub game_resolution: Option<WindowSize>,
@@ -63,6 +68,7 @@ impl InstanceLaunchOverridesData {
             extra_launch_args: self.extra_launch_args,
             custom_env_vars: self.custom_env_vars,
             memory: self.memory,
+            memory_allocation_mode: self.memory_allocation_mode,
             force_fullscreen: self.force_fullscreen,
             game_resolution: self.game_resolution,
             hooks: self.hooks,
@@ -77,6 +83,7 @@ impl From<&InstanceLaunchOverrides> for InstanceLaunchOverridesData {
             extra_launch_args: overrides.extra_launch_args.clone(),
             custom_env_vars: overrides.custom_env_vars.clone(),
             memory: overrides.memory,
+            memory_allocation_mode: overrides.memory_allocation_mode,
             force_fullscreen: overrides.force_fullscreen,
             game_resolution: overrides.game_resolution,
             hooks: overrides.hooks.clone(),

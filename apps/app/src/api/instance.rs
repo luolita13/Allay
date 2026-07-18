@@ -10,6 +10,7 @@ use theseus::data::{
     EditInstance as CoreEditInstance, InstanceInstallCandidate,
     InstanceInstallTarget, InstanceLaunchOverridesPatch,
     InstanceLink as CoreInstanceLink, InstanceMetadata, LinkedModpackInfo,
+    MemoryAllocationMode,
 };
 use theseus::instance::InstallProjectWithDependenciesRequest;
 use theseus::instance::QuickPlayType;
@@ -81,6 +82,7 @@ pub struct Instance {
     pub extra_launch_args: Option<Vec<String>>,
     pub custom_env_vars: Option<Vec<(String, String)>>,
     pub memory: Option<MemorySettings>,
+    pub memory_allocation_mode: Option<i32>,
     pub force_fullscreen: Option<bool>,
     pub game_resolution: Option<WindowSize>,
     pub hooks: Hooks,
@@ -173,6 +175,12 @@ pub struct EditInstance {
         skip_serializing_if = "Option::is_none",
         with = "serde_with::rust::double_option"
     )]
+    pub memory_allocation_mode: Option<Option<i32>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "serde_with::rust::double_option"
+    )]
     pub force_fullscreen: Option<Option<bool>>,
     #[serde(
         default,
@@ -212,6 +220,10 @@ impl From<InstanceMetadata> for Instance {
             extra_launch_args: metadata.launch_overrides.extra_launch_args,
             custom_env_vars: metadata.launch_overrides.custom_env_vars,
             memory: metadata.launch_overrides.memory,
+            memory_allocation_mode: metadata
+                .launch_overrides
+                .memory_allocation_mode
+                .map(|mode| mode.as_i32()),
             force_fullscreen: metadata.launch_overrides.force_fullscreen,
             game_resolution: metadata.launch_overrides.game_resolution,
             hooks: metadata.launch_overrides.hooks,
@@ -383,6 +395,9 @@ fn edit_to_core(edit_instance: EditInstance) -> Result<CoreEditInstance> {
             extra_launch_args: edit_instance.extra_launch_args,
             custom_env_vars: edit_instance.custom_env_vars,
             memory: edit_instance.memory,
+            memory_allocation_mode: edit_instance
+                .memory_allocation_mode
+                .map(|mode| mode.map(MemoryAllocationMode::from_i32)),
             force_fullscreen: edit_instance.force_fullscreen,
             game_resolution: edit_instance.game_resolution,
             hooks: edit_instance.hooks,

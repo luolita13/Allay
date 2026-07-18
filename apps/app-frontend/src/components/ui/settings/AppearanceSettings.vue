@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Combobox, defineMessages, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
+import { Combobox, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
+import { open } from '@tauri-apps/plugin-dialog'
+import { convertFileSrc } from '@tauri-apps/api/core'
 import { ref, watch } from 'vue'
 
 import { get, set } from '@/helpers/settings.ts'
@@ -9,6 +11,25 @@ import type { ColorTheme, FeatureFlag } from '@/store/theme.ts'
 
 const themeStore = useTheming()
 const { formatMessage } = useVIntl()
+
+async function selectBackgroundImage() {
+	const selected = await open({
+		multiple: false,
+		filters: [
+			{
+				name: 'Images',
+				extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'],
+			},
+		],
+	})
+	if (selected) {
+		themeStore.setBackgroundImagePath(selected)
+	}
+}
+
+function clearBackgroundImage() {
+	themeStore.setBackgroundImagePath(null)
+}
 
 const worldsInHomeFlag: FeatureFlag = 'worlds_in_home'
 const skipNonEssentialWarningsFlag: FeatureFlag = 'skip_non_essential_warnings'
@@ -118,6 +139,30 @@ const messages = defineMessages({
 	showPlayTimeDescription: {
 		id: 'app.appearance-settings.show-play-time.description',
 		defaultMessage: `Displays how much time you've spent playing an instance.`,
+	},
+	backgroundImageTitle: {
+		id: 'app.appearance-settings.background-image.title',
+		defaultMessage: 'Background image',
+	},
+	backgroundImageDescription: {
+		id: 'app.appearance-settings.background-image.description',
+		defaultMessage: 'Set a custom background image for the launcher.',
+	},
+	selectImageButton: {
+		id: 'app.appearance-settings.background-image.select-button',
+		defaultMessage: 'Select image',
+	},
+	clearImageButton: {
+		id: 'app.appearance-settings.background-image.clear-button',
+		defaultMessage: 'Clear',
+	},
+	backgroundBlurTitle: {
+		id: 'app.appearance-settings.background-blur.title',
+		defaultMessage: 'Background blur',
+	},
+	backgroundBlurDescription: {
+		id: 'app.appearance-settings.background-blur.description',
+		defaultMessage: 'Adjust the blur amount applied to the background image.',
 	},
 })
 
@@ -343,6 +388,65 @@ watch(
 					themeStore.toggleSidebar = settings.toggle_sidebar
 				}
 			"
+		/>
+	</div>
+
+	<hr class="mt-6 mb-6 border-solid border-[var(--color-button-bg)]" />
+
+	<h2 class="m-0 text-lg font-semibold text-contrast">
+		{{ formatMessage(messages.backgroundImageTitle) }}
+	</h2>
+	<p class="m-0 mt-1">{{ formatMessage(messages.backgroundImageDescription) }}</p>
+
+	<div class="mt-4 flex items-center gap-4">
+		<button class="btn btn-highlight" @click="selectBackgroundImage">
+			{{ formatMessage(messages.selectImageButton) }}
+		</button>
+		<button
+			v-if="themeStore.backgroundImagePath"
+			class="btn"
+			@click="clearBackgroundImage"
+		>
+			{{ formatMessage(messages.clearImageButton) }}
+		</button>
+	</div>
+
+	<div v-if="themeStore.backgroundImagePath" class="mt-4">
+		<div
+			class="relative w-full h-32 rounded-xl overflow-hidden border border-solid border-[var(--color-button-bg)]"
+		>
+			<img
+				:src="convertFileSrc(themeStore.backgroundImagePath)"
+				class="w-full h-full object-cover"
+			/>
+			<div
+				class="absolute inset-0"
+				:style="{
+					backdropFilter: `blur(${themeStore.backgroundBlur}px)`,
+					backgroundColor: 'rgba(0,0,0,0.4)',
+				}"
+			/>
+		</div>
+	</div>
+
+	<div
+		v-if="themeStore.backgroundImagePath"
+		class="mt-4 flex flex-col gap-2"
+	>
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.backgroundBlurTitle) }}
+			</h2>
+			<p class="m-0 mt-1">
+				{{ formatMessage(messages.backgroundBlurDescription) }}
+			</p>
+		</div>
+		<Slider
+			v-model="themeStore.backgroundBlur"
+			:min="0"
+			:max="50"
+			:step="1"
+			unit="px"
 		/>
 	</div>
 </template>

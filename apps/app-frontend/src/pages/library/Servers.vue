@@ -1,8 +1,15 @@
 <script setup lang="ts">
+import { defineMessages, useVIntl } from '@modrinth/ui'
 import { computed, ref, watchEffect } from 'vue'
 
 import GridDisplay from '@/components/GridDisplay.vue'
 import { get_project_v3_many } from '@/helpers/cache.js'
+
+const { formatMessage } = useVIntl()
+
+const messages = defineMessages({
+	noServers: { id: 'app.library.no-servers', defaultMessage: 'No server instances found' },
+})
 
 const props = defineProps({
 	instances: {
@@ -44,4 +51,7 @@ const filteredInstances = computed(() =>
 		label="Instances"
 		:instances="filteredInstances"
 	/>
+	<div v-else class="flex flex-1 items-center justify-center text-secondary min-h-[12rem]">
+		{{ formatMessage(messages.noServers) }}
+	</div>
 </template>

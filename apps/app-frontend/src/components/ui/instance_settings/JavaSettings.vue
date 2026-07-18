@@ -10,7 +10,7 @@ import {
 } from '@modrinth/assets'
 import {
 	ButtonStyled,
-	Checkbox,
+	Combobox,
 	defineMessages,
 	injectNotificationManager,
 	Slider,
@@ -97,14 +97,16 @@ const envVars = ref(
 		.join(' '),
 )
 
-const overrideMemorySettings = ref(!!instance.value.memory)
+const memoryAllocationMode = ref(String(instance.value.memory_allocation_mode ?? 2))
 const memory = ref(instance.value.memory ?? globalSettings.memory)
+const isCustomMemory = computed(() => memoryAllocationMode.value === '1')
 const { maxMemory, snapPoints } = (await useMemorySlider().catch(handleError)) as unknown as {
 	maxMemory: number
 	snapPoints: number[]
 }
 
 const editInstanceObject = computed(() => {
+	const mode = Number(memoryAllocationMode.value)
 	return {
 		java_path:
 			overrideJavaInstall.value && javaPath.value
@@ -120,7 +122,8 @@ const editInstanceObject = computed(() => {
 					.filter(Boolean)
 					.map((x) => x.split('=').filter(Boolean))
 			: null,
-		memory: overrideMemorySettings.value ? memory.value : null,
+		memory: mode === 1 ? memory.value : null,
+		memory_allocation_mode: mode,
 	}
 })
 
@@ -132,7 +135,7 @@ watch(
 		javaArgs,
 		overrideEnvVars,
 		envVars,
-		overrideMemorySettings,
+		memoryAllocationMode,
 		memory,
 	],
 	async () => {
@@ -158,9 +161,22 @@ const messages = defineMessages({
 		id: 'instance.settings.tabs.java.java-memory',
 		defaultMessage: 'Memory allocated',
 	},
-	customMemoryAllocation: {
-		id: 'instance.settings.tabs.java.custom-memory-allocation',
-		defaultMessage: 'Custom memory allocation',
+	memoryModeFollowGlobal: {
+		id: 'instance.settings.tabs.java.memory-mode-follow-global',
+		defaultMessage: 'Follow global',
+	},
+	memoryModeAuto: {
+		id: 'instance.settings.tabs.java.memory-mode-auto',
+		defaultMessage: 'Auto',
+	},
+	memoryModeCustom: {
+		id: 'instance.settings.tabs.java.memory-mode-custom',
+		defaultMessage: 'Custom',
+	},
+	memoryModeHint: {
+		id: 'instance.settings.tabs.java.memory-mode-hint',
+		defaultMessage:
+			'Follow global uses the global memory setting; Auto calculates memory based on system RAM, instance type, and mod count.',
 	},
 	javaArguments: {
 		id: 'instance.settings.tabs.java.java-arguments',
@@ -270,15 +286,21 @@ const messages = defineMessages({
 		<h2 class="mt-4 mb-1 text-lg font-extrabold text-contrast block">
 			{{ formatMessage(messages.javaMemory) }}
 		</h2>
-		<Checkbox
-			v-model="overrideMemorySettings"
-			:label="formatMessage(messages.customMemoryAllocation)"
-			class="mb-2"
+		<Combobox
+			id="memory-mode"
+			v-model="memoryAllocationMode"
+			name="Memory allocation mode"
+			class="mb-2 max-w-60"
+			:options="[
+				{ value: '2', label: formatMessage(messages.memoryModeFollowGlobal) },
+				{ value: '0', label: formatMessage(messages.memoryModeAuto) },
+				{ value: '1', label: formatMessage(messages.memoryModeCustom) },
+			]"
 		/>
 		<Slider
+			v-if="isCustomMemory"
 			id="max-memory"
 			v-model="memory.maximum"
-			:disabled="!overrideMemorySettings"
 			:min="512"
 			:max="maxMemory"
 			:step="64"
@@ -286,6 +308,9 @@ const messages = defineMessages({
 			:snap-range="512"
 			unit="MB"
 		/>
+		<div v-else class="rounded-lg bg-bg px-3 py-2 text-sm text-secondary">
+			{{ formatMessage(messages.memoryModeHint) }}
+		</div>
 		<h2 class="mt-4 mb-1 text-lg font-extrabold text-contrast block">
 			{{ formatMessage(messages.javaArguments) }}
 		</h2>
