@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import { defineMessages, useVIntl } from '@modrinth/ui'
+import {
+  CheckCircleIcon,
+  CircleAlertIcon,
+  CircleUserIcon,
+  ClipboardCopyIcon,
+  CrownIcon,
+  GlobeIcon,
+  LogOutIcon,
+  MonitorIcon,
+  RefreshCwIcon,
+  ScanEyeIcon,
+  ServerPlusIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from '@modrinth/assets'
+import {
+  ButtonStyled,
+  Card,
+  defineMessages,
+  Tabs,
+  useVIntl,
+} from '@modrinth/ui'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useBreadcrumbs } from '@/store/breadcrumbs'
+
 import { get_default_user, users } from '@/helpers/auth'
+import { useBreadcrumbs } from '@/store/breadcrumbs'
 
 const { formatMessage } = useVIntl()
 
@@ -66,6 +88,7 @@ interface FoundWorld {
 // ---------------------------------------------------------------------------
 
 const breadcrumbs = useBreadcrumbs()
+const activeTab = ref<'host' | 'join'>('host')
 
 const messages = defineMessages({
   breadcrumbName: { id: 'app.game-link.breadcrumb', defaultMessage: 'Game Link' },
@@ -86,10 +109,12 @@ const messages = defineMessages({
     id: 'app.game-link.no-account',
     defaultMessage: 'No Minecraft account logged in',
   },
+  hostTab: { id: 'app.game-link.tab.host', defaultMessage: 'Host' },
+  joinTab: { id: 'app.game-link.tab.join', defaultMessage: 'Join' },
   hostLobbyTitle: { id: 'app.game-link.host.title', defaultMessage: 'Host a lobby' },
   hostLobbySubtitle: {
     id: 'app.game-link.host.subtitle',
-    defaultMessage: 'Open a world to LAN, then scan and create',
+    defaultMessage: 'Open a world to LAN in Minecraft, then scan and create a lobby for others to join.',
   },
   scanButton: { id: 'app.game-link.host.scan', defaultMessage: 'Scan for LAN worlds' },
   scanningButton: { id: 'app.game-link.host.scanning', defaultMessage: 'Scanning...' },
@@ -103,12 +128,13 @@ const messages = defineMessages({
   joinLobbyTitle: { id: 'app.game-link.join.title', defaultMessage: 'Join a lobby' },
   joinLobbySubtitle: {
     id: 'app.game-link.join.subtitle',
-    defaultMessage: 'Enter a lobby code to connect',
+    defaultMessage: 'Enter a lobby code shared by the host to connect.',
   },
   lobbyCodeLabel: { id: 'app.game-link.lobby-code.label', defaultMessage: 'Lobby code' },
   joinLobbyButton: { id: 'app.game-link.join.button', defaultMessage: 'Join lobby' },
   joiningLobbyButton: { id: 'app.game-link.join.joining', defaultMessage: 'Joining...' },
   copyTitle: { id: 'app.game-link.copy', defaultMessage: 'Copy' },
+  copiedTitle: { id: 'app.game-link.copied', defaultMessage: 'Copied!' },
   roleHost: { id: 'app.game-link.role.host', defaultMessage: 'Host' },
   roleClient: { id: 'app.game-link.role.client', defaultMessage: 'Client' },
   leaveLobbyButton: { id: 'app.game-link.leave', defaultMessage: 'Leave lobby' },
@@ -167,12 +193,25 @@ const messages = defineMessages({
   qualityGood: { id: 'app.game-link.quality.good', defaultMessage: 'Good' },
   qualityFair: { id: 'app.game-link.quality.fair', defaultMessage: 'Fair' },
   qualityPoor: { id: 'app.game-link.quality.poor', defaultMessage: 'Poor' },
-  wayLocal: { id: 'app.game-link.way.local', defaultMessage: 'local' },
-  wayP2p: { id: 'app.game-link.way.p2p', defaultMessage: 'p2p' },
-  wayRelay: { id: 'app.game-link.way.relay', defaultMessage: 'relay' },
-  wayUnknown: { id: 'app.game-link.way.unknown', defaultMessage: 'unknown' },
+  wayLocal: { id: 'app.game-link.way.local', defaultMessage: 'Local' },
+  wayP2p: { id: 'app.game-link.way.p2p', defaultMessage: 'P2P' },
+  wayRelay: { id: 'app.game-link.way.relay', defaultMessage: 'Relay' },
+  wayUnknown: { id: 'app.game-link.way.unknown', defaultMessage: 'Unknown' },
   yes: { id: 'app.game-link.yes', defaultMessage: 'Yes' },
   no: { id: 'app.game-link.no', defaultMessage: 'No' },
+  mcStatusRunning: { id: 'app.game-link.mc-status.running', defaultMessage: 'Minecraft running' },
+  mcStatusStopped: { id: 'app.game-link.mc-status.stopped', defaultMessage: 'Minecraft not running' },
+  portLabel: { id: 'app.game-link.port.label', defaultMessage: 'Port' },
+  joinTimeoutError: {
+    id: 'app.game-link.join.timeout',
+    defaultMessage: 'Connection timed out. The lobby code may be invalid or the host is offline.',
+  },
+  cancelButton: { id: 'app.game-link.cancel', defaultMessage: 'Cancel' },
+  retryButton: { id: 'app.game-link.retry', defaultMessage: 'Retry' },
+  joiningHint: {
+    id: 'app.game-link.join.hint',
+    defaultMessage: 'Joining can take up to 15 seconds while the peer-to-peer network is established.',
+  },
 })
 
 const username = ref('')
@@ -180,6 +219,7 @@ const lobbyCode = ref('')
 const joinCodeInput = ref('')
 const selectedWorld = ref<FoundWorld | null>(null)
 const mcPort = ref(0)
+const justCopied = ref(false)
 
 const state = ref<LobbyState>('idle')
 const isHost = ref(false)
@@ -195,15 +235,11 @@ const foundWorlds = ref<FoundWorld[]>([])
 const mcRunning = ref(false)
 const errorMsg = ref('')
 
-// Collapsible section states (default collapsed, except players when connected)
-const showPlayers = ref(false)
-const showConnection = ref(false)
-const showModCompat = ref(false)
-const showNetworkDiagnostics = ref(false)
-const showWorlds = ref(false)
-
 const isBusy = ref(false)
 const isScanning = ref(false)
+const joinElapsed = ref(0)
+const joinTimerId = ref<ReturnType<typeof setInterval> | null>(null)
+const joinAbortController = ref<AbortController | null>(null)
 
 // Event unlisteners
 const unlisteners: UnlistenFn[] = []
@@ -232,22 +268,27 @@ const stateLabel = computed(() => {
 
 const stateColor = computed(() => {
   switch (state.value) {
-    case 'connected': return 'var(--color-brand)'
+    case 'connected': return 'green'
     case 'creating':
-    case 'joining': return 'var(--color-orange)'
-    case 'error': return 'var(--color-red)'
-    default: return 'var(--color-base)'
+    case 'joining': return 'orange'
+    case 'error': return 'red'
+    default: return 'standard'
   }
 })
 
 const connectionQualityColor = computed(() => {
   switch (connectionInfo.value.quality) {
-    case 'Good': return 'var(--color-brand)'
-    case 'Fair': return 'var(--color-orange)'
-    case 'Poor': return 'var(--color-red)'
-    default: return 'var(--color-base)'
+    case 'Good': return 'green'
+    case 'Fair': return 'orange'
+    case 'Poor': return 'red'
+    default: return 'standard'
   }
 })
+
+const tabItems = computed(() => [
+  { value: 'host', label: formatMessage(messages.hostTab), icon: CrownIcon },
+  { value: 'join', label: formatMessage(messages.joinTab), icon: CircleUserIcon },
+])
 
 function formatConnectionWay(way: ConnectionWay): string {
   switch (way) {
@@ -270,6 +311,13 @@ function formatConnectionQuality(quality: ConnectionQuality): string {
 // Actions
 // ---------------------------------------------------------------------------
 
+function formatError(e: unknown): string {
+  if (e instanceof Error) return e.message
+  if (typeof e === 'string') return e
+  if (e && typeof e === 'object' && 'message' in e) return String((e as any).message)
+  return String(e)
+}
+
 async function createLobby() {
   if (!canCreate.value) return
   isBusy.value = true
@@ -282,9 +330,8 @@ async function createLobby() {
     })
     lobbyCode.value = code
     mcPort.value = port
-    showPlayers.value = true
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
     state.value = 'error'
   } finally {
     isBusy.value = false
@@ -292,22 +339,61 @@ async function createLobby() {
 }
 
 async function joinLobby() {
-  if (!canJoin.value) return
+  if (!canJoin.value || isBusy.value) return
   isBusy.value = true
   errorMsg.value = ''
+  joinElapsed.value = 0
+
+  // Count elapsed seconds and show the user that something is happening.
+  joinTimerId.value = setInterval(() => {
+    joinElapsed.value += 1
+  }, 1000)
+
+  // Tauri does not support aborting an in-flight invoke. We race it against
+  // an 18-second client-side timeout so the UI never hangs forever.
+  const timeoutPromise = new Promise<boolean>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(formatMessage(messages.joinTimeoutError)))
+    }, 18000)
+  })
+
   try {
-    await invoke<boolean>('plugin:link|link_join_lobby', {
-      lobbyCode: joinCodeInput.value.trim(),
-      username: username.value,
-    })
+    await Promise.race([
+      invoke<boolean>('plugin:link|link_join_lobby', {
+        lobbyCode: joinCodeInput.value.trim(),
+        username: username.value,
+      }),
+      timeoutPromise,
+    ])
     lobbyCode.value = joinCodeInput.value.trim()
-    showPlayers.value = true
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
     state.value = 'error'
+    joinCodeInput.value = ''
   } finally {
+    if (joinTimerId.value) {
+      clearInterval(joinTimerId.value)
+      joinTimerId.value = null
+    }
+    joinElapsed.value = 0
     isBusy.value = false
   }
+}
+
+async function cancelJoin() {
+  // Best-effort cleanup: call leave to stop the half-initialized network.
+  try {
+    await invoke('plugin:link|link_leave_lobby')
+  } catch {
+    // ignore
+  }
+  resetState()
+}
+
+function retryJoin() {
+  errorMsg.value = ''
+  state.value = 'idle'
+  activeTab.value = 'join'
 }
 
 function selectWorld(world: FoundWorld) {
@@ -323,7 +409,7 @@ async function leaveLobby() {
     await invoke('plugin:link|link_leave_lobby')
     resetState()
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
   } finally {
     isBusy.value = false
   }
@@ -333,7 +419,7 @@ async function refreshPlayers() {
   try {
     players.value = await invoke<PlayerProfile[]>('plugin:link|link_get_players')
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
   }
 }
 
@@ -341,18 +427,17 @@ async function refreshConnectionInfo() {
   try {
     connectionInfo.value = await invoke<ConnectionInfo>('plugin:link|link_get_connection_info')
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
   }
 }
 
 async function checkModCompat() {
   try {
-    // Pass empty instance path — the backend handles host case by returning compatible
     modCompatResult.value = await invoke<ModCompatibilityResult>('plugin:link|link_check_mod_compat', {
       instancePath: '',
     })
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
   }
 }
 
@@ -361,12 +446,11 @@ async function discoverWorlds() {
   errorMsg.value = ''
   try {
     foundWorlds.value = await invoke<FoundWorld[]>('plugin:link|link_discover_worlds')
-    // Auto-select the first discovered world if none selected.
     if (selectedWorld.value === null && foundWorlds.value.length > 0) {
       selectWorld(foundWorlds.value[0])
     }
   } catch (e: any) {
-    errorMsg.value = String(e)
+    errorMsg.value = formatError(e)
   } finally {
     isScanning.value = false
   }
@@ -384,6 +468,8 @@ async function copyLobbyCode() {
   if (!lobbyCode.value) return
   try {
     await navigator.clipboard.writeText(lobbyCode.value)
+    justCopied.value = true
+    setTimeout(() => { justCopied.value = false }, 2000)
   } catch {
     // ignore
   }
@@ -399,11 +485,6 @@ function resetState() {
   hostMods.value = []
   modCompatResult.value = null
   foundWorlds.value = []
-  showPlayers.value = false
-  showConnection.value = false
-  showModCompat.value = false
-  showNetworkDiagnostics.value = false
-  showWorlds.value = false
 }
 
 // ---------------------------------------------------------------------------
@@ -414,7 +495,6 @@ async function setupListeners() {
   unlisteners.push(
     await listen<LobbyState>('link_state_changed', (event) => {
       state.value = event.payload
-      // When entering connected state, sync isHost from backend.
       if (event.payload === 'connected') {
         invoke<boolean>('plugin:link|link_is_host').then((h) => {
           isHost.value = h
@@ -468,7 +548,6 @@ onMounted(async () => {
   breadcrumbs.setName(formatMessage(messages.breadcrumbName))
   await setupListeners()
 
-  // Load current default Minecraft username (same source as the AccountsCard).
   try {
     const defaultId = await get_default_user()
     const accountList = await users()
@@ -480,14 +559,12 @@ onMounted(async () => {
     // ignore
   }
 
-  // Sync current state
   try {
     state.value = await invoke<LobbyState>('plugin:link|link_get_state')
     isHost.value = await invoke<boolean>('plugin:link|link_is_host')
     const code = await invoke<string | null>('plugin:link|link_get_lobby_code')
     if (code) lobbyCode.value = code
     if (state.value === 'connected') {
-      showPlayers.value = true
       await refreshPlayers()
       await refreshConnectionInfo()
     }
@@ -503,173 +580,240 @@ onUnmounted(() => {
 
 <template>
   <div class="game-link-page">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-header">
-        <h1 class="hero-title">{{ formatMessage(messages.title) }}</h1>
-        <div class="state-badge" :style="{ color: stateColor, borderColor: stateColor }">
-          {{ stateLabel }}
-        </div>
+    <!-- ── Page Header ────────────────────────────────────────── -->
+    <div class="page-header">
+      <div class="header-row">
+        <h1 class="title">{{ formatMessage(messages.title) }}</h1>
+        <ButtonStyled :color="stateColor" type="chip">
+          <span class="status-chip">{{ stateLabel }}</span>
+        </ButtonStyled>
       </div>
-      <p class="hero-description">
-        {{ formatMessage(messages.description) }}
-      </p>
+      <p class="description">{{ formatMessage(messages.description) }}</p>
 
-      <!-- Error display -->
+      <!-- User identity -->
+      <div class="user-identity">
+        <span class="user-label">{{ formatMessage(messages.playingAs) }}</span>
+        <span v-if="hasUsername" class="user-name">{{ username }}</span>
+        <span v-else class="user-name user-name--missing">{{ formatMessage(messages.noAccount) }}</span>
+      </div>
+
+      <!-- Error banner -->
       <div v-if="errorMsg" class="error-banner">
-        <span>{{ errorMsg }}</span>
-        <button class="error-dismiss" @click="errorMsg = ''">x</button>
+        <CircleAlertIcon class="error-icon" />
+        <span class="error-text">{{ errorMsg }}</span>
+        <button class="error-dismiss" @click="errorMsg = ''">&times;</button>
       </div>
+    </div>
 
-      <!-- Idle: show create/join controls -->
-      <div v-if="state === 'idle'" class="hero-controls">
-        <div class="user-banner">
-          <span class="user-banner-label">{{ formatMessage(messages.playingAs) }}</span>
-          <span v-if="hasUsername" class="user-banner-name">{{ username }}</span>
-          <span v-else class="user-banner-name user-banner-name--missing">{{ formatMessage(messages.noAccount) }}</span>
-        </div>
+    <!-- ── IDLE: Tab-based Host / Join ─────────────────────────── -->
+    <template v-if="state === 'idle'">
+      <Tabs v-model:value="activeTab" :tabs="tabItems" />
 
-        <div class="action-row">
-          <!-- Create lobby -->
-          <div class="action-card action-card--host">
-            <div class="action-card-header">
-              <span class="action-card-icon">H</span>
-              <div>
-                <div class="action-card-title">{{ formatMessage(messages.hostLobbyTitle) }}</div>
-                <div class="action-card-subtitle">{{ formatMessage(messages.hostLobbySubtitle) }}</div>
-              </div>
+      <!-- Host Tab -->
+      <Card v-if="activeTab === 'host'" class="action-card">
+        <template #header>
+          <div class="card-header-row">
+            <ServerPlusIcon class="card-header-icon host-icon" />
+            <div>
+              <h2 class="card-header-title">{{ formatMessage(messages.hostLobbyTitle) }}</h2>
+              <p class="card-header-subtitle">{{ formatMessage(messages.hostLobbySubtitle) }}</p>
             </div>
+          </div>
+        </template>
 
-            <button
-              class="btn btn-ghost"
-              :disabled="isScanning || isBusy"
-              @click="discoverWorlds"
+        <div class="card-content">
+          <div class="btn-row">
+            <ButtonStyled color="brand" :disabled="isScanning || isBusy">
+              <button @click="discoverWorlds">
+                <ScanEyeIcon />
+                {{ isScanning ? formatMessage(messages.scanningButton) : formatMessage(messages.scanButton) }}
+              </button>
+            </ButtonStyled>
+          </div>
+
+          <div v-if="foundWorlds.length > 0" class="world-list">
+            <div class="input-label">{{ formatMessage(messages.selectWorld) }}</div>
+            <div
+              v-for="world in foundWorlds"
+              :key="world.port"
+              class="world-item"
+              :class="{ 'world-item--selected': selectedWorld?.port === world.port }"
+              @click="selectWorld(world)"
             >
-              {{ isScanning ? formatMessage(messages.scanningButton) : formatMessage(messages.scanButton) }}
-            </button>
+              <div class="world-item-info">
+                <GlobeIcon class="world-item-icon" />
+                <span class="world-item-name">{{ world.name }}</span>
+              </div>
+              <span class="world-item-port">:{{ world.port }}</span>
+            </div>
+          </div>
+          <p v-else-if="!isScanning" class="empty-hint">{{ formatMessage(messages.noWorldsHint) }}</p>
 
-            <div v-if="foundWorlds.length > 0" class="world-select">
-              <div class="input-label">{{ formatMessage(messages.selectWorld) }}</div>
-              <div
-                v-for="world in foundWorlds"
-                :key="world.port"
-                class="world-option"
-                :class="selectedWorld?.port === world.port ? 'world-option--selected' : ''"
-                @click="selectWorld(world)"
+          <div class="btn-row btn-row--end">
+            <ButtonStyled color="green" :disabled="!canCreate">
+              <button @click="createLobby">
+                <ServerPlusIcon />
+                {{ isBusy ? formatMessage(messages.creatingLobbyButton) : formatMessage(messages.createLobbyButton) }}
+              </button>
+            </ButtonStyled>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Join Tab -->
+      <Card v-if="activeTab === 'join'" class="action-card">
+        <template #header>
+          <div class="card-header-row">
+            <CircleUserIcon class="card-header-icon client-icon" />
+            <div>
+              <h2 class="card-header-title">{{ formatMessage(messages.joinLobbyTitle) }}</h2>
+              <p class="card-header-subtitle">{{ formatMessage(messages.joinLobbySubtitle) }}</p>
+            </div>
+          </div>
+        </template>
+
+        <div class="card-content">
+          <div class="input-group">
+            <label class="input-label">{{ formatMessage(messages.lobbyCodeLabel) }}</label>
+            <input
+              v-model="joinCodeInput"
+              type="text"
+              class="text-input"
+              placeholder="U/XXXX-XXXX-XXXX-XXXX"
+              :disabled="isBusy"
+              @keyup.enter="joinLobby"
+            />
+          </div>
+          <div class="btn-row btn-row--end">
+            <ButtonStyled color="blue" :disabled="!canJoin">
+              <button @click="joinLobby">
+                <UsersIcon />
+                {{ isBusy ? formatMessage(messages.joiningLobbyButton) : formatMessage(messages.joinLobbyButton) }}
+              </button>
+            </ButtonStyled>
+          </div>
+        </div>
+      </Card>
+    </template>
+
+    <!-- ── CONNECTED: Lobby Dashboard ─────────────────────────── -->
+    <template v-else-if="isConnected">
+      <!-- Lobby code hero + live status chips -->
+      <Card class="lobby-code-card">
+        <div class="lobby-code-layout">
+          <div class="lobby-code-main">
+            <div class="lobby-code-label">{{ formatMessage(messages.lobbyCodeLabel) }}</div>
+            <div class="lobby-code-value-row">
+              <code class="lobby-code-text">{{ lobbyCode }}</code>
+              <ButtonStyled
+                color="brand"
+                type="highlight"
+                :hover-filled="true"
               >
-                <span class="world-option-name">{{ world.name }}</span>
-                <span class="world-option-port">:{{ world.port }}</span>
-              </div>
+                <button @click="copyLobbyCode">
+                  <ClipboardCopyIcon />
+                  {{ justCopied ? formatMessage(messages.copiedTitle) : formatMessage(messages.copyTitle) }}
+                </button>
+              </ButtonStyled>
             </div>
-            <p v-else-if="!isScanning" class="empty-hint">
-              {{ formatMessage(messages.noWorldsHint) }}
-            </p>
-
-            <button class="btn btn-brand" :disabled="!canCreate" @click="createLobby">
-              {{ isBusy ? formatMessage(messages.creatingLobbyButton) : formatMessage(messages.createLobbyButton) }}
-            </button>
-          </div>
-
-          <!-- Join lobby -->
-          <div class="action-card action-card--client">
-            <div class="action-card-header">
-              <span class="action-card-icon action-card-icon--client">C</span>
-              <div>
-                <div class="action-card-title">{{ formatMessage(messages.joinLobbyTitle) }}</div>
-                <div class="action-card-subtitle">{{ formatMessage(messages.joinLobbySubtitle) }}</div>
-              </div>
+            <!-- Live status bar: role + quality + latency + mc port -->
+            <div class="status-bar">
+              <ButtonStyled :color="isHost ? 'green' : 'blue'" type="chip">
+                <span class="status-chip-inline">
+                  <CrownIcon v-if="isHost" class="status-chip-icon" />
+                  <CircleUserIcon v-else class="status-chip-icon" />
+                  {{ isHost ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}
+                </span>
+              </ButtonStyled>
+              <ButtonStyled :color="connectionQualityColor" type="chip">
+                <span class="status-chip-inline">
+                  <GlobeIcon class="status-chip-icon" />
+                  {{ formatConnectionQuality(connectionInfo.quality) }} · {{ connectionInfo.latency_ms }}ms
+                </span>
+              </ButtonStyled>
+              <ButtonStyled :color="mcRunning ? 'green' : 'orange'" type="chip">
+                <span class="status-chip-inline">
+                  <MonitorIcon v-if="mcRunning" class="status-chip-icon" />
+                  <CircleAlertIcon v-else class="status-chip-icon" />
+                  {{ mcRunning ? formatMessage(messages.mcStatusRunning) : formatMessage(messages.mcStatusStopped) }}
+                </span>
+              </ButtonStyled>
+              <ButtonStyled type="chip">
+                <span class="status-chip-inline">
+                  {{ formatMessage(messages.portLabel) }} {{ mcPort }}
+                </span>
+              </ButtonStyled>
             </div>
-            <div class="input-group">
-              <label class="input-label">{{ formatMessage(messages.lobbyCodeLabel) }}</label>
-              <input
-                v-model="joinCodeInput"
-                type="text"
-                class="text-input"
-                placeholder="U/XXXX-XXXX-XXXX-XXXX"
-                :disabled="isBusy"
-              />
-            </div>
-            <button class="btn btn-primary" :disabled="!canJoin" @click="joinLobby">
-              {{ isBusy ? formatMessage(messages.joiningLobbyButton) : formatMessage(messages.joinLobbyButton) }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Connected: show lobby code and leave -->
-      <div v-else-if="isConnected" class="hero-connected">
-        <div class="lobby-code-display">
-          <div class="lobby-code-label">{{ formatMessage(messages.lobbyCodeLabel) }}</div>
-          <div class="lobby-code-value">
-            <code>{{ lobbyCode }}</code>
-            <button class="btn btn-icon" :title="formatMessage(messages.copyTitle)" @click="copyLobbyCode">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-              </svg>
-            </button>
           </div>
         </div>
-        <div class="role-badge" :class="isHost ? 'role-badge--host' : 'role-badge--client'">
-          {{ isHost ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}
-        </div>
-        <button class="btn btn-danger" :disabled="!canLeave" @click="leaveLobby">
-          {{ formatMessage(messages.leaveLobbyButton) }}
-        </button>
-      </div>
+      </Card>
 
-      <!-- Busy states -->
-      <div v-else-if="state === 'creating' || state === 'joining' || state === 'leaving'" class="hero-busy">
-        <div class="spinner" />
-        <span>{{ stateLabel }}</span>
-      </div>
-    </section>
-
-    <!-- Collapsible: Players -->
-    <section v-if="isConnected" class="collapsible-section">
-      <button class="section-header" @click="showPlayers = !showPlayers">
-        <span class="section-title">{{ formatMessage(messages.playersTitle, { count: players.length }) }}</span>
-        <span class="section-chevron" :class="{ 'section-chevron--open': showPlayers }">v</span>
-      </button>
-      <div v-if="showPlayers" class="section-body">
+      <!-- Players list — always visible -->
+      <Card>
+        <template #header>
+          <div class="section-header-row">
+            <UsersIcon class="section-icon" />
+            <h3>{{ formatMessage(messages.playersTitle, { count: players.length }) }}</h3>
+          </div>
+        </template>
         <div class="player-list">
           <div
             v-for="player in players"
             :key="player.machine_id"
-            class="player-card"
-            :class="player.kind === 'host' ? 'player-card--host' : 'player-card--client'"
+            class="player-item"
+            :class="player.kind === 'host' ? 'player-item--host' : 'player-item--client'"
           >
-            <div class="player-avatar">{{ player.name.charAt(0).toUpperCase() }}</div>
+            <div class="player-avatar" :class="player.kind === 'host' ? 'player-avatar--host' : 'player-avatar--client'">
+              {{ player.name.charAt(0).toUpperCase() }}
+            </div>
             <div class="player-info">
-              <div class="player-name">{{ player.name }}</div>
-              <div class="player-role">{{ player.kind === 'host' ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}</div>
+              <span class="player-name">{{ player.name }}</span>
+              <span class="player-role">
+                <CrownIcon v-if="player.kind === 'host'" class="role-icon-inline" />
+                {{ player.kind === 'host' ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}
+              </span>
             </div>
-            <div v-if="player.latency_ms !== null" class="player-latency">
+            <span
+v-if="player.latency_ms !== null" class="player-latency" :class="{
+              'latency-good': player.latency_ms < 100,
+              'latency-fair': player.latency_ms >= 100 && player.latency_ms < 200,
+              'latency-poor': player.latency_ms >= 200,
+            }">
               {{ player.latency_ms }}ms
-            </div>
+            </span>
+          </div>
+          <div v-if="players.length === 0" class="empty-hint">
+            {{ formatMessage(messages.playersTitle, { count: 0 }) }}
           </div>
         </div>
-        <button class="btn btn-ghost" @click="refreshPlayers">{{ formatMessage(messages.refreshButton) }}</button>
-      </div>
-    </section>
+        <div class="btn-row">
+          <ButtonStyled type="transparent" :hover-filled="true">
+            <button @click="refreshPlayers">
+              <RefreshCwIcon />
+              {{ formatMessage(messages.refreshButton) }}
+            </button>
+          </ButtonStyled>
+        </div>
+      </Card>
 
-    <!-- Collapsible: Connection Info -->
-    <section v-if="isConnected" class="collapsible-section">
-      <button class="section-header" @click="showConnection = !showConnection">
-        <span class="section-title">{{ formatMessage(messages.connectionInfoTitle) }}</span>
-        <span class="section-chevron" :class="{ 'section-chevron--open': showConnection }">v</span>
-      </button>
-      <div v-if="showConnection" class="section-body">
+      <!-- Connection details — collapsed by default, only advanced info -->
+      <Card collapsible default-collapsed>
+        <template #header>
+          <div class="section-header-row">
+            <GlobeIcon class="section-icon" />
+            <h3>{{ formatMessage(messages.connectionInfoTitle) }}</h3>
+          </div>
+        </template>
         <div class="info-grid">
           <div class="info-item">
             <span class="info-label">{{ formatMessage(messages.latencyLabel) }}</span>
-            <span class="info-value" :style="{ color: connectionQualityColor }">
+            <span class="info-value" :class="'info-value--' + connectionQualityColor">
               {{ connectionInfo.latency_ms }} ms
             </span>
           </div>
           <div class="info-item">
             <span class="info-label">{{ formatMessage(messages.qualityLabel) }}</span>
-            <span class="info-value" :style="{ color: connectionQualityColor }">
+            <span class="info-value" :class="'info-value--' + connectionQualityColor">
               {{ formatConnectionQuality(connectionInfo.quality) }}
             </span>
           </div>
@@ -678,171 +822,200 @@ onUnmounted(() => {
             <span class="info-value">{{ formatConnectionWay(connectionInfo.way) }}</span>
           </div>
         </div>
-        <button class="btn btn-ghost" @click="refreshConnectionInfo">{{ formatMessage(messages.refreshButton) }}</button>
-      </div>
-    </section>
+        <div class="btn-row">
+          <ButtonStyled type="transparent" :hover-filled="true">
+            <button @click="refreshConnectionInfo">
+              <RefreshCwIcon />
+              {{ formatMessage(messages.refreshButton) }}
+            </button>
+          </ButtonStyled>
+        </div>
+      </Card>
 
-    <!-- Collapsible: Mod compatibility -->
-    <section v-if="isConnected && !isHost" class="collapsible-section">
-      <button class="section-header" @click="showModCompat = !showModCompat">
-        <span class="section-title">{{ formatMessage(messages.modCompatTitle) }}</span>
-        <span class="section-chevron" :class="{ 'section-chevron--open': showModCompat }">v</span>
-      </button>
-      <div v-if="showModCompat" class="section-body">
-        <button class="btn btn-primary" @click="checkModCompat">{{ formatMessage(messages.checkCompatButton) }}</button>
+      <!-- Mod compatibility — collapsed by default, client only -->
+      <Card v-if="!isHost" collapsible default-collapsed>
+        <template #header>
+          <div class="section-header-row">
+            <ShieldCheckIcon class="section-icon" />
+            <h3>{{ formatMessage(messages.modCompatTitle) }}</h3>
+          </div>
+        </template>
+        <div class="btn-row">
+          <ButtonStyled color="blue" :disabled="isBusy">
+            <button @click="checkModCompat">
+              <ShieldCheckIcon />
+              {{ formatMessage(messages.checkCompatButton) }}
+            </button>
+          </ButtonStyled>
+        </div>
         <div v-if="modCompatResult" class="mod-compat-result">
-          <div
-            class="compat-status"
-            :class="modCompatResult.is_compatible ? 'compat-status--ok' : 'compat-status--warn'"
-          >
+          <div class="compat-status" :class="modCompatResult.is_compatible ? 'compat-ok' : 'compat-warn'">
+            <CheckCircleIcon v-if="modCompatResult.is_compatible" />
+            <CircleAlertIcon v-else />
             {{ modCompatResult.is_compatible ? formatMessage(messages.modsCompatible) : formatMessage(messages.modMismatch) }}
           </div>
           <div v-if="modCompatResult.host_only.length > 0" class="compat-group">
             <div class="compat-group-title">{{ formatMessage(messages.missingModsTitle, { count: modCompatResult.host_only.length }) }}</div>
-            <div
-              v-for="mod in modCompatResult.host_only"
-              :key="mod.mod_id"
-              class="compat-mod-item"
-            >
+            <div v-for="mod in modCompatResult.host_only" :key="mod.mod_id" class="compat-mod-item">
               <span class="mod-name">{{ mod.name || mod.mod_id }}</span>
               <span class="mod-version">{{ mod.version }}</span>
             </div>
           </div>
           <div v-if="modCompatResult.local_only.length > 0" class="compat-group">
             <div class="compat-group-title">{{ formatMessage(messages.extraModsTitle, { count: modCompatResult.local_only.length }) }}</div>
-            <div
-              v-for="mod in modCompatResult.local_only"
-              :key="mod.mod_id"
-              class="compat-mod-item"
-            >
+            <div v-for="mod in modCompatResult.local_only" :key="mod.mod_id" class="compat-mod-item">
               <span class="mod-name">{{ mod.name || mod.mod_id }}</span>
               <span class="mod-version">{{ mod.version }}</span>
             </div>
           </div>
           <div v-if="modCompatResult.version_mismatch.length > 0" class="compat-group">
             <div class="compat-group-title">{{ formatMessage(messages.versionMismatchesTitle, { count: modCompatResult.version_mismatch.length }) }}</div>
-            <div
-              v-for="(pair, idx) in modCompatResult.version_mismatch"
-              :key="idx"
-              class="compat-mod-item"
-            >
+            <div v-for="(pair, idx) in modCompatResult.version_mismatch" :key="idx" class="compat-mod-item">
               <span class="mod-name">{{ pair[0].name || pair[0].mod_id }}</span>
               <span class="mod-version mod-version--mismatch">{{ pair[0].version }} vs {{ pair[1].version }}</span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </Card>
 
-    <!-- Collapsible: World discovery -->
-    <section v-if="isConnected" class="collapsible-section">
-      <button class="section-header" @click="showWorlds = !showWorlds">
-        <span class="section-title">{{ formatMessage(messages.localWorldsTitle) }}</span>
-        <span class="section-chevron" :class="{ 'section-chevron--open': showWorlds }">v</span>
-      </button>
-      <div v-if="showWorlds" class="section-body">
-        <button class="btn btn-ghost" @click="discoverWorlds">{{ formatMessage(messages.scanWorldsButton) }}</button>
-        <div v-if="foundWorlds.length > 0" class="world-list">
-          <div v-for="(world, idx) in foundWorlds" :key="idx" class="world-item">
-            <span class="world-name">{{ world.name }}</span>
-            <span class="world-port">:{{ world.port }}</span>
-          </div>
-        </div>
-        <p v-else class="empty-hint">{{ formatMessage(messages.noWorldsConnectedHint) }}</p>
+      <!-- Leave lobby -->
+      <div class="leave-row">
+        <ButtonStyled color="red" :disabled="!canLeave">
+          <button @click="leaveLobby">
+            <LogOutIcon />
+            {{ formatMessage(messages.leaveLobbyButton) }}
+          </button>
+        </ButtonStyled>
       </div>
-    </section>
+    </template>
 
-    <!-- Collapsible: Network diagnostics -->
-    <section v-if="isConnected" class="collapsible-section">
-      <button class="section-header" @click="showNetworkDiagnostics = !showNetworkDiagnostics">
-        <span class="section-title">{{ formatMessage(messages.networkDiagnosticsTitle) }}</span>
-        <span class="section-chevron" :class="{ 'section-chevron--open': showNetworkDiagnostics }">v</span>
-      </button>
-      <div v-if="showNetworkDiagnostics" class="section-body">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">{{ formatMessage(messages.mcRunningLabel) }}</span>
-            <span class="info-value">{{ mcRunning ? formatMessage(messages.yes) : formatMessage(messages.no) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ formatMessage(messages.mcPortLabel) }}</span>
-            <span class="info-value">{{ mcPort }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ formatMessage(messages.roleLabel) }}</span>
-            <span class="info-value">{{ isHost ? formatMessage(messages.roleHost) : formatMessage(messages.roleClient) }}</span>
-          </div>
+    <!-- ── BUSY: Loading state ─────────────────────────────────── -->
+    <Card v-else-if="state === 'creating' || state === 'joining' || state === 'leaving'" class="busy-card">
+      <div class="busy-content">
+        <div class="spinner" />
+        <div class="busy-text-stack">
+          <span class="busy-text">{{ stateLabel }}</span>
+          <span v-if="state === 'joining'" class="busy-hint">
+            {{ formatMessage(messages.joiningHint) }}
+            <span v-if="joinElapsed > 0">({{ joinElapsed }}s)</span>
+          </span>
         </div>
-        <button class="btn btn-ghost" @click="checkMcRunning">{{ formatMessage(messages.checkMcProcessButton) }}</button>
       </div>
-    </section>
+      <div v-if="state === 'joining'" class="busy-actions">
+        <ButtonStyled color="red" type="outline" @click="cancelJoin">
+          <button>{{ formatMessage(messages.cancelButton) }}</button>
+        </ButtonStyled>
+      </div>
+    </Card>
+
+    <!-- ── ERROR state ─────────────────────────────────────────── -->
+    <Card v-else-if="state === 'error'" class="error-card">
+      <div class="error-content">
+        <CircleAlertIcon class="error-big-icon" />
+        <p>{{ errorMsg || formatMessage(messages.stateError) }}</p>
+        <div class="error-actions">
+          <ButtonStyled @click="resetState">
+            <button>OK</button>
+          </ButtonStyled>
+          <ButtonStyled color="brand" @click="retryJoin">
+            <button>{{ formatMessage(messages.retryButton) }}</button>
+          </ButtonStyled>
+        </div>
+      </div>
+    </Card>
   </div>
 </template>
 
 <style scoped>
 .game-link-page {
-  max-width: 800px;
+  max-width: 48rem;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem 3rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-/* Hero section */
-.hero-section {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-md);
-  padding: 1.75rem;
+/* ── Page Header ─────────────────────────────── */
+.page-header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
-.hero-header {
+.header-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.hero-title {
-  font-size: 1.75rem;
+.title {
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   color: var(--color-text);
 }
 
-.state-badge {
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
 }
 
-.hero-description {
+.description {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 
-/* Error banner */
-.error-banner {
-  background-color: var(--color-red-bg);
-  border: 1px solid var(--color-red);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem;
+.user-identity {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.user-label {
+  color: var(--color-text-secondary);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.user-name--missing {
+  color: var(--color-orange);
+  font-style: italic;
+}
+
+/* ── Error Banner ────────────────────────────── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-red-bg);
+  border: 1px solid var(--color-red);
+  border-radius: var(--radius-md);
   color: var(--color-red);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.error-icon {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.error-text {
+  flex: 1;
 }
 
 .error-dismiss {
@@ -850,532 +1023,74 @@ onUnmounted(() => {
   border: none;
   color: inherit;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.1rem;
   padding: 0;
   opacity: 0.7;
+  line-height: 1;
 }
 
 .error-dismiss:hover {
   opacity: 1;
 }
 
-/* Controls */
-.hero-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.user-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  font-size: 0.95rem;
-}
-
-.user-banner-label {
-  color: var(--color-text-secondary);
-}
-
-.user-banner-name {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.user-banner-name--missing {
-  color: var(--color-orange);
-}
-
-.world-select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.world-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.world-option:hover {
-  border-color: var(--color-brand);
-}
-
-.world-option--selected {
-  border-color: var(--color-brand);
-  background-color: var(--color-brand-bg);
-}
-
-.world-option-name {
-  color: var(--color-text);
-  font-weight: 500;
-}
-
-.world-option-port {
-  color: var(--color-text-secondary);
-  font-family: monospace;
-  font-size: 0.9rem;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.input-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.text-input {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.95rem;
-  color: var(--color-text);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.text-input:focus {
-  border-color: var(--color-brand);
-}
-
-.text-input--small {
-  max-width: 120px;
-}
-
-.action-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 600px) {
-  .action-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.action-card {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.action-card--host {
-  border-top: 3px solid var(--color-brand);
-}
-
-.action-card--client {
-  border-top: 3px solid var(--color-blue);
-}
-
-.action-card-header {
+/* ── Card Headers ────────────────────────────── */
+.card-header-row {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.action-card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: var(--color-brand);
-  color: var(--color-button-text-active);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
+.card-header-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.host-icon {
+  color: var(--color-green);
+}
+
+.client-icon {
+  color: var(--color-blue);
+}
+
+.card-header-title {
   font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.action-card-icon--client {
-  background-color: var(--color-blue);
-}
-
-.action-card-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--color-text);
-}
-
-.action-card-subtitle {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-}
-
-/* Buttons */
-.btn {
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s, opacity 0.15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-brand {
-  background-color: var(--color-brand);
-  color: var(--color-button-text-active);
-}
-
-.btn-brand:hover:not(:disabled) {
-  background-color: var(--color-brand-highlight);
-}
-
-.btn-primary {
-  background-color: var(--color-blue);
-  color: var(--color-button-text-active);
-}
-
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn-danger {
-  background-color: var(--color-red);
-  color: var(--color-button-text-active);
-}
-
-.btn-danger:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-button-border);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--color-button-bg-hover);
-}
-
-.btn-icon {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  padding: 0.35rem;
-  border: 1px solid var(--color-button-border);
-}
-
-.btn-icon:hover {
-  color: var(--color-text);
-  background-color: var(--color-button-bg-hover);
-}
-
-/* Connected hero */
-.hero-connected {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.lobby-code-display {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.lobby-code-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-}
-
-.lobby-code-value {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.lobby-code-value code {
-  font-family: 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-brand);
-  background-color: var(--color-bg);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-button-border);
-}
-
-.role-badge {
-  font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-sm);
-}
-
-.role-badge--host {
-  background-color: var(--color-brand);
-  color: var(--color-button-text-active);
-}
-
-.role-badge--client {
-  background-color: var(--color-blue);
-  color: var(--color-button-text-active);
-}
-
-/* Busy state */
-.hero-busy {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-text-secondary);
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--color-button-border);
-  border-top-color: var(--color-brand);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Collapsible sections */
-.collapsible-section {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.section-header {
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0.85rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+  margin: 0;
   color: var(--color-text);
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-align: left;
-  transition: background-color 0.15s;
 }
 
-.section-header:hover {
-  background-color: var(--color-button-bg-hover);
-}
-
-.section-chevron {
-  transition: transform 0.2s;
-  color: var(--color-text-secondary);
+.card-header-subtitle {
+  margin: 0;
   font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
 }
 
-.section-chevron--open {
-  transform: rotate(180deg);
-}
-
-.section-body {
-  padding: 0 1rem 1rem;
+/* ── Card Content ────────────────────────────── */
+.card-content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-/* Player list */
-.player-list {
+.action-card :deep(.card) {
+  /* ensure card body has room */
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn-row {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-}
-
-.player-card {
-  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.75rem;
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-sm);
 }
 
-.player-card--host {
-  border-left: 3px solid var(--color-brand);
+.btn-row--end {
+  justify-content: flex-end;
 }
 
-.player-card--client {
-  border-left: 3px solid var(--color-blue);
-}
-
-.player-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--color-button-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--color-text);
-  flex-shrink: 0;
-}
-
-.player-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.player-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--color-text);
-}
-
-.player-role {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  text-transform: capitalize;
-}
-
-.player-latency {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  font-family: 'Fira Code', monospace;
-}
-
-/* Info grid */
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.75rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.6rem 0.75rem;
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-sm);
-}
-
-.info-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-}
-
-.info-value {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text);
-  text-transform: capitalize;
-}
-
-/* Mod compatibility */
-.mod-compat-result {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.compat-status {
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-sm);
-}
-
-.compat-status--ok {
-  background-color: var(--color-brand-bg);
-  color: var(--color-brand);
-}
-
-.compat-status--warn {
-  background-color: var(--color-orange-bg);
-  color: var(--color-orange);
-}
-
-.compat-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.compat-group-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-
-.compat-mod-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0.6rem;
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-button-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-}
-
-.mod-name {
-  color: var(--color-text);
-}
-
-.mod-version {
-  color: var(--color-text-secondary);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.8rem;
-}
-
-.mod-version--mismatch {
-  color: var(--color-orange);
-}
-
-/* World list */
+/* ── World List ──────────────────────────────── */
 .world-list {
   display: flex;
   flex-direction: column;
@@ -1384,26 +1099,466 @@ onUnmounted(() => {
 
 .world-item {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0.6rem;
-  background-color: var(--color-bg);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg);
   border: 1px solid var(--color-button-border);
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
-.world-name {
+.world-item:hover {
+  border-color: var(--color-brand);
+}
+
+.world-item--selected {
+  border-color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
+
+.world-item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.world-item-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.world-item-name {
+  font-weight: 500;
   color: var(--color-text);
 }
 
-.world-port {
+.world-item-port {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85rem;
   color: var(--color-text-secondary);
-  font-family: 'Fira Code', monospace;
 }
 
+/* ── Input ───────────────────────────────────── */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.input-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.text-input {
+  background: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+}
+
+.text-input:focus {
+  border-color: var(--color-brand);
+}
+
+.text-input:disabled {
+  opacity: 0.5;
+}
+
+/* ── Lobby Code Card (Connected) ─────────────── */
+.lobby-code-card {
+  background: linear-gradient(135deg, var(--color-brand-bg) 0%, var(--color-bg) 100%);
+}
+
+.lobby-code-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lobby-code-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: min(100%, 18rem);
+}
+
+.lobby-code-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.lobby-code-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.lobby-code-text {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  font-weight: 700;
+  color: var(--color-brand);
+  letter-spacing: 0.04em;
+}
+
+.lobby-code-side {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.status-chip-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-chip-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.role-chip-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* ── Section Headers ─────────────────────────── */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Player List ─────────────────────────────── */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+}
+
+.player-item--host {
+  border-left-color: var(--color-green);
+}
+
+.player-item--client {
+  border-left-color: var(--color-blue);
+}
+
+.player-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.player-avatar--host {
+  background: var(--color-green);
+  color: var(--color-accent-contrast);
+}
+
+.player-avatar--client {
+  background: var(--color-blue);
+  color: var(--color-accent-contrast);
+}
+
+.player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.player-role {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.role-icon-inline {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.player-latency {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+}
+
+.latency-good {
+  color: var(--color-green);
+}
+
+.latency-fair {
+  color: var(--color-orange);
+}
+
+.latency-poor {
+  color: var(--color-red);
+}
+
+/* ── Info Grid ───────────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+}
+
+.info-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.info-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.info-value--green {
+  color: var(--color-green);
+}
+
+.info-value--orange {
+  color: var(--color-orange);
+}
+
+.info-value--red {
+  color: var(--color-red);
+}
+
+/* ── Mod Compatibility ───────────────────────── */
+.mod-compat-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.compat-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+}
+
+.compat-status svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.compat-ok {
+  background: var(--color-brand-bg);
+  color: var(--color-green);
+}
+
+.compat-warn {
+  background: var(--color-orange-bg);
+  color: var(--color-orange);
+}
+
+.compat-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.compat-group-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.compat-mod-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.mod-name {
+  color: var(--color-text);
+}
+
+.mod-version {
+  color: var(--color-text-secondary);
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.75rem;
+}
+
+.mod-version--mismatch {
+  color: var(--color-orange);
+}
+
+/* ── Leave Button ────────────────────────────── */
+.leave-row {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+/* ── Busy State ──────────────────────────────── */
+.busy-card :deep(.card) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.busy-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 2rem 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--color-button-border);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.busy-text-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.busy-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.busy-hint {
+  font-size: 0.75rem;
+  text-align: center;
+  max-width: 24rem;
+  line-height: 1.4;
+}
+
+.busy-actions {
+  padding: 0.75rem 0 1.5rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Error State ─────────────────────────────── */
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.error-big-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-red);
+}
+
+/* ── Misc ────────────────────────────────────── */
 .empty-hint {
   color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin: 0;
 }
 </style>

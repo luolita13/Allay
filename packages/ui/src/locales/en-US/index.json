@@ -797,6 +797,30 @@
   "creation-flow.modal.final-config.world-type.superflat": {
     "defaultMessage": "Superflat"
   },
+  "creation-flow.modal.game-version-select.group.old-alpha": {
+    "defaultMessage": "Old Alpha"
+  },
+  "creation-flow.modal.game-version-select.group.old-beta": {
+    "defaultMessage": "Old Beta"
+  },
+  "creation-flow.modal.game-version-select.group.recent-release": {
+    "defaultMessage": "Recent releases"
+  },
+  "creation-flow.modal.game-version-select.group.release": {
+    "defaultMessage": "Releases"
+  },
+  "creation-flow.modal.game-version-select.group.snapshot": {
+    "defaultMessage": "Snapshots"
+  },
+  "creation-flow.modal.game-version-select.no-results": {
+    "defaultMessage": "No versions found"
+  },
+  "creation-flow.modal.game-version-select.search": {
+    "defaultMessage": "Search version..."
+  },
+  "creation-flow.modal.game-version-select.show-all": {
+    "defaultMessage": "Show all versions (snapshots, beta, alpha)"
+  },
   "creation-flow.modal.import-instance.action.add": {
     "defaultMessage": "Add"
   },
@@ -826,6 +850,45 @@
   },
   "creation-flow.modal.import-instance.selection.clear-all": {
     "defaultMessage": "Clear all"
+  },
+  "creation-flow.modal.loader-select.back": {
+    "defaultMessage": "Back to game version"
+  },
+  "creation-flow.modal.loader-select.game-version": {
+    "defaultMessage": "Game version"
+  },
+  "creation-flow.modal.loader-select.incompatible": {
+    "defaultMessage": "Incompatible with this game version"
+  },
+  "creation-flow.modal.loader-select.loader-version": {
+    "defaultMessage": "Loader version"
+  },
+  "creation-flow.modal.loader-select.no-versions": {
+    "defaultMessage": "No compatible versions"
+  },
+  "creation-flow.modal.loader-select.optional": {
+    "defaultMessage": "Skip to play vanilla"
+  },
+  "creation-flow.modal.loader-select.stable": {
+    "defaultMessage": "Stable"
+  },
+  "creation-flow.modal.loader-select.title": {
+    "defaultMessage": "Select loader (optional)"
+  },
+  "creation-flow.modal.loader-select.type.latest": {
+    "defaultMessage": "Latest"
+  },
+  "creation-flow.modal.loader-select.type.other": {
+    "defaultMessage": "Other"
+  },
+  "creation-flow.modal.loader-select.type.stable": {
+    "defaultMessage": "Stable"
+  },
+  "creation-flow.modal.loader-select.vanilla.desc": {
+    "defaultMessage": "No mods, original Minecraft experience"
+  },
+  "creation-flow.modal.loader-select.versions-available": {
+    "defaultMessage": "{count, plural, one {# version} other {# versions}} available"
   },
   "creation-flow.modal.modpack.action.browse": {
     "defaultMessage": "Browse modpacks"

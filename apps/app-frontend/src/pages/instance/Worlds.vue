@@ -160,7 +160,7 @@ import {
 } from '@modrinth/ui'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { platform } from '@tauri-apps/plugin-os'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import type ContextMenu from '@/components/ui/ContextMenu.vue'
@@ -443,7 +443,9 @@ async function initWorldsTab() {
 	gameVersions.value = resolvedGameVersions
 }
 
-await initWorldsTab()
+onMounted(async () => {
+	await initWorldsTab()
+})
 
 async function refreshServer(address: string) {
 	if (!serverData.value[address]) {

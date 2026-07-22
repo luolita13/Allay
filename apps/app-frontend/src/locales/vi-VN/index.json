@@ -767,9 +767,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Tùy chỉnh phiên bản cài đặt Java"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Tùy chỉnh phân bổ bộ nhớ"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Nhập biến môi trường..."
   },

@@ -182,7 +182,7 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { renderString } from '@modrinth/utils'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { SwapIcon } from '@/assets/icons'
@@ -352,7 +352,9 @@ async function refreshDisplayDependencies() {
 		}
 	})
 }
-await refreshDisplayDependencies()
+onMounted(async () => {
+	await refreshDisplayDependencies()
+})
 </script>
 
 <style scoped lang="scss">

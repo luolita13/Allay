@@ -9,10 +9,10 @@ import {
 } from '@modrinth/assets'
 import {
 	ButtonStyled,
-	NewModal as Modal,
-	StyledInput,
 	defineMessages,
 	injectNotificationManager,
+	NewModal as Modal,
+	StyledInput,
 	useVIntl,
 } from '@modrinth/ui'
 import { computed, ref } from 'vue'

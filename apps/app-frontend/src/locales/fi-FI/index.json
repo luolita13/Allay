@@ -887,9 +887,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Mukautettu Java asennus"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Mukautettu muistin allokointi"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Syötä ympäristö muuttujat..."
   },

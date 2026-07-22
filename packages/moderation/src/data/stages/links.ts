@@ -38,6 +38,7 @@ const links: Stage = {
 
 		return text
 	},
+
 	actions: [
 		{
 			id: 'links_misused',

@@ -1,5 +1,6 @@
 //! Functions for fetching information from the Internet
 use super::io::{self, IOError};
+use super::chunked_download;
 use crate::ErrorKind;
 use crate::event::LoadingBarId;
 use crate::event::emit::emit_loading;
@@ -16,7 +17,7 @@ use std::ffi::OsStr;
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 use std::time::{self};
 use tokio::sync::Semaphore;
 use tokio::{fs::File, io::AsyncReadExt, io::AsyncWriteExt};
@@ -787,6 +788,89 @@ pub async fn write_cached_icon(
 
     let path = io::canonicalize(path)?;
     Ok(path)
+}
+
+/// Downloads a file using parallel chunked (HTTP Range) requests when beneficial.
+///
+/// This wraps the chunked_download module, integrating it with the mirror/fallback system
+/// and the fetch semaphore. For large files (>1MB), the server is first probed with a HEAD
+/// request to check Range support; if supported, the file is split into parallel chunks.
+/// Falls back to a standard single-request download otherwise.
+#[tracing::instrument(skip(semaphore, progress))]
+pub async fn fetch_chunked(
+    url: &str,
+    sha1: Option<&str>,
+    download_meta: Option<&DownloadMeta>,
+    uri_path: Option<&'static str>,
+    semaphore: &FetchSemaphore,
+    exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
+    max_chunks: usize,
+    progress: Option<Arc<dyn Fn(u64, u64) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'static>> + Send + Sync>>,
+) -> crate::Result<Bytes> {
+    let _permit = semaphore.0.acquire().await?;
+
+    let strategy = super::mirror::get_fetch_strategy(url);
+    let (primary_url, fallback_url) = match &strategy {
+        super::mirror::FetchStrategy::OfficialOnly => (url.to_string(), None),
+        super::mirror::FetchStrategy::MirrorFirst { mirror_url } => {
+            (mirror_url.clone(), Some(url.to_string()))
+        }
+        super::mirror::FetchStrategy::OfficialFirstWithFallback { mirror_url } => {
+            (url.to_string(), Some(mirror_url.clone()))
+        }
+    };
+
+    let download_meta_header = download_meta
+        .map(|m| (DOWNLOAD_META_HEADER.to_string(), m.to_header_value()));
+
+    // Build a client with appropriate headers
+    let client = &INSECURE_REQWEST_CLIENT;
+
+    // Wrap the external progress callback to match the chunked_download signature
+    let chunked_progress: Option<Arc<dyn Fn(u64, u64) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send>> + Send + Sync>> = progress;
+
+    // Phase 1: Try primary URL with chunked download
+    match chunked_download::download_chunked(
+        client,
+        &primary_url,
+        url,
+        sha1,
+        max_chunks,
+        &semaphore.0,
+        chunked_progress.clone(),
+    )
+    .await
+    {
+        Ok(bytes) => return Ok(bytes),
+        Err(primary_err) => {
+            if let Some(fallback) = &fallback_url {
+                tracing::info!(
+                    "Chunked primary URL failed for {url}, trying fallback: {fallback}"
+                );
+                // Phase 2: Try fallback URL
+                match chunked_download::download_chunked(
+                    client,
+                    fallback,
+                    url,
+                    sha1,
+                    max_chunks,
+                    &semaphore.0,
+                    chunked_progress,
+                )
+                .await
+                {
+                    Ok(bytes) => return Ok(bytes),
+                    Err(fallback_err) => {
+                        tracing::warn!(
+                            "Both primary and fallback chunked URLs failed for {url}"
+                        );
+                        return Err(fallback_err);
+                    }
+                }
+            }
+            Err(primary_err)
+        }
+    }
 }
 
 pub async fn sha1_async(bytes: Bytes) -> crate::Result<String> {

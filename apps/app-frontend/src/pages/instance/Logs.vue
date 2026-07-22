@@ -13,7 +13,7 @@ import {
 	provideConsoleManager,
 	useVIntl,
 } from '@modrinth/ui'
-import { computed, onUnmounted, ref, shallowRef, triggerRef, watch, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef, triggerRef, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { useInstanceConsole } from '@/composables/useInstanceConsole'
@@ -212,33 +212,38 @@ if (!props.playing) {
 	void analyseForCrash()
 }
 
-const unlistenLog = await log_listener((payload) => {
-	if (payload.instance_id !== instanceId.value) return
+let unlistenLog = null
+let unlistenProcesses = null
 
-	if (payload.type === 'log4j') {
-		liveConsole.addLog4jEvent(payload)
-	} else if (payload.type === 'legacy') {
-		liveConsole.addLegacyLog(payload.message)
-	}
-})
+onMounted(async () => {
+	unlistenLog = await log_listener((payload) => {
+		if (payload.instance_id !== instanceId.value) return
 
-const unlistenProcesses = await process_listener(async (e) => {
-	if (e.instance_id !== instanceId.value) return
-	if (e.event === 'launched') {
-		liveConsole.clear()
-		invalidate()
-		selectedLogIndex.value = 0
-	}
-	if (e.event === 'finished') {
+		if (payload.type === 'log4j') {
+			liveConsole.addLog4jEvent(payload)
+		} else if (payload.type === 'legacy') {
+			liveConsole.addLegacyLog(payload.message)
+		}
+	})
+
+	unlistenProcesses = await process_listener(async (e) => {
+		if (e.instance_id !== instanceId.value) return
+		if (e.event === 'launched') {
+			liveConsole.clear()
+			invalidate()
+			selectedLogIndex.value = 0
+		}
+		if (e.event === 'finished') {
 		invalidate()
 		const freshLogs = await getHistoricalLogs()
 		logs.value = buildLogList(freshLogs)
 		void analyseForCrash()
 	}
+	})
 })
 
 onUnmounted(() => {
-	unlistenLog()
-	unlistenProcesses()
+	unlistenLog?.()
+	unlistenProcesses?.()
 })
 </script>

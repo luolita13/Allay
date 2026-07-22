@@ -34,6 +34,7 @@ Memorysettings {
 export type AppSettings = {
 	max_concurrent_downloads: number
 	max_concurrent_writes: number
+	max_chunks_per_file: number
 
 	theme: ColorTheme
 	locale: string
@@ -85,6 +86,8 @@ export type AppSettings = {
 
 	game_file_source: number
 	community_source: number
+	curseforge_source: number
+	version_list_source: number
 
 	version: number
 }

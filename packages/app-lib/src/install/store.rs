@@ -36,17 +36,22 @@ impl InstallJobRecord {
         InstallJobSnapshot {
             job_id: self.id,
             instance_id: self.instance_id.clone(),
+            instance_deleted: self.state.instance_deleted(),
             kind: self.kind,
             status: self.status,
+            provider: self.state.provider(),
             target: self.state.target.clone(),
             phase: self.state.progress.phase,
             progress: self.state.progress.progress.clone(),
             details: self.state.progress.details.clone(),
             display: self.state.display.clone(),
             error: self.state.error.clone(),
+            rollback_error: self.state.rollback_error.clone(),
             created: self.created,
             modified: self.modified,
             finished: self.finished,
+            summary: self.state.download_summary(),
+            items: self.state.download_items(),
         }
     }
 }
@@ -264,19 +269,29 @@ pub async fn update_status(
 pub async fn dismiss(id: Uuid, app_state: &State) -> crate::Result<()> {
     let id = id.to_string();
     let modified = Utc::now().timestamp();
-    sqlx::query!(
-        "
-		UPDATE install_jobs
-		SET dismissed = 1, modified = ?
-		WHERE id = ?
-		",
-        modified,
-        id,
+    sqlx::query(
+        "UPDATE install_jobs SET dismissed = 1, modified = ? WHERE id = ?",
     )
+    .bind(modified)
+    .bind(&id)
     .execute(&app_state.pool)
     .await?;
 
     Ok(())
+}
+
+pub async fn clear_finished(app_state: &State) -> crate::Result<u64> {
+    let modified = Utc::now().timestamp();
+    let result = sqlx::query(
+        "UPDATE install_jobs
+         SET dismissed = 1, modified = ?
+         WHERE dismissed = 0
+           AND status IN ('succeeded', 'failed', 'interrupted', 'canceled')",
+    )
+    .bind(modified)
+    .execute(&app_state.pool)
+    .await?;
+    Ok(result.rows_affected())
 }
 
 pub async fn get_required(

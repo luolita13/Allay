@@ -728,9 +728,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "사용자 지정 Java 설치"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "사용자 지정 메모리 할당"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "환경 변수를 입력하세요..."
   },

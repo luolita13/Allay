@@ -17,8 +17,10 @@ use serde::{Deserialize, Serialize};
 use crate::state::{SearchResultV3, SearchResultsV3};
 use crate::util::fetch::FetchSemaphore;
 
-/// CurseForge API base URL
+/// CurseForge API base URL (used for URL construction)
 const CURSEFORGE_API_BASE: &str = "https://api.curseforge.com/v1";
+/// Host portion of the CurseForge API, used for mirror rewriting.
+const CURSEFORGE_API_HOST: &str = "https://api.curseforge.com";
 
 /// Built-in public API key (PolyMC's key, same as PCL-CE / PrismLauncher).
 /// Users can override this in settings.
@@ -381,16 +383,24 @@ fn resolve_api_key() -> &'static str {
     BUILT_IN_API_KEY
 }
 
+/// MCIMirror proxy base URL for CurseForge API.
+const CURSEFORGE_MCIMIRROR_API_BASE: &str = "https://mod.mcimirror.top/curseforge";
+
 /// Send a CurseForge API GET request and parse JSON response.
 /// Adds the `x-api-key` header required by CurseForge.
+/// Respects the `curseforge_source` mirror setting: when set to Mirror or Auto,
+/// requests are routed through MCIMirror's CurseForge API proxy.
 async fn cf_request<T: serde::de::DeserializeOwned>(
     url: &str,
     semaphore: &FetchSemaphore,
-    state: &crate::State,
+    _state: &crate::State,
 ) -> crate::Result<T> {
     let api_key = resolve_api_key();
 
-    tracing::debug!("CurseForge request: {}", url);
+    let (primary_url, fallback_url) =
+        resolve_cf_api_urls(url, crate::util::mirror::get_curseforge_source().as_i32());
+
+    tracing::debug!("CurseForge request: {url} (primary: {primary_url})");
 
     let client = &crate::util::fetch::INSECURE_REQWEST_CLIENT;
     let _permit = semaphore.0.acquire().await.map_err(|e| {
@@ -400,29 +410,68 @@ async fn cf_request<T: serde::de::DeserializeOwned>(
         .as_error()
     })?;
 
-    let response = client
-        .request(Method::GET, url)
+    // Try primary URL first
+    let response = match client
+        .request(Method::GET, &primary_url)
         .header("x-api-key", api_key)
         .header("Accept", "application/json")
         .send()
         .await
-        .map_err(|e| {
-            crate::ErrorKind::OtherError(format!(
-                "CurseForge request failed: {e}"
-            ))
-            .as_error()
-        })?;
-
-    let status = response.status();
-    if !status.is_success() {
-        let body = response.text().await.unwrap_or_default();
-        return Err(crate::ErrorKind::OtherError(format!(
-            "CurseForge API returned {}: {}",
-            status,
-            body.chars().take(500).collect::<String>()
-        ))
-        .as_error());
-    }
+    {
+        Ok(resp) if resp.status().is_success() => resp,
+        Ok(resp) => {
+            let status = resp.status();
+            // For non-success status, try fallback if available
+            if let Some(fallback) = &fallback_url {
+                tracing::info!(
+                    "CurseForge primary returned {status}, trying fallback: {fallback}"
+                );
+                client
+                    .request(Method::GET, fallback)
+                    .header("x-api-key", api_key)
+                    .header("Accept", "application/json")
+                    .send()
+                    .await
+                    .map_err(|e| {
+                        crate::ErrorKind::OtherError(format!(
+                            "CurseForge fallback request failed: {e}"
+                        ))
+                        .as_error()
+                    })?
+            } else {
+                let body = resp.text().await.unwrap_or_default();
+                return Err(crate::ErrorKind::OtherError(format!(
+                    "CurseForge API returned {status}: {}",
+                    body.chars().take(500).collect::<String>()
+                ))
+                .as_error());
+            }
+        }
+        Err(primary_err) => {
+            if let Some(fallback) = &fallback_url {
+                tracing::info!(
+                    "CurseForge primary request failed ({primary_err}), trying fallback: {fallback}"
+                );
+                client
+                    .request(Method::GET, fallback)
+                    .header("x-api-key", api_key)
+                    .header("Accept", "application/json")
+                    .send()
+                    .await
+                    .map_err(|e| {
+                        crate::ErrorKind::OtherError(format!(
+                            "CurseForge fallback request failed: {e}"
+                        ))
+                        .as_error()
+                    })?
+            } else {
+                return Err(crate::ErrorKind::OtherError(format!(
+                    "CurseForge request failed: {primary_err}"
+                ))
+                .as_error());
+            }
+        }
+    };
 
     let bytes = response.bytes().await.map_err(|e| {
         crate::ErrorKind::OtherError(format!(
@@ -443,6 +492,29 @@ async fn cf_request<T: serde::de::DeserializeOwned>(
     })?;
 
     Ok(value)
+}
+
+/// Resolve the actual URL(s) to use for a CurseForge API request based on the
+/// curseforge_source setting.
+///
+/// Returns `(primary_url, optional_fallback_url)`.
+fn resolve_cf_api_urls(
+    original: &str,
+    curseforge_source: i32,
+) -> (String, Option<String>) {
+    let mirror_url = original.replace(
+        CURSEFORGE_API_HOST,
+        CURSEFORGE_MCIMIRROR_API_BASE,
+    );
+
+    match curseforge_source {
+        // Mirror first: try MCIMirror, fallback to official
+        0 => (mirror_url, Some(original.to_string())),
+        // Auto (default): try official first, fallback to mirror
+        1 => (original.to_string(), Some(mirror_url)),
+        // Official only
+        _ => (original.to_string(), None),
+    }
 }
 
 // ============================================================================

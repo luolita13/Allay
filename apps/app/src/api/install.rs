@@ -1,6 +1,6 @@
 use crate::api::Result;
 use crate::api::instance::InstanceLink;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use theseus::data::ModLoader;
 use theseus::install::{
@@ -28,6 +28,14 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             install_job_pause,
             install_job_resume,
             install_job_dismiss,
+            install_job_support_details,
+            download_job_list,
+            download_job_get,
+            download_job_retry,
+            download_job_cancel,
+            download_job_delete,
+            download_history_clear,
+            download_job_support_details,
         ])
         .build()
 }
@@ -190,4 +198,100 @@ pub async fn install_job_resume(job_id: Uuid) -> Result<InstallJobSnapshot> {
 #[tauri::command]
 pub async fn install_job_dismiss(job_id: Uuid) -> Result<()> {
     Ok(theseus::install::dismiss_job(job_id).await?)
+}
+
+#[tauri::command]
+pub async fn install_job_support_details(job_id: Uuid) -> Result<String> {
+    Ok(theseus::install::job_support_details(job_id).await?)
+}
+
+#[derive(Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadJobListRequest {
+    pub status: Option<String>,
+    pub provider: Option<String>,
+    pub query: Option<String>,
+    pub cursor: Option<String>,
+    pub limit: Option<usize>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadJobPage {
+    pub jobs: Vec<InstallJobSnapshot>,
+    pub next_cursor: Option<String>,
+}
+
+#[tauri::command]
+pub async fn download_job_list(
+    request: Option<DownloadJobListRequest>,
+) -> Result<DownloadJobPage> {
+    let request = request.unwrap_or_default();
+    let mut jobs = theseus::install::list_jobs(true).await?;
+    if let Some(status) = request.status.as_deref() {
+        jobs.retain(|job| job.status.as_str() == status);
+    }
+    if let Some(provider) = request.provider.as_deref() {
+        jobs.retain(|job| {
+            format!("{:?}", job.provider)
+                .to_ascii_lowercase()
+                .replace('_', "")
+                == provider.to_ascii_lowercase().replace('_', "")
+        });
+    }
+    if let Some(query) = request.query.as_deref() {
+        let query = query.trim().to_ascii_lowercase();
+        if !query.is_empty() {
+            jobs.retain(|job| {
+                job.display.as_ref().is_some_and(|display| {
+                    display.title.to_ascii_lowercase().contains(&query)
+                }) || job.job_id.to_string().contains(&query)
+            });
+        }
+    }
+    jobs.sort_by(|a, b| b.created.cmp(&a.created));
+    let offset = request
+        .cursor
+        .as_deref()
+        .and_then(|cursor| cursor.parse::<usize>().ok())
+        .unwrap_or(0);
+    let limit = request.limit.unwrap_or(100).clamp(1, 250);
+    let jobs = jobs
+        .into_iter()
+        .skip(offset)
+        .take(limit)
+        .collect::<Vec<_>>();
+    let next_cursor =
+        (jobs.len() == limit).then(|| (offset + limit).to_string());
+    Ok(DownloadJobPage { jobs, next_cursor })
+}
+
+#[tauri::command]
+pub async fn download_job_get(job_id: Uuid) -> Result<InstallJobSnapshot> {
+    install_job_get(job_id).await
+}
+
+#[tauri::command]
+pub async fn download_job_retry(job_id: Uuid) -> Result<InstallJobSnapshot> {
+    Ok(theseus::install::retry_job_as_new(job_id).await?)
+}
+
+#[tauri::command]
+pub async fn download_job_cancel(job_id: Uuid) -> Result<InstallJobSnapshot> {
+    install_job_cancel(job_id).await
+}
+
+#[tauri::command]
+pub async fn download_job_delete(job_id: Uuid) -> Result<()> {
+    install_job_dismiss(job_id).await
+}
+
+#[tauri::command]
+pub async fn download_history_clear() -> Result<u64> {
+    Ok(theseus::install::clear_job_history().await?)
+}
+
+#[tauri::command]
+pub async fn download_job_support_details(job_id: Uuid) -> Result<String> {
+    install_job_support_details(job_id).await
 }

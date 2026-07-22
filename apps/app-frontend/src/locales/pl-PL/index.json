@@ -884,9 +884,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Niestandardowa instalacja Javy"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Niestandardowa alokacja pamięci"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Zmienne środowiskowe..."
   },

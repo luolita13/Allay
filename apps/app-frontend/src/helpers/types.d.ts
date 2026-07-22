@@ -151,6 +151,7 @@ type ManifestLoaderVersion = {
 type AppSettings = {
 	max_concurrent_downloads: number
 	max_concurrent_writes: number
+	max_chunks_per_file: number
 
 	theme: 'dark' | 'light' | 'oled' | 'system'
 	locale: string

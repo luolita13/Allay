@@ -10,10 +10,10 @@ import {
 	SettingsIcon,
 	ShieldIcon,
 	ToggleRightIcon,
+	WrenchIcon,
 } from '@modrinth/assets'
 import {
 	commonMessages,
-	commonSettingsMessages,
 	defineMessage,
 	defineMessages,
 	ProgressBar,
@@ -32,6 +32,7 @@ import JavaSettings from '@/components/ui/settings/JavaSettings.vue'
 import LanguageSettings from '@/components/ui/settings/LanguageSettings.vue'
 import PrivacySettings from '@/components/ui/settings/PrivacySettings.vue'
 import ResourceManagementSettings from '@/components/ui/settings/ResourceManagementSettings.vue'
+import AdvancedInstanceSettings from '@/components/ui/settings/AdvancedInstanceSettings.vue'
 import { get, set } from '@/helpers/settings.ts'
 import { injectAppUpdateDownloadProgress } from '@/providers/download-progress.ts'
 import { useTheming } from '@/store/state'
@@ -104,6 +105,14 @@ const tabs = [
 	},
 	{
 		name: defineMessage({
+			id: 'app.settings.tabs.advanced-instance-options',
+			defaultMessage: 'Advanced instance options',
+		}),
+		icon: WrenchIcon,
+		content: AdvancedInstanceSettings,
+	},
+	{
+		name: defineMessage({
 			id: 'app.settings.tabs.resource-management',
 			defaultMessage: 'Resource management',
 		}),
@@ -111,10 +120,12 @@ const tabs = [
 		content: ResourceManagementSettings,
 	},
 	{
-		name: commonSettingsMessages.featureFlags,
+		name: defineMessage({
+			id: 'app.settings.tabs.experimental-features',
+			defaultMessage: '实验性功能',
+		}),
 		icon: ToggleRightIcon,
 		content: FeatureFlagSettings,
-		developerOnly: true,
 	},
 ]
 
@@ -147,10 +158,6 @@ function devModeCount() {
 		themeStore.devMode = !themeStore.devMode
 		settings.value.developer_mode = !!themeStore.devMode
 		devModeCounter.value = 0
-
-		if (!themeStore.devMode && tabs[modal.value!.selectedTab].developerOnly) {
-			modal.value!.setTab(0)
-		}
 	}
 }
 
@@ -162,7 +169,7 @@ const messages = defineMessages({
 })
 </script>
 <template>
-	<TabbedModal ref="modal" width="900px" :tabs="tabs.filter((t) => !t.developerOnly || themeStore.devMode)">
+	<TabbedModal ref="modal" width="900px" :tabs="tabs">
 		<template #title>
 			<span class="flex items-center gap-2 text-lg font-extrabold text-contrast">
 				<SettingsIcon /> {{ formatMessage(settingsTitle) }}

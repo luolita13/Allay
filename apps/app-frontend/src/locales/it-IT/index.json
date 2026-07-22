@@ -884,9 +884,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Personalizzata"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Personalizzata"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Inserisci le variabili d'ambiente..."
   },

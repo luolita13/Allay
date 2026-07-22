@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { GameIcon, LeftArrowIcon } from '@modrinth/assets'
 import { Avatar, ButtonStyled, FormattedTag } from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { computed } from 'vue'
+
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 
 type Instance = {
 	game_version: string
@@ -32,7 +33,7 @@ const instanceLink = computed(() => {
 		<router-link :to="instanceLink" tabindex="-1" class="flex flex-col gap-4 text-primary">
 			<span class="flex items-center gap-2">
 				<Avatar
-					:src="instance.icon_path ? convertFileSrc(instance.icon_path) : undefined"
+					:src="getInstanceIconSrc(instance)"
 					:alt="instance.name"
 					size="48px"
 				/>

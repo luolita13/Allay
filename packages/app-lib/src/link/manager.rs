@@ -80,7 +80,7 @@ impl LinkManager {
         self.is_host = true;
 
         // Wait for network to be ready (Host only needs its own route).
-        self.wait_ready_host().await;
+        self.wait_ready_host().await?;
 
         Ok(())
     }
@@ -106,7 +106,7 @@ impl LinkManager {
         self.is_host = false;
 
         // Wait until we can see the host in the route list.
-        self.wait_ready_client().await;
+        self.wait_ready_client().await?;
 
         Ok(())
     }
@@ -249,7 +249,7 @@ impl LinkManager {
     /// Wait for the host's own EasyTier node to be ready.
     /// For the host, we just need the API service to be available
     /// and our own route entry to exist.
-    async fn wait_ready_host(&self) {
+    async fn wait_ready_host(&self) -> Result<(), String> {
         for _ in 0..150 {
             let api_service_opt: Option<_> = {
                 let launcher = self.launcher.lock();
@@ -266,8 +266,8 @@ impl LinkManager {
             };
 
             if let Some(api) = api_service_opt {
-                use easytier::proto::rpc_types::controller::BaseController;
                 use easytier::proto::api::instance::ListRouteRequest;
+                use easytier::proto::rpc_types::controller::BaseController;
                 let ctrl = BaseController::default();
                 if let Ok(routes) = api
                     .get_peer_manage_service()
@@ -275,9 +275,13 @@ impl LinkManager {
                     .await
                 {
                     // Host is ready when we can see our own route.
-                    if routes.routes.iter().any(|r| r.hostname.starts_with(HOST_HOSTNAME_PREFIX)) {
+                    if routes
+                        .routes
+                        .iter()
+                        .any(|r| r.hostname.starts_with(HOST_HOSTNAME_PREFIX))
+                    {
                         tracing::info!("EasyTier host is ready");
-                        return;
+                        return Ok(());
                     }
                 }
             }
@@ -285,10 +289,11 @@ impl LinkManager {
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
         tracing::warn!("EasyTier wait_ready_host timed out after 15s");
+        Err("Timed out waiting for the virtual network to start.".to_string())
     }
 
     /// Wait for the client to find the host in the route list.
-    async fn wait_ready_client(&self) {
+    async fn wait_ready_client(&self) -> Result<(), String> {
         for _ in 0..150 {
             let api_service_opt: Option<_> = {
                 let launcher = self.launcher.lock();
@@ -305,8 +310,8 @@ impl LinkManager {
             };
 
             if let Some(api) = api_service_opt {
-                use easytier::proto::rpc_types::controller::BaseController;
                 use easytier::proto::api::instance::ListRouteRequest;
+                use easytier::proto::rpc_types::controller::BaseController;
                 let ctrl = BaseController::default();
                 if let Ok(routes) = api
                     .get_peer_manage_service()
@@ -314,9 +319,13 @@ impl LinkManager {
                     .await
                 {
                     // Client is ready when we can see the host's route.
-                    if routes.routes.iter().any(|r| r.hostname.starts_with(HOST_HOSTNAME_PREFIX)) {
+                    if routes
+                        .routes
+                        .iter()
+                        .any(|r| r.hostname.starts_with(HOST_HOSTNAME_PREFIX))
+                    {
                         tracing::info!("EasyTier client found host");
-                        return;
+                        return Ok(());
                     }
                 }
             }
@@ -324,6 +333,7 @@ impl LinkManager {
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
         tracing::warn!("EasyTier wait_ready_client timed out after 15s");
+        Err("Could not find the host on the virtual network. Check the lobby code and make sure the host is online.".to_string())
     }
 }
 

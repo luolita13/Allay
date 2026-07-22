@@ -65,6 +65,9 @@
   "nags.gallery.title": {
     "defaultMessage": "ギャラリーのページを閲覧する"
   },
+  "nags.gpl-license-source-required.description": {
+    "defaultMessage": "あなたの{type}はソースコードの公開を必要とするライセンスを使用しています。各追加バージョンにソースコードのリンクまたはソースコードファイルを提供するか、別のライセンスの使用を検討してください。"
+  },
   "nags.gpl-license-source-required.title": {
     "defaultMessage": "ソースコードのリンクの追加"
   },
@@ -131,6 +134,12 @@
   "nags.moderator-feedback.title": {
     "defaultMessage": "フィードバックの確認"
   },
+  "nags.review-permissions.description": {
+    "defaultMessage": "再提出する前に、審査チームから指摘されたすべての問題を確認して対応してください。"
+  },
+  "nags.review-permissions.title": {
+    "defaultMessage": "外部権限の確認"
+  },
   "nags.multiple-resolution-tags.description": {
     "defaultMessage": "{count, plural, other {#個の解像度タグ}} ({tags}) を選択しました。リソースパックは通常、主要な解像度と一致する1つの解像度タグのみを設定すべきです。"
   },
@@ -155,6 +164,9 @@
   "nags.select-language.title": {
     "defaultMessage": "言語を選択"
   },
+  "nags.select-license.description": {
+    "defaultMessage": "{type} の配布に使用するライセンスを選択してください。"
+  },
   "nags.select-license.title": {
     "defaultMessage": "ライセンスを選択"
   },
@@ -172,6 +184,9 @@
   },
   "nags.settings.license.title": {
     "defaultMessage": "ライセンス設定を表示"
+  },
+  "nags.settings.permissions.title": {
+    "defaultMessage": "権限管理パネルを表示"
   },
   "nags.settings.links.title": {
     "defaultMessage": "リンクの設定を表示"
@@ -217,6 +232,12 @@
   },
   "nags.too-many-tags.title": {
     "defaultMessage": "正確なタグを選択"
+  },
+  "nags.upload-gallery-image.description": {
+    "defaultMessage": "{type}の内容を示す画像が少なくとも1つ必要です。"
+  },
+  "nags.upload-gallery-image.resourcepack-type": {
+    "defaultMessage": "リソースパック（ただしオーディオパックやローカライズパックは除く）。あなたのコンテンツがこれに該当する場合は、該当するタグを選択してください"
   },
   "nags.upload-gallery-image.title": {
     "defaultMessage": "ギャラリー画像をアップロード"

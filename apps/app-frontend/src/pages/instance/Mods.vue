@@ -92,7 +92,6 @@ import {
 	versionChangesGameVersion,
 } from '@modrinth/ui'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { open } from '@tauri-apps/plugin-dialog'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -121,6 +120,7 @@ import {
 	update_managed_modrinth_version,
 } from '@/helpers/instance'
 import { type InstanceContentData, loadInstanceContentData } from '@/helpers/instance-content'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import type { CacheBehaviour, GameInstance } from '@/helpers/types'
 import { highlightModInInstance } from '@/helpers/utils.js'
 import { injectContentInstall } from '@/providers/content-install'
@@ -253,7 +253,7 @@ const localImportedModpackProject = computed<ContentModpackCardProject | null>((
 		id: link.filename ?? props.instance.id,
 		slug: link.filename ?? props.instance.id,
 		title: link.name ?? props.instance.name,
-		icon_url: props.instance.icon_path ? convertFileSrc(props.instance.icon_path) : undefined,
+		icon_url: getInstanceIconSrc(props.instance),
 		description: '',
 		filename: link.filename ?? undefined,
 	}

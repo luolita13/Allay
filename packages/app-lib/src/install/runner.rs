@@ -1,13 +1,15 @@
 use super::control::{self, JobGuard};
 use super::events::{InstallProgressReporter, emit_install_job};
 use super::model::{
-    InstallCleanup, InstallErrorView, InstallJobDisplay, InstallJobSnapshot,
+    InstallCleanup, InstallErrorView, InstallJobDisplay, InstallJobEvent,
+    InstallJobEventKind, InstallJobSnapshot,
     InstallJobState, InstallJobStatus, InstallPhaseDetails, InstallPhaseId,
     InstallPostInstallEdit, InstallRequest, InstallRollbackState,
     InstallTarget,
 };
 use super::{recovery, store};
 use crate::ErrorKind;
+use chrono::Utc;
 use crate::api::pack::install_from::{
     CreatePackLocation, generate_pack_from_file,
     generate_pack_from_version_id_with_reporter, get_instance_from_pack,
@@ -169,6 +171,14 @@ pub async fn retry_job(job_id: Uuid) -> crate::Result<InstallJobSnapshot> {
     job.state.progress.phase = InstallPhaseId::PreparingInstance;
     job.state.progress.progress = None;
     job.state.progress.details = InstallPhaseDetails::Empty;
+    job.state.events = vec![InstallJobEvent {
+        at: Utc::now(),
+        kind: InstallJobEventKind::JobQueued {
+            kind: job.state.request.kind(),
+        },
+    }];
+    job.state.context = None;
+    job.state.rollback_error = None;
     prepare_initial_instance(&mut job.state, &state).await?;
 
     let record = store::update_status(
@@ -194,7 +204,10 @@ pub async fn cancel_job(job_id: Uuid) -> crate::Result<InstallJobSnapshot> {
             let mut job_state = job.state.clone();
             job_state.error = Some(InstallErrorView {
                 code: "canceled".to_string(),
+                phase: None,
                 message: "Install was canceled".to_string(),
+                api: None,
+                context: None,
             });
             recovery::apply_cleanup(&job_state, &state).await?;
             clear_deleted_new_instance_id(&mut job_state);
@@ -226,7 +239,10 @@ pub async fn cancel_job(job_id: Uuid) -> crate::Result<InstallJobSnapshot> {
                 let mut job_state = job.state.clone();
                 job_state.error = Some(InstallErrorView {
                     code: "canceled".to_string(),
+                    phase: None,
                     message: "Install was canceled".to_string(),
+                    api: None,
+                    context: None,
                 });
                 clear_deleted_new_instance_id(&mut job_state);
                 let record = store::update_status(
@@ -467,6 +483,7 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
     }
 
     let mut job_state = job.state.clone();
+    job_state.record_event(InstallJobEventKind::JobStarted);
     let record = store::update_status(
         job_id,
         InstallJobStatus::Running,
@@ -515,6 +532,9 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
             job_state.progress.progress = None;
             job_state.progress.details = InstallPhaseDetails::Empty;
             job_state.error = None;
+            job_state.record_event(InstallJobEventKind::JobSucceeded {
+                instance_id: current_instance_id(&job_state),
+            });
             let record = store::update_status(
                 job_id,
                 InstallJobStatus::Succeeded,
@@ -538,7 +558,13 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
                 job_state.progress.details = InstallPhaseDetails::Empty;
                 job_state.error = Some(InstallErrorView {
                     code: "canceled".to_string(),
+                    phase: None,
                     message: "Install was canceled".to_string(),
+                    api: None,
+                    context: None,
+                });
+                job_state.record_event(InstallJobEventKind::JobCanceled {
+                    phase: job_state.progress.phase,
                 });
                 recovery::apply_cleanup(&job_state, &state).await?;
                 clear_deleted_new_instance_id(&mut job_state);
@@ -554,7 +580,12 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
                 job_state.progress.phase = InstallPhaseId::RollingBack;
                 job_state.progress.progress = None;
                 job_state.progress.details = InstallPhaseDetails::Empty;
-                job_state.error = Some(install_error_view(&error));
+                job_state.error = Some(install_error_view(&error, job_state.progress.phase));
+                job_state.record_event(InstallJobEventKind::Failed {
+                    phase: job_state.progress.phase,
+                    code: "install_error".to_string(),
+                    message: error.to_string(),
+                });
                 recovery::apply_cleanup(&job_state, &state).await?;
                 clear_deleted_new_instance_id(&mut job_state);
                 let record = store::update_status(
@@ -1404,9 +1435,7 @@ async fn update_progress(
     phase: InstallPhaseId,
     details: InstallPhaseDetails,
 ) -> crate::Result<()> {
-    job_state.progress.phase = phase;
-    job_state.progress.progress = None;
-    job_state.progress.details = details;
+    job_state.set_progress(phase, None, details);
     let record = store::update_state(job_id, job_state, state).await?;
     emit_install_job(&record.snapshot()).await?;
     Ok(())
@@ -1451,19 +1480,21 @@ fn set_display(
     job_state.display = Some(InstallJobDisplay { title, icon });
 }
 
-fn install_error_view(error: &crate::Error) -> InstallErrorView {
+fn install_error_view(error: &crate::Error, phase: InstallPhaseId) -> InstallErrorView {
     match error.raw.as_ref() {
         ErrorKind::FetchError(_)
         | ErrorKind::ApiIsDownError(_)
         | ErrorKind::WSError(_)
-        | ErrorKind::WSClosedError(_) => InstallErrorView {
-            code: "network_error".to_string(),
-            message: "network_error".to_string(),
-        },
-        _ => InstallErrorView {
-            code: "unknown_error".to_string(),
-            message: "unknown_error".to_string(),
-        },
+        | ErrorKind::WSClosedError(_) => InstallErrorView::from_message(
+            "network_error",
+            phase,
+            "network_error",
+        ),
+        _ => InstallErrorView::from_message(
+            "unknown_error",
+            phase,
+            "unknown_error",
+        ),
     }
 }
 
@@ -1494,4 +1525,34 @@ fn modpack_details(location: &CreatePackLocation) -> InstallPhaseDetails {
             title: None,
         },
     }
+}
+
+pub async fn job_support_details(job_id: Uuid) -> crate::Result<String> {
+    let state = State::get().await?;
+    let job = store::get_required(job_id, &state).await?;
+    super::diagnostics::build_job_support_details(&job, &state).await
+}
+
+pub async fn retry_job_as_new(job_id: Uuid) -> crate::Result<InstallJobSnapshot> {
+    let state = State::get().await?;
+    let job = store::get_required(job_id, &state).await?;
+
+    if !matches!(
+        job.status,
+        InstallJobStatus::Failed | InstallJobStatus::Interrupted | InstallJobStatus::Canceled
+    ) {
+        return Err(crate::ErrorKind::InputError(
+            "Only failed, interrupted, or canceled install jobs can be retried"
+                .to_string(),
+        )
+        .into());
+    }
+
+    // Start a new job with the same request
+    start(job.state.request.clone()).await
+}
+
+pub async fn clear_job_history() -> crate::Result<u64> {
+    let state = State::get().await?;
+    store::clear_finished(&state).await
 }

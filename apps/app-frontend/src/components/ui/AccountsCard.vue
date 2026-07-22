@@ -107,6 +107,7 @@ import {
 import type { Ref } from 'vue'
 import { computed, onUnmounted, ref } from 'vue'
 
+import MinecraftLoginModal from '@/components/ui/modal/MinecraftLoginModal.vue'
 import { trackEvent } from '@/helpers/analytics'
 import {
 	get_default_user,
@@ -118,7 +119,6 @@ import { process_listener } from '@/helpers/events'
 import { getPlayerHeadUrl } from '@/helpers/rendering/batch-skin-renderer.ts'
 import type { Skin } from '@/helpers/skins'
 import { get_available_skins } from '@/helpers/skins'
-import MinecraftLoginModal from '@/components/ui/modal/MinecraftLoginModal.vue'
 
 const { formatMessage } = useVIntl()
 const { handleError } = injectNotificationManager()

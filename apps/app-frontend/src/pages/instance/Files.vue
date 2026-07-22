@@ -22,7 +22,7 @@ import {
 	writeFile as writeFileBytes,
 	writeTextFile,
 } from '@tauri-apps/plugin-fs'
-import { onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { instance_listener } from '@/helpers/events'
 import { get_full_path } from '@/helpers/instance'
@@ -64,10 +64,12 @@ const editingFile = ref<EditingFile | null>(null)
 
 debug('setup: start, instance.id =', props.instance.id)
 
-instanceRoot.value = await get_full_path(props.instance.id)
-debug('setup: instanceRoot =', instanceRoot.value)
-await refresh()
-debug('setup: refresh complete, items =', items.value.length, 'error =', error.value)
+onMounted(async () => {
+	instanceRoot.value = await get_full_path(props.instance.id)
+	debug('setup: instanceRoot =', instanceRoot.value)
+	await refresh()
+	debug('setup: refresh complete, items =', items.value.length, 'error =', error.value)
+})
 
 function resolvePath(relativePath: string): string {
 	return relativePath ? `${instanceRoot.value}/${relativePath}` : instanceRoot.value
@@ -290,19 +292,23 @@ async function handleExtractFile(path: string, override: boolean, dry: boolean) 
 }
 
 debug('setup: registering instance_listener')
-const unlistenInstances = await instance_listener(
-	async (event: { event: string; instance_id: string }) => {
-		debug('instance_listener: event =', event.event, 'path =', event.instance_id)
-		if (event.instance_id === props.instance.id && event.event === 'synced') {
-			debug('instance_listener: synced event matched, calling refresh')
-			await refresh()
-		}
-	},
-)
-debug('setup: instance_listener registered')
+let unlistenInstances: (() => void) | null = null
+
+onMounted(async () => {
+	unlistenInstances = await instance_listener(
+		async (event: { event: string; instance_id: string }) => {
+			debug('instance_listener: event =', event.event, 'path =', event.instance_id)
+			if (event.instance_id === props.instance.id && event.event === 'synced') {
+				debug('instance_listener: synced event matched, calling refresh')
+				await refresh()
+			}
+		},
+	)
+	debug('setup: instance_listener registered')
+})
 
 onUnmounted(() => {
-	unlistenInstances()
+	unlistenInstances?.()
 })
 
 watch(

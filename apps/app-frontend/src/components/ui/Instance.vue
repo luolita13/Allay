@@ -8,7 +8,6 @@ import {
 	TimerIcon,
 } from '@modrinth/assets'
 import { Avatar, ButtonStyled, defineMessages, injectNotificationManager, useRelativeTime, useVIntl } from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import dayjs from 'dayjs'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -17,6 +16,7 @@ import { trackEvent } from '@/helpers/analytics'
 import { process_listener } from '@/helpers/events'
 import { install_existing_instance, install_pack_to_existing_instance } from '@/helpers/install'
 import { kill, run } from '@/helpers/instance'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_by_instance_id } from '@/helpers/process'
 import { showInstanceInFolder } from '@/helpers/utils.js'
 import { handleSevereError } from '@/store/error.js'
@@ -166,7 +166,7 @@ onUnmounted(() => unlisten())
 		>
 			<Avatar
 				size="48px"
-				:src="instance.icon_path ? convertFileSrc(instance.icon_path) : null"
+				:src="getInstanceIconSrc(instance)"
 				:tint-by="instance.id"
 				alt="Mod card"
 			/>
@@ -215,7 +215,7 @@ onUnmounted(() => unlisten())
 			<div class="relative flex items-center justify-center">
 				<Avatar
 					size="48px"
-					:src="instance.icon_path ? convertFileSrc(instance.icon_path) : null"
+					:src="getInstanceIconSrc(instance)"
 					:tint-by="instance.id"
 					alt="Mod card"
 					:class="`transition-all ${modLoading || installing ? `brightness-[0.25] scale-[0.85]` : `group-hover:brightness-75`}`"

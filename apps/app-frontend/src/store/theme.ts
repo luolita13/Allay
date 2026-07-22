@@ -4,6 +4,8 @@ let systemThemeMq: MediaQueryList | null = null
 
 const LS_KEY_BG_PATH = 'modrinth-app-background-image-path'
 const LS_KEY_BG_BLUR = 'modrinth-app-background-blur'
+const LS_KEY_BG_OPACITY = 'modrinth-app-background-opacity'
+const LS_KEY_ACCENT_COLOR = 'modrinth-app-accent-color'
 
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
@@ -27,9 +29,14 @@ export const DEFAULT_FEATURE_FLAGS = {
 	home_show_system_status: true,
 	home_show_recent_screenshots: true,
 	home_show_random_mods: true,
+	// Experimental features
+	game_link: false,
 }
 
 export const THEME_OPTIONS = ['dark', 'light', 'oled', 'system'] as const
+export const ACCENT_COLOR_OPTIONS = ['pink', 'orange', 'green', 'blue', 'purple'] as const
+
+export type AccentColor = (typeof ACCENT_COLOR_OPTIONS)[number]
 
 export type FeatureFlag = keyof typeof DEFAULT_FEATURE_FLAGS
 export type FeatureFlags = Record<FeatureFlag, boolean>
@@ -37,6 +44,7 @@ export type ColorTheme = (typeof THEME_OPTIONS)[number]
 
 export type ThemeStore = {
 	selectedTheme: ColorTheme
+	selectedAccentColor: AccentColor
 	advancedRendering: boolean
 	hideNametagSkinsPage: boolean
 	toggleSidebar: boolean
@@ -46,10 +54,12 @@ export type ThemeStore = {
 
 	backgroundImagePath: string | null
 	backgroundBlur: number
+	backgroundOpacity: number
 }
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
 	selectedTheme: 'dark',
+	selectedAccentColor: 'pink',
 	advancedRendering: true,
 	hideNametagSkinsPage: false,
 	toggleSidebar: false,
@@ -59,6 +69,7 @@ export const DEFAULT_THEME_STORE: ThemeStore = {
 
 	backgroundImagePath: null,
 	backgroundBlur: 20,
+	backgroundOpacity: 65,
 }
 
 export const useTheming = defineStore('themeStore', {
@@ -71,7 +82,17 @@ export const useTheming = defineStore('themeStore', {
 		}
 		const savedBlur = localStorage.getItem(LS_KEY_BG_BLUR)
 		if (savedBlur) {
-			stored.backgroundBlur = parseInt(savedBlur, 10) || 20
+			const parsed = parseInt(savedBlur, 10)
+			stored.backgroundBlur = Number.isNaN(parsed) ? 20 : parsed
+		}
+		const savedOpacity = localStorage.getItem(LS_KEY_BG_OPACITY)
+		if (savedOpacity) {
+			const parsed = parseInt(savedOpacity, 10)
+			stored.backgroundOpacity = Number.isNaN(parsed) ? 65 : parsed
+		}
+		const savedAccentColor = localStorage.getItem(LS_KEY_ACCENT_COLOR) as AccentColor | null
+		if (savedAccentColor && ACCENT_COLOR_OPTIONS.includes(savedAccentColor)) {
+			stored.selectedAccentColor = savedAccentColor
 		}
 		return stored
 	},
@@ -84,6 +105,20 @@ export const useTheming = defineStore('themeStore', {
 			}
 
 			this.setThemeClass()
+		},
+		setAccentColor(newAccentColor: AccentColor) {
+			if (ACCENT_COLOR_OPTIONS.includes(newAccentColor)) {
+				this.selectedAccentColor = newAccentColor
+			} else {
+				console.warn('Selected accent color is not available.')
+			}
+
+			const html = document.documentElement
+			for (const accentColor of ACCENT_COLOR_OPTIONS) {
+				html.classList.remove(`accent-${accentColor}`)
+			}
+			html.classList.add(`accent-${this.selectedAccentColor}`)
+			localStorage.setItem(LS_KEY_ACCENT_COLOR, this.selectedAccentColor)
 		},
 		setThemeClass() {
 			const html = document.getElementsByTagName('html')[0]
@@ -120,6 +155,10 @@ export const useTheming = defineStore('themeStore', {
 		setBackgroundBlur(blur: number) {
 			this.backgroundBlur = blur
 			localStorage.setItem(LS_KEY_BG_BLUR, String(blur))
+		},
+		setBackgroundOpacity(opacity: number) {
+			this.backgroundOpacity = opacity
+			localStorage.setItem(LS_KEY_BG_OPACITY, String(opacity))
 		},
 	},
 })

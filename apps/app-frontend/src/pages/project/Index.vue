@@ -286,11 +286,10 @@ import {
 	SelectedProjectsFloatingBar,
 	useVIntl,
 } from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { computed, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
@@ -310,6 +309,7 @@ import {
 	kill,
 	list as listInstances,
 } from '@/helpers/instance'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_loader_versions as getLoaderManifest } from '@/helpers/metadata'
 import { get_by_instance_id } from '@/helpers/process'
 import { get_categories, get_game_versions, get_loaders } from '@/helpers/tags'
@@ -396,7 +396,6 @@ const serverSetupModalRef = ref(null)
 const serverInstallContent = createServerInstallContent({ serverSetupModalRef })
 
 serverInstallContent.watchServerContextChanges()
-await serverInstallContent.initServerContext()
 
 const instanceFilters = computed(() => {
 	if (!instance.value) {
@@ -486,7 +485,7 @@ const projectInstallContext = computed(() => {
 			name: instance.value.name,
 			loader: instance.value.loader,
 			gameVersion: instance.value.game_version,
-			iconSrc: instance.value.icon_path ? convertFileSrc(instance.value.icon_path) : null,
+			iconSrc: getInstanceIconSrc(instance.value),
 			backUrl: projectBrowseBackUrl.value,
 			backLabel: formatMessage(messages.backToBrowse),
 			heading: formatMessage(messages.installContentToInstance),
@@ -538,10 +537,8 @@ const installButtonTooltip = computed(() => {
 	return null
 })
 
-const [allLoaders, allGameVersions] = await Promise.all([
-	get_loaders().catch(handleError).then(ref),
-	get_game_versions().catch(handleError).then(ref),
-])
+const allLoaders = ref([])
+const allGameVersions = ref([])
 
 async function handleClickPlay() {
 	if (!isServerProject.value) return
@@ -678,19 +675,31 @@ function fetchDeferredServerData(project) {
 	updateServerPlayState()
 }
 
-await fetchProjectData()
+let unlistenProcesses = null
 
-let unlistenProcesses
-process_listener((e) => {
-	if (
-		e.event === 'finished' &&
-		serverInstancePath.value &&
-		e.instance_id === serverInstancePath.value
-	) {
-		serverPlaying.value = false
-	}
-}).then((unlisten) => {
-	unlistenProcesses = unlisten
+onMounted(async () => {
+	await serverInstallContent.initServerContext()
+
+	const [loadedLoaders, loadedGameVersions] = await Promise.all([
+		get_loaders().catch(handleError),
+		get_game_versions().catch(handleError),
+	])
+	if (loadedLoaders) allLoaders.value = loadedLoaders
+	if (loadedGameVersions) allGameVersions.value = loadedGameVersions
+
+	await fetchProjectData()
+
+	process_listener((e) => {
+		if (
+			e.event === 'finished' &&
+			serverInstancePath.value &&
+			e.instance_id === serverInstancePath.value
+		) {
+			serverPlaying.value = false
+		}
+	}).then((unlisten) => {
+		unlistenProcesses = unlisten
+	})
 })
 
 onUnmounted(() => {

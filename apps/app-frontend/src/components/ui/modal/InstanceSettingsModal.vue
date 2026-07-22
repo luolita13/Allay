@@ -18,7 +18,6 @@ import {
 } from '@modrinth/ui'
 import type { PlatformTag } from '@modrinth/utils'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { computed, nextTick, ref, watch } from 'vue'
 
 import GeneralSettings from '@/components/ui/instance_settings/GeneralSettings.vue'
@@ -28,6 +27,7 @@ import JavaSettings from '@/components/ui/instance_settings/JavaSettings.vue'
 import WindowSettings from '@/components/ui/instance_settings/WindowSettings.vue'
 import { get_project_v3 } from '@/helpers/cache'
 import { get_linked_modpack_info } from '@/helpers/instance'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_loader_versions } from '@/helpers/metadata'
 import { get_game_versions, get_loaders } from '@/helpers/tags'
 import { provideInstanceSettings } from '@/providers/instance-settings'
@@ -187,7 +187,7 @@ defineExpose({ show, hide })
 		<template #title>
 			<span class="flex items-center gap-2 text-lg font-semibold text-primary">
 				<Avatar
-					:src="instance.icon_path ? convertFileSrc(instance.icon_path) : undefined"
+					:src="getInstanceIconSrc(instance)"
 					size="24px"
 					:tint-by="props.instance.id"
 				/>

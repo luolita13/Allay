@@ -48,6 +48,8 @@ export type InstallJobStatus =
 	| 'queued'
 	| 'running'
 	| 'paused'
+	| 'canceling'
+	| 'waiting_for_user'
 	| 'succeeded'
 	| 'failed'
 	| 'interrupted'
@@ -86,9 +88,76 @@ export type InstallJavaStep =
 	| 'extracting'
 	| 'validating'
 
+export type InstallJobProvider = 'modrinth' | 'curse_forge' | 'minecraft' | 'java' | 'application' | 'local'
+
+export interface InstallErrorView {
+	code: string
+	phase?: InstallPhaseId | null
+	message: string
+	api?: {
+		error: string
+		status?: number | null
+		method?: string | null
+		url?: string | null
+		route?: string | null
+	} | null
+	context?: {
+		operation: string
+		source_path?: string | null
+		target_path?: string | null
+		file_path?: string | null
+		entry_path?: string | null
+		urls?: string[]
+		expected_hash?: string | null
+		expected_size?: number | null
+		project_id?: string | null
+		version_id?: string | null
+		minecraft_version?: string | null
+		loader?: string | null
+		java_version?: number | null
+		os?: string | null
+		arch?: string | null
+	} | null
+}
+
+export interface DownloadJobSummary {
+	files_completed: number
+	files_total?: number | null
+	bytes_downloaded: number
+	bytes_total?: number | null
+	speed_bytes_per_second?: number | null
+	eta_seconds?: number | null
+	source?: string | null
+	fallback_count: number
+}
+
+export interface DownloadItemSnapshot {
+	id: string
+	name: string
+	project_id?: string | null
+	version_id?: string | null
+	status:
+		| 'queued'
+		| 'downloading'
+		| 'verifying'
+		| 'writing'
+		| 'waiting_for_user'
+		| 'completed'
+		| 'skipped'
+		| 'failed'
+		| 'canceled'
+	bytes_downloaded: number
+	bytes_total?: number | null
+	attempt?: number | null
+	max_attempts?: number | null
+	error?: string | null
+	manual_url?: string | null
+}
+
 export interface InstallJobSnapshot {
 	job_id: string
 	instance_id?: string | null
+	instance_deleted: boolean
 	kind:
 		| 'create_instance'
 		| 'create_modpack_instance'
@@ -99,6 +168,7 @@ export interface InstallJobSnapshot {
 		| 'install_content'
 		| 'install_curseforge_file'
 	status: InstallJobStatus
+	provider: InstallJobProvider
 	target:
 		| { type: 'new_instance'; instance_id?: string | null }
 		| { type: 'existing_instance'; instance_id: string }
@@ -117,10 +187,26 @@ export interface InstallJobSnapshot {
 		  }
 		| { type: 'import'; launcher_type: string; instance_folder: string }
 	display?: { title: string; icon?: string | null } | null
-	error?: { code: string; message: string } | null
+	error?: InstallErrorView | null
+	rollback_error?: InstallErrorView | null
 	created: string
 	modified: string
 	finished?: string | null
+	summary: DownloadJobSummary
+	items: DownloadItemSnapshot[]
+}
+
+export interface DownloadJobListRequest {
+	status?: InstallJobStatus
+	provider?: InstallJobProvider
+	query?: string
+	cursor?: string
+	limit?: number
+}
+
+export interface DownloadJobPage {
+	jobs: InstallJobSnapshot[]
+	nextCursor?: string | null
 }
 
 export async function install_get_modpack_preview(location: CreatePackLocation) {
@@ -228,6 +314,38 @@ export async function install_job_resume(jobId: string) {
 
 export async function install_job_dismiss(jobId: string) {
 	return await invoke<void>('plugin:install|install_job_dismiss', { jobId })
+}
+
+export async function install_job_support_details(jobId: string) {
+	return await invoke<string>('plugin:install|install_job_support_details', { jobId })
+}
+
+export async function download_job_list(request: DownloadJobListRequest = {}) {
+	return await invoke<DownloadJobPage>('plugin:install|download_job_list', { request })
+}
+
+export async function download_job_get(jobId: string) {
+	return await invoke<InstallJobSnapshot>('plugin:install|download_job_get', { jobId })
+}
+
+export async function download_job_retry(jobId: string) {
+	return await invoke<InstallJobSnapshot>('plugin:install|download_job_retry', { jobId })
+}
+
+export async function download_job_cancel(jobId: string) {
+	return await invoke<InstallJobSnapshot>('plugin:install|download_job_cancel', { jobId })
+}
+
+export async function download_job_delete(jobId: string) {
+	return await invoke<void>('plugin:install|download_job_delete', { jobId })
+}
+
+export async function download_history_clear() {
+	return await invoke<number>('plugin:install|download_history_clear')
+}
+
+export async function download_job_support_details(jobId: string) {
+	return await invoke<string>('plugin:install|download_job_support_details', { jobId })
 }
 
 export function installJobInstanceId(job: InstallJobSnapshot): string | null {

@@ -62,6 +62,10 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { computed, ref } from 'vue'
 
+import type ContextMenu from '@/components/ui/ContextMenu.vue'
+import ExportModal from '@/components/ui/ExportModal.vue'
+import ConfirmDeleteInstanceModal from '@/components/ui/modal/ConfirmDeleteInstanceModal.vue'
+import { remove } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'
 
 dayjs.extend(relativeTime)
@@ -117,6 +121,16 @@ const emit = defineEmits<{
 
 const instance = computed(() => props.instance)
 const exportModal = ref<InstanceType<typeof ExportModal>>()
+const deleteInstanceModal = ref<InstanceType<typeof ConfirmDeleteInstanceModal>>()
+const currentDeleteInstance = ref<string | null>(null)
+
+async function doDeleteInstance() {
+	if (currentDeleteInstance.value) {
+		await remove(currentDeleteInstance.value).catch((e) => {
+			console.error('Failed to delete instance:', e)
+		})
+	}
+}
 
 const formatPlayTime = computed(() => {
 	const total = instance.value

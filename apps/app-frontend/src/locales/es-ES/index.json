@@ -779,9 +779,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Instalación personalizada de Java"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Asignación de memoria personalizada"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Introduce las variables de entorno..."
   },

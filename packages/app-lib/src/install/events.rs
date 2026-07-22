@@ -1,7 +1,7 @@
 use super::control::JobGuard;
 use super::model::{
-    InstallJobSnapshot, InstallJobState, InstallPhaseDetails, InstallPhaseId,
-    InstallProgress,
+    InstallJobEventKind, InstallJobSnapshot, InstallJobState,
+    InstallPhaseDetails, InstallPhaseId, InstallProgress,
 };
 use super::store;
 use std::sync::Arc;
@@ -61,9 +61,22 @@ impl InstallProgressReporter {
 
         let app_state = crate::State::get().await?;
         let mut state = self.state.lock().await;
-        state.progress.phase = phase;
-        state.progress.progress = progress;
-        state.progress.details = details;
+        // Use set_progress which automatically records PhaseStarted events
+        state.set_progress(phase, progress, details);
+
+        let record =
+            store::update_state(self.job_id, &state, &app_state).await?;
+        emit_install_job(&record.snapshot()).await
+    }
+
+    /// Record an event into the job state and persist + emit.
+    pub async fn record_event(
+        &self,
+        kind: InstallJobEventKind,
+    ) -> crate::Result<()> {
+        let app_state = crate::State::get().await?;
+        let mut state = self.state.lock().await;
+        state.record_event(kind);
 
         let record =
             store::update_state(self.job_id, &state, &app_state).await?;

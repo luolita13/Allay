@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub struct Settings {
 	pub max_concurrent_downloads: usize,
 	pub max_concurrent_writes: usize,
+	pub max_chunks_per_file: usize,
 
 	pub theme: Theme,
 	pub locale: String,
@@ -63,7 +64,8 @@ pub struct Settings {
 	// Download mirror source settings
 	pub game_file_source: crate::util::mirror::DownloadSource,
 	pub community_source: crate::util::mirror::DownloadSource,
-
+	pub curseforge_source: crate::util::mirror::DownloadSource,
+	pub version_list_source: crate::util::mirror::DownloadSource,
 
 	pub version: usize,
 }
@@ -73,6 +75,7 @@ pub struct Settings {
 struct SettingsRow {
 	max_concurrent_writes: i32,
 	max_concurrent_downloads: i32,
+	max_chunks_per_file: i32,
 	theme: String,
 	locale: String,
 	default_page: String,
@@ -118,7 +121,9 @@ struct SettingsRow {
 	disable_legacy_fix: i32,
 	disable_lwjgl_unsafe_agent: i32,
 	game_file_source: i32,
-	community_source: i32,
+   community_source: i32,
+   curseforge_source: i32,
+   version_list_source: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, Hash, PartialEq)]
@@ -137,10 +142,11 @@ pub enum FeatureFlag {
 	I18nDebug,
 	ShowInstancePlayTime,
 	SkipNonEssentialWarnings,
+	GameLink,
 }
 
 impl Settings {
-	const CURRENT_VERSION: usize = 5;
+	const CURRENT_VERSION: usize = 6;
 
 	pub async fn get(
 		exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
@@ -148,8 +154,7 @@ impl Settings {
 	 let row = sqlx::query_as::<_, SettingsRow>(
 	  "
 	  SELECT
-	   max_concurrent_writes, max_concurrent_downloads,
-	   theme, locale, default_page, collapsed_navigation, hide_nametag_skins_page, advanced_rendering, native_decorations,
+	   max_concurrent_writes, max_concurrent_downloads, max_chunks_per_file, version_list_source, theme, locale, default_page, collapsed_navigation, hide_nametag_skins_page, advanced_rendering, native_decorations,
 	   discord_rpc, developer_mode, telemetry, personalized_ads,
 	   onboarded,
 	   json(extra_launch_args) AS extra_launch_args, json(custom_env_vars) AS custom_env_vars,
@@ -160,12 +165,12 @@ impl Settings {
 	   version,
 	   launcher_visibility, process_priority, renderer,
 	   json(extra_game_args) AS extra_game_args,
-	   preferred_ip_stack, custom_info, window_title, memory_allocation_mode,
-	   set_gpu_preference, use_java_exe, pre_launch_wait,
-	   disable_java_launch_wrapper, disable_legacy_fix, disable_lwjgl_unsafe_agent,
-	   game_file_source, community_source
-	  FROM settings
-	  ",
+   preferred_ip_stack, custom_info, window_title, memory_allocation_mode,
+   set_gpu_preference, use_java_exe, pre_launch_wait,
+   disable_java_launch_wrapper, disable_legacy_fix, disable_lwjgl_unsafe_agent,
+   game_file_source, community_source, curseforge_source
+  FROM settings
+  ",
 	 )
 	 .fetch_one(exec)
 	 .await?;
@@ -173,6 +178,8 @@ impl Settings {
 	 let result = Self {
 	  max_concurrent_downloads: row.max_concurrent_downloads as usize,
 	  max_concurrent_writes: row.max_concurrent_writes as usize,
+	  max_chunks_per_file: row.max_chunks_per_file as usize,
+	  version_list_source: crate::util::mirror::DownloadSource::from_i32(row.version_list_source),
 	  theme: Theme::from_string(&row.theme),
 	  locale: row.locale,
 	  default_page: DefaultPage::from_string(&row.default_page),
@@ -243,16 +250,19 @@ impl Settings {
 	  disable_lwjgl_unsafe_agent: row.disable_lwjgl_unsafe_agent != 0,
 
 	  game_file_source: crate::util::mirror::DownloadSource::from_i32(row.game_file_source),
-	  community_source: crate::util::mirror::DownloadSource::from_i32(row.community_source),
+		  community_source: crate::util::mirror::DownloadSource::from_i32(row.community_source),
+		  curseforge_source: crate::util::mirror::DownloadSource::from_i32(row.curseforge_source),
 
-	  version: row.version as usize,
-	 };
+		  version: row.version as usize,
+		 };
 
-	 // Sync global mirror cache
-	 crate::util::mirror::update_mirror_settings(
-	  row.game_file_source,
-	  row.community_source,
-	 );
+		 // Sync global mirror cache
+		 crate::util::mirror::update_mirror_settings(
+		  row.game_file_source,
+		  row.community_source,
+		  row.curseforge_source,
+		  row.version_list_source,
+		 );
 
 	 Ok(result)
 	}
@@ -274,56 +284,61 @@ impl Settings {
 			SET
 				max_concurrent_writes = $1,
 				max_concurrent_downloads = $2,
-				theme = $3,
-				locale = $4,
-				default_page = $5,
-				collapsed_navigation = $6,
-				advanced_rendering = $7,
-				native_decorations = $8,
-				discord_rpc = $9,
-				developer_mode = $10,
-				telemetry = $11,
-				personalized_ads = $12,
-				onboarded = $13,
-				extra_launch_args = jsonb($14),
-				custom_env_vars = jsonb($15),
-				mc_memory_max = $16,
-				mc_force_fullscreen = $17,
-				mc_game_resolution_x = $18,
-				mc_game_resolution_y = $19,
-				hook_pre_launch = $20,
-				hook_wrapper = $21,
-				hook_post_exit = $22,
-				custom_dir = $23,
-				prev_custom_dir = $24,
-				migrated = $25,
-				toggle_sidebar = $26,
-				feature_flags = jsonb($27),
-				hide_nametag_skins_page = $28,
-				skipped_update = $29,
-				pending_update_toast_for_version = $30,
-				auto_download_updates = $31,
-				version = $32,
-				launcher_visibility = $33,
-				process_priority = $34,
-				renderer = $35,
-				extra_game_args = jsonb($36),
-				preferred_ip_stack = $37,
-				custom_info = $38,
-				window_title = $39,
-				memory_allocation_mode = $40,
-				set_gpu_preference = $41,
-				use_java_exe = $42,
-				pre_launch_wait = $43,
-				disable_java_launch_wrapper = $44,
-			disable_legacy_fix = $45,
-			disable_lwjgl_unsafe_agent = $46,
-			game_file_source = $47,
-			community_source = $48
-		",
-		)
-		.bind(self.max_concurrent_writes as i32)
+				max_chunks_per_file = $3,
+				version_list_source = $4,
+				theme = $5,
+				locale = $6,
+				default_page = $7,
+				collapsed_navigation = $8,
+				advanced_rendering = $9,
+				native_decorations = $10,
+				discord_rpc = $11,
+				developer_mode = $12,
+				telemetry = $13,
+				personalized_ads = $14,
+				onboarded = $15,
+				extra_launch_args = jsonb($16),
+				custom_env_vars = jsonb($17),
+				mc_memory_max = $18,
+				mc_force_fullscreen = $19,
+				mc_game_resolution_x = $20,
+				mc_game_resolution_y = $21,
+				hook_pre_launch = $22,
+				hook_wrapper = $23,
+				hook_post_exit = $24,
+				custom_dir = $25,
+				prev_custom_dir = $26,
+				migrated = $27,
+				toggle_sidebar = $28,
+				feature_flags = jsonb($29),
+				hide_nametag_skins_page = $30,
+				skipped_update = $31,
+				pending_update_toast_for_version = $32,
+				auto_download_updates = $33,
+				version = $34,
+				launcher_visibility = $35,
+				process_priority = $36,
+				renderer = $37,
+				extra_game_args = jsonb($38),
+				preferred_ip_stack = $39,
+				custom_info = $40,
+				window_title = $41,
+				memory_allocation_mode = $42,
+				set_gpu_preference = $43,
+				use_java_exe = $44,
+				pre_launch_wait = $45,
+				disable_java_launch_wrapper = $46,
+			disable_legacy_fix = $47,
+				disable_lwjgl_unsafe_agent = $48,
+				game_file_source = $49,
+				community_source = $50,
+				curseforge_source = $51
+			",
+			)
+			.bind(self.max_concurrent_writes as i32)
 		.bind(self.max_concurrent_downloads as i32)
+		.bind(self.max_chunks_per_file as i32)
+		.bind(self.version_list_source.as_i32())
 		.bind(theme)
 		.bind(&self.locale)
 		.bind(default_page)
@@ -366,17 +381,20 @@ impl Settings {
 		.bind(self.use_java_exe)
 		.bind(self.pre_launch_wait)
 		.bind(self.disable_java_launch_wrapper)
-		.bind(self.disable_legacy_fix)
-		.bind(self.disable_lwjgl_unsafe_agent)
-		.bind(self.game_file_source.as_i32())
-		.bind(self.community_source.as_i32())
-		.execute(exec)
-		.await?;
+			.bind(self.disable_legacy_fix)
+			.bind(self.disable_lwjgl_unsafe_agent)
+			.bind(self.game_file_source.as_i32())
+			.bind(self.community_source.as_i32())
+			.bind(self.curseforge_source.as_i32())
+			.execute(exec)
+			.await?;
 
 		// Sync global mirror cache
 		crate::util::mirror::update_mirror_settings(
 			self.game_file_source.as_i32(),
 			self.community_source.as_i32(),
+			self.curseforge_source.as_i32(),
+			self.version_list_source.as_i32(),
 		);
 
 		Ok(())
@@ -449,6 +467,10 @@ impl Settings {
 		// Download mirror source fields are added via SQL migration with defaults.
 		// game_file_source and community_source both default to 1 (Auto).
 		self.version = 5;
+	}
+	5 => {
+		// Chunked download setting added via SQL migration with default 8.
+		self.version = 6;
 	}
 	version => {
 				return Err(crate::ErrorKind::OtherError(format!(

@@ -21,7 +21,10 @@ pub async fn recover_interrupted_jobs(state: &State) -> crate::Result<()> {
         job.state.progress.details = InstallPhaseDetails::Empty;
         job.state.error = Some(InstallErrorView {
             code: "interrupted".to_string(),
+            phase: None,
             message: "interrupted".to_string(),
+            api: None,
+            context: None,
         });
 
         if let Err(error) = apply_cleanup(&job.state, state).await {

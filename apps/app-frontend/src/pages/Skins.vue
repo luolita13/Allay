@@ -761,14 +761,14 @@ function getBakedSkinTextures(skin: Skin): RenderResult | undefined {
 }
 
 async function login() {
-	accountsCard.value.setLoginDisabled(true)
+	accountsCard.value?.setLoginDisabled(true)
 	loginModal.value?.show('microsoft')
 	trackEvent('AccountLogIn')
 }
 
 async function onLoginSuccess() {
 	await accountsCard.value?.refreshValues()
-	accountsCard.value.setLoginDisabled(false)
+	accountsCard.value?.setLoginDisabled(false)
 }
 
 function openAddSkinFileBrowser() {
@@ -998,8 +998,10 @@ async function checkUserChanges() {
 	}
 }
 
-await Promise.all([loadCapes(), loadCurrentUser()])
-await loadSkins()
+onMounted(async () => {
+	await Promise.all([loadCapes(), loadCurrentUser()])
+	await loadSkins()
+})
 </script>
 
 <template>
@@ -1134,10 +1136,10 @@ await loadSkins()
 				<p class="text-lg m-0">
 					{{ formatMessage(messages.signInDescription) }}
 				</p>
-				<ButtonStyled v-show="accountsCard" color="brand" :disabled="accountsCard.loginDisabled">
-					<button :disabled="accountsCard.loginDisabled" @click="login">
-						<LogInIcon v-if="!accountsCard.loginDisabled" />
-						<SpinnerIcon v-else class="animate-spin" />
+				<ButtonStyled v-show="accountsCard" color="brand" :disabled="accountsCard?.loginDisabled">
+						<button :disabled="accountsCard?.loginDisabled" @click="login">
+							<LogInIcon v-if="!accountsCard?.loginDisabled" />
+							<SpinnerIcon v-else class="animate-spin" />
 						{{ formatMessage(messages.signInButton) }}
 					</button>
 				</ButtonStyled>

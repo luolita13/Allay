@@ -335,7 +335,7 @@ const filteredResults = computed(() => {
 			:placeholder="formatMessage(messages.selectPlaceholder)"
 		>
 			<span class="font-semibold text-primary">{{ formatMessage(messages.sortBy) }}</span>
-			<span class="font-semibold text-secondary">{{ formatMessage(sortLabelMap[selected] ?? selected) }}</span>
+			<span class="font-semibold text-secondary">{{ selected }}</span>
 		</DropdownSelect>
 		<DropdownSelect
 			v-slot="{ selected }"
@@ -347,7 +347,7 @@ const filteredResults = computed(() => {
 			:placeholder="formatMessage(messages.selectPlaceholder)"
 		>
 			<span class="font-semibold text-primary">{{ formatMessage(messages.groupBy) }}</span>
-			<span class="font-semibold text-secondary">{{ formatMessage(groupLabelMap[selected] ?? selected) }}</span>
+			<span class="font-semibold text-secondary">{{ selected }}</span>
 		</DropdownSelect>
 	</div>
 	<Accordion

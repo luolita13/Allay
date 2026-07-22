@@ -767,9 +767,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Власна інсталяція Java"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Власний розподіл пам'яті"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Уведіть змінні середовища…"
   },

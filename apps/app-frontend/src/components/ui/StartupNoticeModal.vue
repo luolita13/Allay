@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { CheckIcon, ModrinthIcon } from '@modrinth/assets'
 import { ButtonStyled, NewModal } from '@modrinth/ui'
-import { onMounted, ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { onMounted, ref } from 'vue'
 
 const STORAGE_KEY_DISMISSED = 'modrinth-app-startup-notice-dismissed'
 

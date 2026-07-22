@@ -147,32 +147,29 @@ async fn fetch_minecraft_file(
     };
 
     let last_downloaded = Arc::new(AtomicU64::new(0));
-    let mut progress_fn = {
+    let progress_fn = {
         let progress = progress.clone();
         let last_downloaded = last_downloaded.clone();
-        move |downloaded: u64,
+        Arc::new(move |downloaded: u64,
               _total: u64|
-              -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send>> {
+              -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'static>> {
             let previous =
                 last_downloaded.swap(downloaded, Ordering::Relaxed);
             let delta = downloaded.saturating_sub(previous);
             let progress = progress.clone();
             Box::pin(async move { progress.add_bytes(delta).await })
-        }
+        })
     };
 
-    let bytes = fetch_advanced_with_progress(
-        Method::GET,
+    let bytes = fetch_chunked(
         url,
         sha1,
         None,
         None,
-        None,
-        None,
-        None,
         &st.fetch_semaphore,
         &st.pool,
-        Some(&mut progress_fn as &mut FetchProgressFn<'_>),
+        st.max_chunks_per_file,
+        Some(progress_fn),
     )
     .await?;
 

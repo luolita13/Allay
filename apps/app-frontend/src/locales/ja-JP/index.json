@@ -11,6 +11,33 @@
   "app.action-bar.hide-more-running-instances": {
     "message": "実行中のインスタンスの一部を非表示"
   },
+  "app.action-bar.install.dismiss": {
+    "message": "無視"
+  },
+  "app.action-bar.install.failed": {
+    "message": "インストール失敗"
+  },
+  "app.action-bar.install.failed-app-closed": {
+    "message": "アプリが閉じられたため、インストールに失敗しました。"
+  },
+  "app.action-bar.install.failed-network": {
+    "message": "ネットワークエラーにより、インストールに失敗しました。"
+  },
+  "app.action-bar.install.failed-unknown": {
+    "message": "不明なエラーにより、インストールに失敗しました。"
+  },
+  "app.action-bar.install.open-instance": {
+    "message": "インスタンスを開く"
+  },
+  "app.action-bar.install.retry": {
+    "message": "再試行"
+  },
+  "app.action-bar.install.unknown-instance": {
+    "message": "不明なインスタンス"
+  },
+  "app.action-bar.installs": {
+    "message": "インストール"
+  },
   "app.action-bar.make-primary-instance": {
     "message": "デフォルトのインスタンスを作成"
   },
@@ -23,11 +50,17 @@
   "app.action-bar.primary-instance": {
     "message": "デフォルトのインスタンス"
   },
+  "app.action-bar.reload-to-update": {
+    "message": "再読み込みして更新"
+  },
   "app.action-bar.show-more-running-instances": {
     "message": "実行中のインスタンスをさらに表示"
   },
   "app.action-bar.stop-instance": {
     "message": "インスタンスを停止"
+  },
+  "app.action-bar.update": {
+    "message": "更新"
   },
   "app.action-bar.view-active-downloads": {
     "message": "進行中のダウンロードを表示"
@@ -37,6 +70,27 @@
   },
   "app.action-bar.view-logs": {
     "message": "ログを表示"
+  },
+  "app.add-server-modal.add": {
+    "message": "追加"
+  },
+  "app.add-server-modal.added": {
+    "message": "追加済み"
+  },
+  "app.add-server-modal.adding": {
+    "message": "追加中…"
+  },
+  "app.add-server-modal.cancel": {
+    "message": "キャンセル"
+  },
+  "app.add-server-modal.header": {
+    "message": "サーバーをインスタンスに追加"
+  },
+  "app.add-server-modal.search-placeholder": {
+    "message": "インスタンスを検索"
+  },
+  "app.add-server-modal.warning": {
+    "message": "このサーバーはすべてのインスタンスと互換性がない可能性があります。"
   },
   "app.appearance-settings.advanced-rendering.description": {
     "message": "ぼかし効果などの高度なレンダリングを有効にします。グラフィックアクセラレーションが使用できない場合は、パフォーマンスが低下する可能性があります。"
@@ -95,6 +149,30 @@
   "app.appearance-settings.show-play-time.title": {
     "message": "プレイ時間を表示"
   },
+  "app.appearance-settings.background-blur.description": {
+    "message": "背景画像のぼかし具合を調整します。"
+  },
+  "app.appearance-settings.background-blur.title": {
+    "message": "背景のぼかし"
+  },
+  "app.appearance-settings.background-image.clear-button": {
+    "message": "クリア"
+  },
+  "app.appearance-settings.background-image.description": {
+    "message": "ランチャーのカスタム背景画像を設定します。"
+  },
+  "app.appearance-settings.background-image.select-button": {
+    "message": "画像を選択"
+  },
+  "app.appearance-settings.background-image.title": {
+    "message": "背景画像"
+  },
+  "app.appearance-settings.skip-non-essential-warnings.description": {
+    "message": "低リスクの確認（重複 Mod パックインストール、通常コンテンツ削除、一括更新、Mod パックリンク解除、修復プロンプト）を自動スキップします。危険な警告は引き続き表示されます。"
+  },
+  "app.appearance-settings.skip-non-essential-warnings.title": {
+    "message": "重要でない警告をスキップ"
+  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "サイドバーの表示/非表示を切り替える機能を有効にします。"
   },
@@ -113,6 +191,12 @@
   "app.auth-servers.unreachable.header": {
     "message": "認証サーバーにアクセスできません"
   },
+  "app.browse.add-servers-to-instance": {
+    "message": "サーバーをインスタンスに追加"
+  },
+  "app.browse.add-to-an-instance": {
+    "message": "インスタンスに追加"
+  },
   "app.browse.add-to-instance": {
     "message": "インスタンスに追加"
   },
@@ -125,6 +209,9 @@
   "app.browse.already-added": {
     "message": "すでに追加済み"
   },
+  "app.browse.back-to-instance": {
+    "message": "インスタンスに戻る"
+  },
   "app.browse.discover-content": {
     "message": "コンテンツを探す"
   },
@@ -134,17 +221,569 @@
   "app.browse.hide-added-servers": {
     "message": "既に追加済みのサーバーを非表示にする"
   },
+  "app.browse.project-type.data-packs": {
+    "message": "データパック"
+  },
   "app.browse.project-type.modpacks": {
     "message": "Modパック"
   },
+  "app.browse.project-type.mods": {
+    "message": "Mod"
+  },
+  "app.browse.project-type.resource-packs": {
+    "message": "リソースパック"
+  },
+  "app.browse.project-type.servers": {
+    "message": "サーバー"
+  },
+  "app.browse.project-type.shaders": {
+    "message": "シェーダー"
+  },
+  "app.browse.project-type.worlds": {
+    "message": "ワールド"
+  },
+  "app.browse.server-instance-content-warning": {
+    "message": "サーバーに参加するときにコンテンツを追加すると互換性が損なわれる可能性があります。サーバーインスタンスのコンテンツを更新すると、追加したコンテンツも失われます。"
+  },
   "app.browse.server.installing": {
     "message": "インストール中"
+  },
+  "app.browse.worlds-modrinth-empty": {
+    "message": "Modrinth はワールドファイルをホストしていません。"
+  },
+  "app.content-install.no-compatible-versions": {
+    "message": "{compatibilityLabel} に一致する利用可能なバージョンがありません。それでもインストールする場合はバージョンを選択してください。依存関係は自動的にインストールされません。"
+  },
+  "app.create-instance.change-version": {
+    "message": "変更"
+  },
+  "app.create-instance.create": {
+    "message": "インスタンスを作成"
+  },
+  "app.create-instance.creating": {
+    "message": "作成中…"
+  },
+  "app.create-instance.game-version": {
+    "message": "ゲームバージョン"
+  },
+  "app.create-instance.group.latest": {
+    "message": "最新バージョン"
+  },
+  "app.create-instance.group.old-alpha": {
+    "message": "古い Alpha"
+  },
+  "app.create-instance.group.old-beta": {
+    "message": "古い Beta"
+  },
+  "app.create-instance.group.releases": {
+    "message": "リリース版"
+  },
+  "app.create-instance.group.snapshots": {
+    "message": "スナップショット"
+  },
+  "app.create-instance.icon.remove": {
+    "message": "アイコンを削除"
+  },
+  "app.create-instance.icon.select": {
+    "message": "アイコンを選択"
+  },
+  "app.create-instance.image-filter": {
+    "message": "画像"
+  },
+  "app.create-instance.instance-created": {
+    "message": "インスタンスが作成されました"
+  },
+  "app.create-instance.loader": {
+    "message": "ローダー"
+  },
+  "app.create-instance.loader-version": {
+    "message": "ローダーバージョン"
+  },
+  "app.create-instance.loader-version.label": {
+    "message": "ローダーバージョン"
+  },
+  "app.create-instance.loader.incompatible": {
+    "message": "{version} 非対応"
+  },
+  "app.create-instance.loader.no-versions": {
+    "message": "互換バージョンなし"
+  },
+  "app.create-instance.loader.not-supported": {
+    "message": "未対応"
+  },
+  "app.create-instance.loader.selected": {
+    "message": "選択中: {version}"
+  },
+  "app.create-instance.loader.vanilla": {
+    "message": "Vanilla"
+  },
+  "app.create-instance.loader.vanilla.desc": {
+    "message": "Mod ローダーなし"
+  },
+  "app.create-instance.loader.versions-available": {
+    "message": "{count} 個の利用可能なバージョン"
+  },
+  "app.create-instance.name.label": {
+    "message": "インスタンス名"
+  },
+  "app.create-instance.name.placeholder": {
+    "message": "インスタンス名を入力"
+  },
+  "app.create-instance.no-versions": {
+    "message": "バージョンが見つかりません"
+  },
+  "app.create-instance.search-placeholder": {
+    "message": "バージョンを検索…"
+  },
+  "app.create-instance.select-loader-hint": {
+    "message": "ローダーカードを展開してバージョンを選択するか、Vanilla を選択してください"
+  },
+  "app.create-instance.select-version-hint": {
+    "message": "続行するには Minecraft バージョンを選択してください"
+  },
+  "app.create-instance.selected-game-version": {
+    "message": "選択された Minecraft バージョン"
+  },
+  "app.create-instance.show-all": {
+    "message": "スナップショットと古いバージョンを表示"
+  },
+  "app.create-instance.stable": {
+    "message": "安定版"
+  },
+  "app.create-instance.step.config": {
+    "message": "最終設定"
+  },
+  "app.create-instance.step.loader": {
+    "message": "ローダー"
+  },
+  "app.create-instance.step.version": {
+    "message": "ゲームバージョン"
+  },
+  "app.create-instance.title": {
+    "message": "新しいインスタンスを作成"
+  },
+  "app.create-instance.versions": {
+    "message": "個のバージョン"
+  },
+  "app.default-instance.advanced-launch-options.title": {
+    "message": "高度な起動オプション"
+  },
+  "app.default-instance.compatibility.title": {
+    "message": "互換性"
+  },
+  "app.default-instance.custom-info.hint": {
+    "message": "ゲーム左下と F3 デバッグ画面に表示されます。"
+  },
+  "app.default-instance.custom-info.placeholder": {
+    "message": "例: MyLauncher"
+  },
+  "app.default-instance.custom-info.title": {
+    "message": "カスタム情報"
+  },
+  "app.default-instance.disable-jlw.description": {
+    "message": "theseus.jar 起動ラッパーを無効にします。一部の機能が動作しなくなる可能性があります。"
+  },
+  "app.default-instance.disable-jlw.title": {
+    "message": "Java 起動ラッパーを無効化"
+  },
+  "app.default-instance.disable-lf.description": {
+    "message": "古い Minecraft の互換性修正を無効にします。"
+  },
+  "app.default-instance.disable-lf.title": {
+    "message": "LegacyFix を無効化"
+  },
+  "app.default-instance.disable-lwjgl.description": {
+    "message": "FFM API パフォーマンス問題を修正する LWJGL unsafe agent を無効にします。"
+  },
+  "app.default-instance.disable-lwjgl.title": {
+    "message": "LWJGL Unsafe Agent を無効化"
+  },
+  "app.default-instance.env-variables.placeholder": {
+    "message": "環境変数を入力…"
+  },
+  "app.default-instance.env-variables.title": {
+    "message": "環境変数"
+  },
+  "app.default-instance.extra-game-args.hint": {
+    "message": "Minecraft 起動引数の末尾に追加されます。"
+  },
+  "app.default-instance.extra-game-args.placeholder": {
+    "message": "例: --demo"
+  },
+  "app.default-instance.extra-game-args.title": {
+    "message": "追加ゲーム引数"
+  },
+  "app.default-instance.fullscreen.description": {
+    "message": "起動時に options.txt を上書きして全画面モードで起動します。"
+  },
+  "app.default-instance.fullscreen.title": {
+    "message": "フルスクリーン"
+  },
+  "app.default-instance.height.description": {
+    "message": "ゲーム起動時のウィンドウの高さ。"
+  },
+  "app.default-instance.height.placeholder": {
+    "message": "高さを入力…"
+  },
+  "app.default-instance.height.title": {
+    "message": "高さ"
+  },
+  "app.default-instance.high-perf-gpu.description": {
+    "message": "ゲームプロセスに高性能 GPU の使用を要求します。"
+  },
+  "app.default-instance.high-perf-gpu.title": {
+    "message": "高性能 GPU"
+  },
+  "app.default-instance.hooks.title": {
+    "message": "フック"
+  },
+  "app.default-instance.ip-protocol.description": {
+    "message": "Java ネットワークの優先 IP プロトコルスタック。"
+  },
+  "app.default-instance.ip-protocol.title": {
+    "message": "IP プロトコル設定"
+  },
+  "app.default-instance.ip.default": {
+    "message": "デフォルト"
+  },
+  "app.default-instance.ip.prefer-v4": {
+    "message": "IPv4 優先"
+  },
+  "app.default-instance.ip.prefer-v6": {
+    "message": "IPv6 優先"
+  },
+  "app.default-instance.java-arguments.placeholder": {
+    "message": "Java 引数を入力…"
+  },
+  "app.default-instance.java-arguments.title": {
+    "message": "Java 引数"
+  },
+  "app.default-instance.launch-options.title": {
+    "message": "起動オプション"
+  },
+  "app.default-instance.memory-allocated": {
+    "message": "割り当て済みメモリ"
+  },
+  "app.default-instance.memory-allocation.description": {
+    "message": "インスタンスのメモリ割り当て方法を選択します。"
+  },
+  "app.default-instance.memory-allocation.title": {
+    "message": "メモリ割り当て"
+  },
+  "app.default-instance.memory-auto-hint": {
+    "message": "メモリはシステム RAM、インスタンスタイプ、Mod 数に基づいて自動計算されます。"
+  },
+  "app.default-instance.memory-mode.auto": {
+    "message": "自動"
+  },
+  "app.default-instance.memory-mode.custom": {
+    "message": "カスタム"
+  },
+  "app.default-instance.memory-warning": {
+    "message": "システムメモリの 75% 以上を Minecraft に割り当てています。不安定になる可能性があります。「自動」モードの使用をお勧めします。"
+  },
+  "app.default-instance.post-exit-hook.description": {
+    "message": "ゲーム終了後に実行されます。"
+  },
+  "app.default-instance.post-exit-hook.placeholder": {
+    "message": "終了後コマンドを入力…"
+  },
+  "app.default-instance.post-exit-hook.title": {
+    "message": "終了後フック"
+  },
+  "app.default-instance.pre-launch-hook.description": {
+    "message": "インスタンス起動前に実行されます。"
+  },
+  "app.default-instance.pre-launch-hook.placeholder": {
+    "message": "起動前コマンドを入力…"
+  },
+  "app.default-instance.pre-launch-hook.title": {
+    "message": "起動前フック"
+  },
+  "app.default-instance.pre-launch-wait": {
+    "message": "コマンド完了を待ってから起動"
+  },
+  "app.default-instance.priority.above-normal": {
+    "message": "通常以上"
+  },
+  "app.default-instance.priority.below-normal": {
+    "message": "通常以下"
+  },
+  "app.default-instance.priority.high": {
+    "message": "高"
+  },
+  "app.default-instance.priority.normal": {
+    "message": "通常"
+  },
+  "app.default-instance.priority.realtime": {
+    "message": "リアルタイム"
+  },
+  "app.default-instance.process-priority.description": {
+    "message": "ゲームプロセスの CPU 優先度を設定します。"
+  },
+  "app.default-instance.process-priority.title": {
+    "message": "プロセス優先度"
+  },
+  "app.default-instance.renderer.d3d12": {
+    "message": "DirectX 12"
+  },
+  "app.default-instance.renderer.default": {
+    "message": "デフォルト"
+  },
+  "app.default-instance.renderer.description": {
+    "message": "OpenGL レンダラーを上書きします。不安定になる可能性があります。"
+  },
+  "app.default-instance.renderer.llvmpipe": {
+    "message": "llvmpipe（ソフトウェアレンダリング）"
+  },
+  "app.default-instance.renderer.title": {
+    "message": "レンダラー"
+  },
+  "app.default-instance.renderer.zink": {
+    "message": "Vulkan (Zink)"
+  },
+  "app.default-instance.reset-to-default": {
+    "message": "デフォルトに戻す"
+  },
+  "app.default-instance.use-java-exe.description": {
+    "message": "javaw.exe の代わりに java.exe を使用します。デバッグ用のコンソールウィンドウを提供します。"
+  },
+  "app.default-instance.use-java-exe.title": {
+    "message": "java.exe を使用"
+  },
+  "app.default-instance.width.description": {
+    "message": "ゲーム起動時のウィンドウの幅。"
+  },
+  "app.default-instance.width.placeholder": {
+    "message": "幅を入力…"
+  },
+  "app.default-instance.width.title": {
+    "message": "幅"
+  },
+  "app.default-instance.window-title.hint": {
+    "message": "対応: {user} (ユーザー名), {name} (インスタンス名), {version} (ゲームバージョン)"
+  },
+  "app.default-instance.window-title.placeholder": {
+    "message": "例: {name} | プレイヤー: {user}"
+  },
+  "app.default-instance.window-title.title": {
+    "message": "ゲームウィンドウタイトル"
+  },
+  "app.default-instance.wrapper-hook.description": {
+    "message": "Minecraft を起動するためのラッパーコマンド。"
+  },
+  "app.default-instance.wrapper-hook.placeholder": {
+    "message": "ラッパーコマンドを入力…"
+  },
+  "app.default-instance.wrapper-hook.title": {
+    "message": "ラッパーフック"
+  },
+  "app.downloads.cancel": {
+    "message": "キャンセル"
+  },
+  "app.downloads.created": {
+    "message": "作成日時"
+  },
+  "app.downloads.dismiss": {
+    "message": "無視"
+  },
+  "app.downloads.error": {
+    "message": "エラー"
+  },
+  "app.downloads.no-downloads": {
+    "message": "ダウンロードなし"
+  },
+  "app.downloads.no-downloads-description": {
+    "message": "現在進行中のダウンロードはなく、最近のダウンロード履歴もありません。"
+  },
+  "app.downloads.pause": {
+    "message": "一時停止"
+  },
+  "app.downloads.refresh": {
+    "message": "更新"
+  },
+  "app.downloads.resume": {
+    "message": "再開"
+  },
+  "app.downloads.tab.active": {
+    "message": "ダウンロード中"
+  },
+  "app.downloads.tab.active-count": {
+    "message": "ダウンロード中 ({count})"
+  },
+  "app.downloads.tab.finished": {
+    "message": "完了"
+  },
+  "app.downloads.tab.finished-count": {
+    "message": "完了 ({count})"
+  },
+  "app.downloads.retry": {
+    "message": "再試行"
+  },
+  "app.downloads.status.canceled": {
+    "message": "キャンセル済み"
+  },
+  "app.downloads.status.failed": {
+    "message": "失敗"
+  },
+  "app.downloads.status.interrupted": {
+    "message": "中断"
+  },
+  "app.downloads.status.paused": {
+    "message": "一時停止中"
+  },
+  "app.downloads.status.queued": {
+    "message": "待機中"
+  },
+  "app.downloads.status.running": {
+    "message": "実行中"
+  },
+  "app.downloads.status.succeeded": {
+    "message": "成功"
+  },
+  "app.downloads.title": {
+    "message": "ダウンロード"
+  },
+  "app.downloads.unknown-job": {
+    "message": "インストールタスク"
+  },
+  "app.downloads.updated": {
+    "message": "更新日時"
+  },
+  "app.error-modal.cancel-directory-change": {
+    "message": "ディレクトリ変更をキャンセル"
+  },
+  "app.error-modal.change-directory-permissions": {
+    "message": "ディレクトリ権限を変更"
+  },
+  "app.error-modal.change-directory-permissions.description": {
+    "message": "Modrinth App が選択したディレクトリに書き込めません。ディレクトリ権限を調整して再試行するか、ディレクトリ変更をキャンセルしてください。"
+  },
+  "app.error-modal.close": {
+    "message": "閉じる"
+  },
+  "app.error-modal.copy-debug-info": {
+    "message": "デバッグ情報をコピー"
+  },
+  "app.error-modal.debug-info": {
+    "message": "デバッグ情報"
+  },
+  "app.error-modal.game-pass.description": {
+    "message": "まず公式 Minecraft ランチャーでログインしてください。完了したら、こちらに戻ってログインしてください！"
+  },
+  "app.error-modal.game-pass.title": {
+    "message": "PC Game Pass、Bedrock 版からの移行、または購入直後ですか？"
+  },
+  "app.error-modal.get-support": {
+    "message": "サポートを受ける"
+  },
+  "app.error-modal.hosts-file.description": {
+    "message": "Modrinth App が Microsoft / Xbox / Minecraft サービスに接続しようとしましたが、リモートサーバーが接続を拒否しました。これらのサービスが hosts ファイルでブロックされている可能性があります。"
+  },
+  "app.error-modal.hosts-file.description-suffix": {
+    "message": "で修正方法を確認してください。"
+  },
+  "app.error-modal.migrate-failed.description": {
+    "message": "Modrinth App が選択した新しいディレクトリに移行できません。サポートチームに連絡するか、ディレクトリ変更をキャンセルしてください。"
+  },
+  "app.error-modal.network-issues": {
+    "message": "ネットワークの問題"
+  },
+  "app.error-modal.network-issues.description": {
+    "message": "Modrinth App が Microsoft サーバーへの接続に問題が発生しているようです。通常はネットワーク接続不良が原因です。再試行をお勧めします。問題が続く場合は、"
+  },
+  "app.error-modal.network-issues.description-suffix": {
+    "message": "の手順に従ってトラブルシューティングしてください。"
+  },
+  "app.error-modal.no-error-message": {
+    "message": "エラーメッセージはありません。"
+  },
+  "app.error-modal.no-loader.description": {
+    "message": "Modrinth App がこのインスタンスのローダーバージョンを見つけられません。"
+  },
+  "app.error-modal.no-loader.fix": {
+    "message": "この問題を解決するには、インスタンスを修復する必要があります。下のボタンをクリックして修復してください。"
+  },
+  "app.error-modal.not-enough-space": {
+    "message": "容量不足"
+  },
+  "app.error-modal.not-enough-space.description": {
+    "message": "選択したディレクトリがあるディスクの容量が不足しています。スペースを解放して再試行するか、ディレクトリ変更をキャンセルしてください。"
+  },
+  "app.error-modal.our-support-article": {
+    "message": "サポート記事"
+  },
+  "app.error-modal.repair-instance": {
+    "message": "インスタンスを修復"
+  },
+  "app.error-modal.retry-directory-change": {
+    "message": "ディレクトリ変更を再試行"
+  },
+  "app.error-modal.sign-in-to-minecraft": {
+    "message": "Minecraft にログイン"
+  },
+  "app.error-modal.sign-in-to-play.description": {
+    "message": "このインスタンスをプレイするには、Minecraft アカウントにログインする必要があります。Minecraft アカウントをお持ちでない場合は、Minecraft 公式サイトでゲームを購入できます。"
+  },
+  "app.error-modal.state-init.description": {
+    "message": "Modrinth App の読み込みに失敗しました。ファイルの破損または重要なファイルの欠落が原因の可能性があります。"
+  },
+  "app.error-modal.state-init.fix": {
+    "message": "以下の方法で修復を試みることができます："
+  },
+  "app.error-modal.state-init.fix-1": {
+    "message": "インターネットに接続していることを確認し、アプリを再起動してみてください。"
+  },
+  "app.error-modal.state-init.fix-2": {
+    "message": "アプリを再ダウンロードしてください。"
+  },
+  "app.error-modal.support.description": {
+    "message": "上記の方法がすべて無効でサポートが必要な場合は、サポートページにアクセスし、右下のチャットウィジェットでお問い合わせください。喜んでお手伝いします！サポート担当者に以下のデバッグ情報を提供してください："
+  },
+  "app.error-modal.title.directory-move": {
+    "message": "アプリディレクトリを変更できません"
+  },
+  "app.error-modal.title.error": {
+    "message": "エラーが発生しました"
+  },
+  "app.error-modal.title.minecraft-auth": {
+    "message": "Minecraft にログインできません"
+  },
+  "app.error-modal.title.minecraft-sign-in": {
+    "message": "Minecraft にログイン"
+  },
+  "app.error-modal.title.no-loader": {
+    "message": "ローダーが選択されていません"
+  },
+  "app.error-modal.title.state-init": {
+    "message": "Modrinth App 初期化エラー"
+  },
+  "app.error-modal.try-another-account": {
+    "message": "別の Microsoft アカウントを試す"
+  },
+  "app.error-modal.try-another-account.button": {
+    "message": "別のアカウントを試す"
+  },
+  "app.error-modal.try-another-account.description": {
+    "message": "正しいアカウントでログインしているか確認してください。別の Microsoft アカウントで Minecraft を所有している可能性があります。"
+  },
+  "app.error-modal.try-signing-in-again": {
+    "message": "再ログイン"
   },
   "app.export-modal.description-placeholder": {
     "message": "Modパックの説明を入力…"
   },
   "app.export-modal.export-button": {
     "message": "書き出し"
+  },
+  "app.export-modal.format-label": {
+    "message": "形式"
+  },
+  "app.export-modal.format.mrpack": {
+    "message": "Modrinth (.mrpack)"
+  },
+  "app.export-modal.format.zip": {
+    "message": "ZIP 圧縮 (.zip)"
   },
   "app.export-modal.header": {
     "message": "Modパックを書き出す"
@@ -161,6 +800,267 @@
   "app.export-modal.version-number-placeholder": {
     "message": "1.0.0"
   },
+  "app.grid-display.add-content": {
+    "message": "コンテンツを追加"
+  },
+  "app.grid-display.copy-path": {
+    "message": "パスをコピー"
+  },
+  "app.grid-display.date-created": {
+    "message": "作成日"
+  },
+  "app.grid-display.date-modified": {
+    "message": "更新日"
+  },
+  "app.grid-display.delete": {
+    "message": "削除"
+  },
+  "app.grid-display.duplicate-instance": {
+    "message": "インスタンスを複製"
+  },
+  "app.grid-display.game-version": {
+    "message": "ゲームバージョン"
+  },
+  "app.grid-display.group": {
+    "message": "グループ"
+  },
+  "app.grid-display.group-by": {
+    "message": "グループ化："
+  },
+  "app.grid-display.label": {
+    "message": "インスタンス"
+  },
+  "app.grid-display.last-played": {
+    "message": "最終プレイ"
+  },
+  "app.grid-display.loader": {
+    "message": "ローダー"
+  },
+  "app.grid-display.name": {
+    "message": "名前"
+  },
+  "app.grid-display.none": {
+    "message": "なし"
+  },
+  "app.grid-display.open-folder": {
+    "message": "フォルダを開く"
+  },
+  "app.grid-display.play": {
+    "message": "プレイ"
+  },
+  "app.grid-display.search-placeholder": {
+    "message": "検索"
+  },
+  "app.grid-display.select-placeholder": {
+    "message": "選択…"
+  },
+  "app.grid-display.sort-by": {
+    "message": "並び替え："
+  },
+  "app.grid-display.stop": {
+    "message": "停止"
+  },
+  "app.grid-display.view-instance": {
+    "message": "インスタンスを表示"
+  },
+  "app.home-settings.description": {
+    "message": "ホームページに表示するセクションを選択します。"
+  },
+  "app.home-settings.discover-modpacks.description": {
+    "message": "Modrinth の人気 Mod パックを表示します。"
+  },
+  "app.home-settings.discover-modpacks.title": {
+    "message": "Mod パックを見つける"
+  },
+  "app.home-settings.discover-mods.description": {
+    "message": "Modrinth の人気 Mod を表示します。"
+  },
+  "app.home-settings.discover-mods.title": {
+    "message": "Mod を見つける"
+  },
+  "app.home-settings.jump-back-in.description": {
+    "message": "最近プレイしたワールドとインスタンスを表示します。"
+  },
+  "app.home-settings.jump-back-in.title": {
+    "message": "ジャンプバック"
+  },
+  "app.home-settings.random-mods.description": {
+    "message": "ホームページを開くたびにランダムな Mod のおすすめを表示します。"
+  },
+  "app.home-settings.random-mods.title": {
+    "message": "ランダム Mod おすすめ"
+  },
+  "app.home-settings.recent-screenshots.description": {
+    "message": "すべてのインスタンスの最近のスクリーンショットを表示します。"
+  },
+  "app.home-settings.recent-screenshots.title": {
+    "message": "最近のスクリーンショット"
+  },
+  "app.home-settings.system-status.description": {
+    "message": "CPU、メモリ、ディスク、ネットワーク使用状況とクイック起動操作を表示します。"
+  },
+  "app.home-settings.system-status.title": {
+    "message": "システムステータス"
+  },
+  "app.home-settings.title": {
+    "message": "ホーム画面のカスタマイズ"
+  },
+  "app.home-settings.update-reminders.description": {
+    "message": "利用可能な Mod パックまたは Mod の更新があるインスタンスを表示します。"
+  },
+  "app.home-settings.update-reminders.title": {
+    "message": "ゲーム更新のお知らせ"
+  },
+  "app.home.discover-modpack": {
+    "message": "Mod パックを見つける"
+  },
+  "app.home.discover-mods": {
+    "message": "Mod を見つける"
+  },
+  "app.home.random-mods.reroll": {
+    "message": "別のを見る"
+  },
+  "app.home.random-mods.title": {
+    "message": "ランダム Mod おすすめ"
+  },
+  "app.home.recent-screenshots.title": {
+    "message": "最近のスクリーンショット"
+  },
+  "app.home.system-status.available": {
+    "message": "利用可能"
+  },
+  "app.home.system-status.cpu": {
+    "message": "CPU"
+  },
+  "app.home.system-status.disk": {
+    "message": "ディスク"
+  },
+  "app.home.system-status.instances": {
+    "message": "インスタンス"
+  },
+  "app.home.system-status.memory": {
+    "message": "メモリ"
+  },
+  "app.home.system-status.network": {
+    "message": "ネットワーク"
+  },
+  "app.home.system-status.title": {
+    "message": "システムステータス"
+  },
+  "app.home.title": {
+    "message": "ホーム"
+  },
+  "app.home.update-reminders.new-version": {
+    "message": "新バージョン"
+  },
+  "app.home.update-reminders.title": {
+    "message": "利用可能な更新があります"
+  },
+  "app.home.update-reminders.update": {
+    "message": "更新"
+  },
+  "app.home.welcome-back": {
+    "message": "おかえりなさい！"
+  },
+  "app.home.welcome-to": {
+    "message": "Modrinth App へようこそ！"
+  },
+  "app.install.phase.downloading_content": {
+    "message": "コンテンツをダウンロード中"
+  },
+  "app.install.phase.downloading_minecraft": {
+    "message": "Minecraft をダウンロード中"
+  },
+  "app.install.phase.downloading_pack_file": {
+    "message": "パックファイルをダウンロード中"
+  },
+  "app.install.phase.extracting_overrides": {
+    "message": "オーバーライドを抽出中"
+  },
+  "app.install.phase.finalizing": {
+    "message": "完了"
+  },
+  "app.install.phase.preparing_instance": {
+    "message": "インスタンスを準備中"
+  },
+  "app.install.phase.preparing_java": {
+    "message": "Java を準備中"
+  },
+  "app.install.phase.preparing_java.downloading": {
+    "message": "Java {version} をダウンロード中"
+  },
+  "app.install.phase.preparing_java.extracting": {
+    "message": "Java {version} を抽出中"
+  },
+  "app.install.phase.preparing_java.fetching-metadata": {
+    "message": "Java {version} のメタデータを取得中"
+  },
+  "app.install.phase.preparing_java.resolving": {
+    "message": "Java {version} を準備中"
+  },
+  "app.install.phase.preparing_java.validating": {
+    "message": "Java {version} を検証中"
+  },
+  "app.install.phase.reading_pack_manifest": {
+    "message": "Mod パックマニフェストを読み取り中"
+  },
+  "app.install.phase.resolving_loader": {
+    "message": "ローダーを解決中"
+  },
+  "app.install.phase.resolving_minecraft": {
+    "message": "Minecraft を解決中"
+  },
+  "app.install.phase.resolving_pack": {
+    "message": "コンテンツを解決中"
+  },
+  "app.install.phase.rolling_back": {
+    "message": "ロールバック"
+  },
+  "app.install.phase.running_loader_processors": {
+    "message": "ローダープロセッサを実行中"
+  },
+  "app.instance-card.installing": {
+    "message": "インストール中…"
+  },
+  "app.instance-card.loading": {
+    "message": "インスタンスを読み込み中…"
+  },
+  "app.instance-card.never-played": {
+    "message": "未プレイ"
+  },
+  "app.instance-card.play": {
+    "message": "プレイ"
+  },
+  "app.instance-card.played": {
+    "message": "最終プレイ {time}"
+  },
+  "app.instance-card.repair": {
+    "message": "修復"
+  },
+  "app.instance-card.stop": {
+    "message": "停止"
+  },
+  "app.instance-item.already-open": {
+    "message": "インスタンスは既に開いています"
+  },
+  "app.instance-item.loading-modpack": {
+    "message": "Mod パックを読み込み中..."
+  },
+  "app.instance-item.not-played-yet": {
+    "message": "未プレイ"
+  },
+  "app.instance-item.view-instance": {
+    "message": "インスタンスを表示"
+  },
+  "app.instance-settings.icon": {
+    "message": "アイコン"
+  },
+  "app.instance.add-content": {
+    "message": "コンテンツを追加"
+  },
+  "app.instance.breadcrumb": {
+    "message": "インスタンス"
+  },
   "app.instance.confirm-delete.admonition-body": {
     "message": "インスタンス内のすべてのデータは、ワールド、設定、インストール済みのコンテンツを含め、完全に削除されます。"
   },
@@ -173,6 +1073,66 @@
   "app.instance.confirm-delete.header": {
     "message": "インスタンスを削除"
   },
+  "app.instance.copy-link": {
+    "message": "リンクをコピー"
+  },
+  "app.instance.copy-links": {
+    "message": "リンクをコピー"
+  },
+  "app.instance.copy-names": {
+    "message": "名前をコピー"
+  },
+  "app.instance.copy-path": {
+    "message": "パスをコピー"
+  },
+  "app.instance.copy-slugs": {
+    "message": "スラッグをコピー"
+  },
+  "app.instance.create-server": {
+    "message": "サーバーを作成"
+  },
+  "app.instance.create-shortcut": {
+    "message": "ショートカットを作成"
+  },
+  "app.instance.disable-selected": {
+    "message": "選択を無効化"
+  },
+  "app.instance.edit": {
+    "message": "編集"
+  },
+  "app.instance.enable-selected": {
+    "message": "選択を有効化"
+  },
+  "app.instance.export-modpack": {
+    "message": "Mod パックをエクスポート"
+  },
+  "app.instance.installing": {
+    "message": "インストール中…"
+  },
+  "app.instance.instance-settings": {
+    "message": "インスタンス設定"
+  },
+  "app.instance.join-server": {
+    "message": "サーバーに参加"
+  },
+  "app.instance.launch-instance": {
+    "message": "インスタンスを起動"
+  },
+  "app.instance.linked-to": {
+    "message": "リンク先"
+  },
+  "app.instance.logs.delete-disabled": {
+    "message": "インスタンス実行中は latest.log を削除できません"
+  },
+  "app.instance.logs.live-log": {
+    "message": "ライブログ"
+  },
+  "app.instance.logs.log-n": {
+    "message": "ログ {n}"
+  },
+  "app.instance.logs.unknown": {
+    "message": "不明"
+  },
   "app.instance.modpack-already-installed.body": {
     "message": "このModpackは既に <bold>{instanceName}</bold> インスタンスにインストール済みです。本当に複製しますか？"
   },
@@ -184,6 +1144,15 @@
   },
   "app.instance.modpack-already-installed.instance": {
     "message": "インスタンス"
+  },
+  "app.instance.mods.bulk-update.downloading-projects": {
+    "message": "{current, number}/{total, number} 個のプロジェクトをダウンロード中…"
+  },
+  "app.instance.mods.bulk-update.finishing": {
+    "message": "更新を完了中…"
+  },
+  "app.instance.mods.bulk-update.resolving-versions": {
+    "message": "バージョンを解決中…"
   },
   "app.instance.mods.content-type-project": {
     "message": "プロジェクト"
@@ -203,11 +1172,215 @@
   "app.instance.mods.successfully-uploaded": {
     "message": "アップロードに成功しました"
   },
+  "app.instance.never-played": {
+    "message": "未プレイ"
+  },
+  "app.instance.open-folder": {
+    "message": "フォルダを開く"
+  },
+  "app.instance.open-in-modrinth": {
+    "message": "Modrinth で開く"
+  },
+  "app.instance.overview.created": {
+    "message": "作成日時"
+  },
+  "app.instance.overview.game-version": {
+    "message": "ゲームバージョン"
+  },
+  "app.instance.overview.information": {
+    "message": "情報"
+  },
+  "app.instance.overview.install-stage": {
+    "message": "ステータス"
+  },
+  "app.instance.overview.last-played": {
+    "message": "最終プレイ"
+  },
+  "app.instance.overview.link-type": {
+    "message": "ソース"
+  },
+  "app.instance.overview.link-type.hosting": {
+    "message": "ホスティング"
+  },
+  "app.instance.overview.link-type.imported-modpack": {
+    "message": "インポートされた Mod パック"
+  },
+  "app.instance.overview.link-type.modrinth-modpack": {
+    "message": "Modrinth Mod パック"
+  },
+  "app.instance.overview.link-type.server-modpack": {
+    "message": "サーバー Mod パック"
+  },
+  "app.instance.overview.link-type.server-project": {
+    "message": "サーバープロジェクト"
+  },
+  "app.instance.overview.link-type.shared-instance": {
+    "message": "共有インスタンス"
+  },
+  "app.instance.overview.loader": {
+    "message": "ローダー"
+  },
+  "app.instance.overview.loader-version": {
+    "message": "ローダーバージョン"
+  },
+  "app.instance.overview.never-played": {
+    "message": "未プレイ"
+  },
+  "app.instance.overview.play-time": {
+    "message": "プレイ時間"
+  },
+  "app.instance.overview.status.installed": {
+    "message": "インストール済み"
+  },
+  "app.instance.overview.status.installing": {
+    "message": "インストール中"
+  },
+  "app.instance.overview.status.minecraft-installing": {
+    "message": "Minecraft インストール中"
+  },
+  "app.instance.overview.status.not-installed": {
+    "message": "未インストール"
+  },
+  "app.instance.overview.status.pack-installed": {
+    "message": "Mod パックインストール済み"
+  },
+  "app.instance.overview.status.pack-installing": {
+    "message": "Mod パックインストール中"
+  },
+  "app.instance.overview.update-channel": {
+    "message": "更新チャンネル"
+  },
+  "app.instance.play": {
+    "message": "プレイ"
+  },
+  "app.instance.repair": {
+    "message": "修復"
+  },
+  "app.instance.resource-pack.add-from-file": {
+    "message": "ファイルから追加"
+  },
+  "app.instance.resource-pack.added": {
+    "message": "リソースパックが追加されました"
+  },
+  "app.instance.resource-pack.confirm-delete": {
+    "message": "「{name}」を削除してもよろしいですか？"
+  },
+  "app.instance.resource-pack.delete": {
+    "message": "削除"
+  },
+  "app.instance.resource-pack.deleted": {
+    "message": "リソースパックが削除されました"
+  },
+  "app.instance.resource-pack.empty-description": {
+    "message": "リソースパックファイルを追加して開始"
+  },
+  "app.instance.resource-pack.empty-heading": {
+    "message": "リソースパックがインストールされていません"
+  },
+  "app.instance.resource-pack.open-folder": {
+    "message": "フォルダを開く"
+  },
+  "app.instance.resource-pack.search-placeholder": {
+    "message": "{count} 個のリソースパックを検索…"
+  },
+  "app.instance.screenshots.confirm-delete": {
+    "message": "「{name}」を削除してもよろしいですか？"
+  },
+  "app.instance.screenshots.copied": {
+    "message": "パスをクリップボードにコピーしました"
+  },
+  "app.instance.screenshots.copy": {
+    "message": "クリップボードにコピー"
+  },
+  "app.instance.screenshots.delete": {
+    "message": "削除"
+  },
+  "app.instance.screenshots.deleted": {
+    "message": "スクリーンショットが削除されました"
+  },
+  "app.instance.screenshots.none-description": {
+    "message": "ゲーム内で撮影したスクリーンショットがここに表示されます"
+  },
+  "app.instance.screenshots.none-heading": {
+    "message": "まだスクリーンショットはありません"
+  },
+  "app.instance.screenshots.open": {
+    "message": "開く"
+  },
+  "app.instance.screenshots.open-folder": {
+    "message": "フォルダを開く"
+  },
+  "app.instance.screenshots.search-placeholder": {
+    "message": "{count} 枚のスクリーンショットを検索…"
+  },
+  "app.instance.select-updatable": {
+    "message": "更新可能なものを選択"
+  },
+  "app.instance.share-instance": {
+    "message": "インスタンスを共有"
+  },
+  "app.instance.shortcut-created": {
+    "message": "ショートカットが作成されました"
+  },
+  "app.instance.shortcut-error": {
+    "message": "ショートカットの作成に失敗しました"
+  },
+  "app.instance.show-hide-unselected": {
+    "message": "未選択を表示/非表示"
+  },
+  "app.instance.starting": {
+    "message": "起動中…"
+  },
+  "app.instance.stop": {
+    "message": "停止"
+  },
+  "app.instance.stopping": {
+    "message": "停止中…"
+  },
+  "app.instance.tab.content": {
+    "message": "コンテンツ"
+  },
+  "app.instance.tab.files": {
+    "message": "ファイル"
+  },
+  "app.instance.tab.logs": {
+    "message": "ログ"
+  },
+  "app.instance.tab.overview": {
+    "message": "概要"
+  },
+  "app.instance.tab.screenshots": {
+    "message": "スクリーンショット"
+  },
+  "app.instance.tab.worlds": {
+    "message": "ワールド"
+  },
+  "app.instance.toggle-selected": {
+    "message": "選択を切り替え"
+  },
+  "app.instance.update-all": {
+    "message": "すべて更新"
+  },
+  "app.instance.update-selected": {
+    "message": "選択を更新"
+  },
   "app.instance.worlds.add-server": {
     "message": "サーバーを追加"
   },
   "app.instance.worlds.browse-servers": {
     "message": "サーバーを探す"
+  },
+  "app.instance.worlds.delete-world-modal.delete-button": {
+    "message": "ワールドを削除"
+  },
+  "app.instance.worlds.delete-world-modal.title": {
+    "message": "ワールドを削除"
+  },
+  "app.instance.worlds.delete-world-modal.warning-body": {
+    "message": "このワールドは完全に削除され、この操作は元に戻せません。"
+  },
+  "app.instance.worlds.delete-world-modal.warning-header": {
+    "message": "{name} を削除中"
   },
   "app.instance.worlds.filter-modded": {
     "message": "Mod導入済み"
@@ -227,8 +1400,326 @@
   "app.instance.worlds.no-worlds-heading": {
     "message": "サーバー、ワールドは追加されていません"
   },
+  "app.instance.worlds.remove-server-modal.remove-button": {
+    "message": "サーバーを削除"
+  },
+  "app.instance.worlds.remove-server-modal.title": {
+    "message": "サーバーを削除"
+  },
+  "app.instance.worlds.remove-server-modal.warning-body": {
+    "message": "このサーバーはサーバーリストから削除されます。ゲーム内のサーバーリストからも削除されます。後でアドレスを覚えていれば再度追加できます。"
+  },
+  "app.instance.worlds.remove-server-modal.warning-header": {
+    "message": "{name} を削除中"
+  },
   "app.instance.worlds.search-worlds-placeholder": {
     "message": "{count} 個のワールドを検索…"
+  },
+  "app.java-detection.cancel": {
+    "message": "キャンセル"
+  },
+  "app.java-detection.column.actions": {
+    "message": "操作"
+  },
+  "app.java-detection.column.path": {
+    "message": "パス"
+  },
+  "app.java-detection.column.version": {
+    "message": "バージョン"
+  },
+  "app.java-detection.header": {
+    "message": "Java バージョンを選択"
+  },
+  "app.java-detection.not-found": {
+    "message": "Java インストールが見つかりません！"
+  },
+  "app.java-detection.select": {
+    "message": "選択"
+  },
+  "app.java-detection.selected": {
+    "message": "選択済み"
+  },
+  "app.java-settings.java-location": {
+    "message": "Java {version} のパス"
+  },
+  "app.language-settings.language": {
+    "message": "言語"
+  },
+  "app.library.all-instances": {
+    "message": "すべてのインスタンス"
+  },
+  "app.library.create-new-instance": {
+    "message": "新しいインスタンスを作成"
+  },
+  "app.library.jump-back-in": {
+    "message": "続けてプレイ"
+  },
+  "app.library.no-instances": {
+    "message": "インスタンスが見つかりません"
+  },
+  "app.library.no-search-results": {
+    "message": "一致するインスタンスがありません"
+  },
+  "app.library.overview.subtitle": {
+    "message": "Minecraft インスタンスを管理して起動します。"
+  },
+  "app.library.overview.title": {
+    "message": "あなたのインスタンスライブラリ"
+  },
+  "app.library.search.placeholder": {
+    "message": "インスタンスを検索..."
+  },
+  "app.library.title": {
+    "message": "ライブラリ"
+  },
+  "app.game-link.breadcrumb": {
+    "message": "オンライン接続"
+  },
+  "app.game-link.title": {
+    "message": "オンライン接続"
+  },
+  "app.game-link.description": {
+    "message": "仮想ネットワークロビーを作成または参加して、インターネット経由で友達と Minecraft をプレイ。EasyTier ピアツーピアネットワークがサポート。"
+  },
+  "app.game-link.state.idle": {
+    "message": "未接続"
+  },
+  "app.game-link.state.creating": {
+    "message": "ロビーを作成中..."
+  },
+  "app.game-link.state.joining": {
+    "message": "ロビーに参加中..."
+  },
+  "app.game-link.state.connected": {
+    "message": "接続済み"
+  },
+  "app.game-link.state.leaving": {
+    "message": "退出中..."
+  },
+  "app.game-link.state.error": {
+    "message": "エラー"
+  },
+  "app.game-link.playing-as": {
+    "message": "現在のプレイヤー"
+  },
+  "app.game-link.no-account": {
+    "message": "Minecraft アカウント未ログイン"
+  },
+  "app.game-link.host.title": {
+    "message": "ロビーを作成"
+  },
+  "app.game-link.host.subtitle": {
+    "message": "LAN にワールドを公開し、スキャンして作成"
+  },
+  "app.game-link.host.scan": {
+    "message": "LAN ワールドをスキャン"
+  },
+  "app.game-link.host.scanning": {
+    "message": "スキャン中..."
+  },
+  "app.game-link.host.select-world": {
+    "message": "ワールドを選択"
+  },
+  "app.game-link.host.no-worlds": {
+    "message": "LAN ワールドが見つかりません。Minecraft を開き、ワールドをロードして「LAN に公開」をクリックしてください。"
+  },
+  "app.game-link.host.create": {
+    "message": "ロビーを作成"
+  },
+  "app.game-link.host.creating": {
+    "message": "作成中..."
+  },
+  "app.game-link.join.title": {
+    "message": "ロビーに参加"
+  },
+  "app.game-link.join.subtitle": {
+    "message": "ロビーコードを入力して接続"
+  },
+  "app.game-link.lobby-code.label": {
+    "message": "ロビーコード"
+  },
+  "app.game-link.join.button": {
+    "message": "ロビーに参加"
+  },
+  "app.game-link.join.joining": {
+    "message": "参加中..."
+  },
+  "app.game-link.copy": {
+    "message": "コピー"
+  },
+  "app.game-link.role.host": {
+    "message": "ホスト"
+  },
+  "app.game-link.role.client": {
+    "message": "クライアント"
+  },
+  "app.game-link.leave": {
+    "message": "ロビーを退出"
+  },
+  "app.game-link.players.title": {
+    "message": "プレイヤー ({count})"
+  },
+  "app.game-link.refresh": {
+    "message": "更新"
+  },
+  "app.game-link.connection.title": {
+    "message": "接続情報"
+  },
+  "app.game-link.connection.latency": {
+    "message": "遅延"
+  },
+  "app.game-link.connection.quality": {
+    "message": "品質"
+  },
+  "app.game-link.connection.type": {
+    "message": "接続タイプ"
+  },
+  "app.game-link.mod-compat.title": {
+    "message": "Mod 互換性"
+  },
+  "app.game-link.mod-compat.check": {
+    "message": "互換性をチェック"
+  },
+  "app.game-link.mod-compat.ok": {
+    "message": "Mod 互換性あり"
+  },
+  "app.game-link.mod-compat.mismatch": {
+    "message": "Mod の不一致が検出されました"
+  },
+  "app.game-link.mod-compat.missing": {
+    "message": "不足している Mod ({count})"
+  },
+  "app.game-link.mod-compat.extra": {
+    "message": "余分な Mod ({count})"
+  },
+  "app.game-link.mod-compat.version-mismatch": {
+    "message": "バージョン不一致 ({count})"
+  },
+  "app.game-link.worlds.title": {
+    "message": "ローカルワールド"
+  },
+  "app.game-link.worlds.scan": {
+    "message": "スキャン"
+  },
+  "app.game-link.worlds.none": {
+    "message": "ワールドが見つかりません。Minecraft が実行中で LAN に公開されていることを確認してください。"
+  },
+  "app.game-link.diagnostics.title": {
+    "message": "ネットワーク診断"
+  },
+  "app.game-link.diagnostics.mc-running": {
+    "message": "Minecraft 実行中"
+  },
+  "app.game-link.diagnostics.mc-port": {
+    "message": "MC ポート"
+  },
+  "app.game-link.diagnostics.role": {
+    "message": "役割"
+  },
+  "app.game-link.diagnostics.check-mc": {
+    "message": "MC プロセスを確認"
+  },
+  "app.game-link.host-shutdown": {
+    "message": "ホストがロビーを閉じました。"
+  },
+  "app.game-link.quality.good": {
+    "message": "良好"
+  },
+  "app.game-link.quality.fair": {
+    "message": "普通"
+  },
+  "app.game-link.quality.poor": {
+    "message": "不良"
+  },
+  "app.game-link.way.local": {
+    "message": "ローカル"
+  },
+  "app.game-link.way.p2p": {
+    "message": "ピアツーピア"
+  },
+  "app.game-link.way.relay": {
+    "message": "リレー"
+  },
+  "app.game-link.way.unknown": {
+    "message": "不明"
+  },
+  "app.game-link.yes": {
+    "message": "はい"
+  },
+  "app.game-link.no": {
+    "message": "いいえ"
+  },
+  "app.game-link.tab.host": {
+    "message": "ホスト"
+  },
+  "app.game-link.tab.join": {
+    "message": "参加"
+  },
+  "app.game-link.copied": {
+    "message": "コピーしました！"
+  },
+  "app.game-link.mc-status.running": {
+    "message": "Minecraft 実行中"
+  },
+  "app.game-link.mc-status.stopped": {
+    "message": "Minecraft 未実行"
+  },
+  "app.game-link.port.label": {
+    "message": "ポート"
+  },
+  "app.game-link.join.timeout": {
+    "message": "接続がタイムアウトしました。ロビーコードが無効か、ホストがオフラインです。"
+  },
+  "app.game-link.cancel": {
+    "message": "キャンセル"
+  },
+  "app.game-link.retry": {
+    "message": "再試行"
+  },
+  "app.game-link.join.hint": {
+    "message": "P2Pネットワークを構築中です。最大15秒かかることがあります。"
+  },
+  "app.minecraft-auth.contact-support": {
+    "message": "サポートに連絡"
+  },
+  "app.minecraft-auth.copy-debug-info": {
+    "message": "デバッグ情報をコピー"
+  },
+  "app.minecraft-auth.debug-info": {
+    "message": "デバッグ情報"
+  },
+  "app.minecraft-auth.header": {
+    "message": "ログイン失敗"
+  },
+  "app.minecraft-auth.how-to-fix": {
+    "message": "解決方法"
+  },
+  "app.minecraft-auth.minecraft-login": {
+    "message": "Minecraft ログイン"
+  },
+  "app.minecraft-auth.no-error-message": {
+    "message": "エラーメッセージはありません。"
+  },
+  "app.minecraft-auth.sign-in-again": {
+    "message": "再ログイン"
+  },
+  "app.minecraft-auth.unknown-error": {
+    "message": "不明なエラー"
+  },
+  "app.minecraft-auth.unknown-error.desc": {
+    "message": "このエラーを特定できず、具体的な解決手順をお勧めできません。"
+  },
+  "app.minecraft-auth.unknown-error.support": {
+    "message": "にログインすると、必要な手順が表示される場合があります。サポートチームに連絡して詳細を調査することもできます。"
+  },
+  "app.minecraft-auth.unknown-error.try": {
+    "message": "アクセスしてみてください"
+  },
+  "app.minecraft-auth.warning": {
+    "message": "Microsoft アカウントにログインできません。アカウント制限または地域制限が原因の可能性があります。"
+  },
+  "app.minecraft-auth.what-happened": {
+    "message": "発生したと推定される問題"
   },
   "app.modal.install-to-play.content-required": {
     "message": "必須コンテンツ"
@@ -266,6 +1757,309 @@
   "app.modal.update-to-play.update-required-description": {
     "message": "{name}をプレイするには更新が必要です。ゲームを起動するには最新版に更新してください。"
   },
+  "app.modpack-version.header": {
+    "message": "Mod パックのバージョンを変更"
+  },
+  "app.modpack-version.name": {
+    "message": "名前"
+  },
+  "app.modpack-version.supports": {
+    "message": "対応"
+  },
+  "app.nav.create-instance": {
+    "message": "新しいインスタンスを作成"
+  },
+  "app.nav.discover": {
+    "message": "コンテンツを見つける"
+  },
+  "app.nav.downloads": {
+    "message": "ダウンロード"
+  },
+  "app.nav.game-link": {
+    "message": "オンライン接続"
+  },
+  "app.nav.home": {
+    "message": "ホーム"
+  },
+  "app.nav.hosting": {
+    "message": "Modrinth ホスティング"
+  },
+  "app.nav.library": {
+    "message": "ライブラリ"
+  },
+  "app.nav.skins": {
+    "message": "スキンセレクター"
+  },
+  "app.nav.worlds": {
+    "message": "ワールド"
+  },
+  "app.news.title": {
+    "message": "ニュース"
+  },
+  "app.news.view-all": {
+    "message": "すべてのニュースを見る"
+  },
+  "app.pride-fundraiser.day-left": {
+    "message": "日残り"
+  },
+  "app.pride-fundraiser.days-left": {
+    "message": "日残り"
+  },
+  "app.pride-fundraiser.dismiss": {
+    "message": "Pride 募金活動を閉じる"
+  },
+  "app.pride-fundraiser.of": {
+    "message": "/"
+  },
+  "app.pride-fundraiser.open": {
+    "message": "Pride 募金活動を開く"
+  },
+  "app.pride-fundraiser.supporter": {
+    "message": "人のサポーター"
+  },
+  "app.pride-fundraiser.supporters": {
+    "message": "人のサポーター"
+  },
+  "app.pride-fundraiser.title": {
+    "message": "Pride 2026 募金活動"
+  },
+  "app.privacy-settings.disabled-in-build": {
+    "message": "このビルドでは無効です"
+  },
+  "app.privacy-settings.discord-rpc": {
+    "message": "Discord RPC"
+  },
+  "app.privacy-settings.discord-rpc.desc": {
+    "message": "Discord リッチプレゼンス統合を管理します。無効にすると、Discord プロフィールに Modrinth を使用していることが表示されなくなります。"
+  },
+  "app.privacy-settings.discord-rpc.note": {
+    "message": "注意：これはインスタンス固有の Discord Rich Presence 統合（Mod によって追加されたものなど）をブロックしません。（適用にはアプリの再起動が必要です）"
+  },
+  "app.privacy-settings.personalized-ads": {
+    "message": "パーソナライズ広告"
+  },
+  "app.privacy-settings.personalized-ads.desc": {
+    "message": "Modrinth の広告プロバイダー Aditude はあなたの好みに基づいて広告を表示します。このオプションを無効にすると、パーソナライズ広告がオプトアウトされ、広告はあなたの興味に基づかなくなります。"
+  },
+  "app.privacy-settings.telemetry": {
+    "message": "テレメトリ"
+  },
+  "app.privacy-settings.telemetry.desc": {
+    "message": "Modrinth は匿名の分析データと使用データを収集し、ユーザーエクスペリエンスの向上と体験のカスタマイズに役立てます。このオプションを無効にすると、データ収集がオプトアウトされ、データは収集されなくなります。"
+  },
+  "app.project.follow": {
+    "message": "フォロー"
+  },
+  "app.project.install-button.already-installed": {
+    "message": "このプロジェクトは既にインストールされています"
+  },
+  "app.project.install-context.back-to-browse": {
+    "message": "発見ページに戻る"
+  },
+  "app.project.install-context.install-content-to-instance": {
+    "message": "コンテンツをインスタンスにインストール"
+  },
+  "app.project.more-options": {
+    "message": "その他のオプション"
+  },
+  "app.project.open-in-browser": {
+    "message": "ブラウザで開く"
+  },
+  "app.project.report": {
+    "message": "報告"
+  },
+  "app.project.share": {
+    "message": "共有"
+  },
+  "app.project.unfollow": {
+    "message": "フォロー解除"
+  },
+  "app.project.version.author": {
+    "message": "作者"
+  },
+  "app.project.version.changelog": {
+    "message": "更新履歴"
+  },
+  "app.project.version.dependencies": {
+    "message": "依存関係"
+  },
+  "app.project.version.dependency.added-via-overrides": {
+    "message": "オーバーライドで追加"
+  },
+  "app.project.version.dependency.subtitle": {
+    "message": "バージョン {versionNumber} は {dependencyType}"
+  },
+  "app.project.version.downloads": {
+    "message": "ダウンロード数"
+  },
+  "app.project.version.files": {
+    "message": "ファイル"
+  },
+  "app.project.version.game-versions": {
+    "message": "ゲームバージョン"
+  },
+  "app.project.version.install": {
+    "message": "インストール"
+  },
+  "app.project.version.installed": {
+    "message": "インストール済み"
+  },
+  "app.project.version.installing": {
+    "message": "インストール中..."
+  },
+  "app.project.version.loaders": {
+    "message": "ローダー"
+  },
+  "app.project.version.metadata": {
+    "message": "メタデータ"
+  },
+  "app.project.version.modrinth-website": {
+    "message": "Modrinth ウェブサイト"
+  },
+  "app.project.version.primary": {
+    "message": "メイン"
+  },
+  "app.project.version.publication-date": {
+    "message": "公開日"
+  },
+  "app.project.version.release-channel": {
+    "message": "リリースチャンネル"
+  },
+  "app.project.version.report": {
+    "message": "報告"
+  },
+  "app.project.version.version-id": {
+    "message": "バージョン ID"
+  },
+  "app.project.version.version-number": {
+    "message": "バージョン番号"
+  },
+  "app.project.version.versions": {
+    "message": "バージョン一覧"
+  },
+  "app.project.versions.add-to-another-instance": {
+    "message": "別のインスタンスに追加"
+  },
+  "app.project.versions.install": {
+    "message": "インストール"
+  },
+  "app.project.versions.more-options": {
+    "message": "その他のオプション"
+  },
+  "app.project.versions.open-in-browser": {
+    "message": "ブラウザで開く"
+  },
+  "app.project.versions.swap-version": {
+    "message": "バージョンを切り替え"
+  },
+  "app.resource-management.app-cache.description": {
+    "message": "Modrinth アプリはデータをキャッシュして読み込みを高速化します。キャッシュをクリアしてアプリにデータの再読み込みを強制できます。一時的にアプリの速度が低下する可能性があります。"
+  },
+  "app.resource-management.app-cache.title": {
+    "message": "アプリキャッシュ"
+  },
+  "app.resource-management.app-directory.description": {
+    "message": "ランチャーがすべてのファイルを保存するディレクトリ。変更はランチャー再起動後に反映されます。"
+  },
+  "app.resource-management.app-directory.title": {
+    "message": "アプリディレクトリ"
+  },
+  "app.resource-management.community-source.auto": {
+    "message": "自動（推奨）"
+  },
+  "app.resource-management.community-source.description": {
+    "message": "Modrinth Mod ファイルのダウンロード元。自動：Modrinth 公式ソースを優先し、失敗時に MCIMirror にフォールバック。MCIMirror 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。コンテンツ閲覧は常に Modrinth API を使用します。"
+  },
+  "app.resource-management.community-source.mcimirror-first": {
+    "message": "MCIMirror 優先"
+  },
+  "app.resource-management.community-source.modrinth-only": {
+    "message": "Modrinth 公式ソースのみ"
+  },
+  "app.resource-management.community-source.title": {
+    "message": "コミュニティリソースのダウンロード元"
+  },
+  "app.resource-management.db-backups.button": {
+    "message": "バックアップフォルダを開く"
+  },
+  "app.resource-management.db-backups.description": {
+    "message": "重要なアプリデータのバックアップが復元用にここに保存されています。"
+  },
+  "app.resource-management.db-backups.title": {
+    "message": "アプリデータベースのバックアップ"
+  },
+  "app.resource-management.launcher-logs.button": {
+    "message": "ログフォルダを開く"
+  },
+  "app.resource-management.launcher-logs.description": {
+    "message": "各起動セッションのログがここに保存されています。バグやクラッシュが発生した場合は、問題を報告する際に最新のログファイルを添付してください。"
+  },
+  "app.resource-management.launcher-logs.title": {
+    "message": "ランチャーログ"
+  },
+  "app.resource-management.game-file-source.auto": {
+    "message": "自動（推奨）"
+  },
+  "app.resource-management.game-file-source.bmclapi-first": {
+    "message": "BMCLAPI 優先"
+  },
+  "app.resource-management.game-file-source.description": {
+    "message": "Minecraft ゲームファイル（クライアント JAR、ライブラリ、リソース）のダウンロード元。自動：Mojang 公式ソースを優先し、失敗時に BMCLAPI にフォールバック。BMCLAPI 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。"
+  },
+  "app.resource-management.game-file-source.mojang-only": {
+    "message": "Mojang 公式ソースのみ"
+  },
+  "app.resource-management.game-file-source.title": {
+    "message": "ゲームファイルのダウンロード元"
+  },
+  "app.resource-management.version-list-source.auto": {
+    "message": "自動（推奨）"
+  },
+  "app.resource-management.version-list-source.bmclapi-first": {
+    "message": "BMCLAPI 優先"
+  },
+  "app.resource-management.version-list-source.description": {
+    "message": "Minecraft バージョン一覧とローダー メタデータ（Forge、NeoForge、Fabric、Quilt）の取得元。自動：公式ソースを優先し、失敗時に BMCLAPI にフォールバック。BMCLAPI 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。"
+  },
+  "app.resource-management.version-list-source.mojang-only": {
+    "message": "公式ソースのみ"
+  },
+  "app.resource-management.version-list-source.title": {
+    "message": "バージョン一覧の取得元"
+  },
+  "app.resource-management.max-concurrent-downloads.description": {
+    "message": "ランチャーが同時にダウンロードするファイルの最大数。ネットワーク接続が悪い場合は低い値に設定してください。（適用にはアプリの再起動が必要です）"
+  },
+  "app.resource-management.max-concurrent-downloads.title": {
+    "message": "最大同時ダウンロード数"
+  },
+  "app.resource-management.max-chunks-per-file.description": {
+    "message": "大きなファイル（>1MB）の場合、ランチャーはHTTP Rangeリクエストを使用してダウンロードを複数の並行チャンクに分割します。チャンク数が多いほど、高帯域幅接続でのダウンロードが速くなります。（適用にはアプリの再起動が必要です）"
+  },
+  "app.resource-management.max-chunks-per-file.title": {
+    "message": "ファイルごとの最大チャンクダウンロード数"
+  },
+  "app.resource-management.max-concurrent-writes.description": {
+    "message": "ランチャーが同時にディスクに書き込むファイルの最大数。I/O エラーが頻発する場合は低い値に設定してください。（適用にはアプリの再起動が必要です）"
+  },
+  "app.resource-management.max-concurrent-writes.title": {
+    "message": "最大同時書き込み数"
+  },
+  "app.resource-management.purge-cache.button": {
+    "message": "キャッシュをクリア"
+  },
+  "app.resource-management.purge-cache.confirm-description": {
+    "message": "続行すると、すべてのキャッシュがクリアされます。一時的にアプリの速度が低下する可能性があります。"
+  },
+  "app.resource-management.purge-cache.confirm-title": {
+    "message": "キャッシュをクリアしてもよろしいですか？"
+  },
+  "app.resource-management.select-app-directory": {
+    "message": "新しいアプリディレクトリを選択"
+  },
+  "app.restarting": {
+    "message": "再起動中…"
+  },
   "app.settings.developer-mode-enabled": {
     "message": "開発者モードがオンになっています。"
   },
@@ -277,6 +2071,9 @@
   },
   "app.settings.tabs.default-instance-options": {
     "message": "インスタンスの基本設定"
+  },
+  "app.settings.tabs.home": {
+    "message": "ホーム"
   },
   "app.settings.tabs.java-installations": {
     "message": "Javaのインストール設定"
@@ -290,6 +2087,57 @@
   "app.settings.tabs.resource-management": {
     "message": "リソース管理"
   },
+  "app.settings.title": {
+    "message": "設定"
+  },
+  "app.sidebar.playing-as": {
+    "message": "プレイ中"
+  },
+  "app.sign-in-modrinth": {
+    "message": "Modrinth アカウントにログイン"
+  },
+  "app.sign-out": {
+    "message": "ログアウト"
+  },
+  "app.signed-in-as": {
+    "message": "ログイン中:"
+  },
+  "app.skins.add-button": {
+    "message": "スキンを追加"
+  },
+  "app.skins.add-button.drag-and-drop": {
+    "message": "ドラッグ＆ドロップ"
+  },
+  "app.skins.apply-button": {
+    "message": "適用"
+  },
+  "app.skins.delete-button": {
+    "message": "スキンを削除"
+  },
+  "app.skins.delete-modal.description": {
+    "message": "選択したスキンを完全に削除します。この操作は元に戻せません。"
+  },
+  "app.skins.delete-modal.title": {
+    "message": "このスキンを削除してもよろしいですか？"
+  },
+  "app.skins.dropped-file-error.text": {
+    "message": "ドロップされたファイルを読み取れません。"
+  },
+  "app.skins.dropped-file-error.title": {
+    "message": "ファイル処理中にエラーが発生しました"
+  },
+  "app.skins.edit-button": {
+    "message": "スキンを編集"
+  },
+  "app.skins.modal.add-skin-button": {
+    "message": "スキンを追加"
+  },
+  "app.skins.modal.add-title": {
+    "message": "スキンを追加中"
+  },
+  "app.skins.modal.arm-style-section": {
+    "message": "腕のスタイル"
+  },
   "app.skins.modal.arm-style-slim": {
     "message": "スリム"
   },
@@ -302,23 +2150,62 @@
   "app.skins.modal.cape-section": {
     "message": "マント"
   },
+  "app.skins.modal.edit-title": {
+    "message": "スキンを編集中"
+  },
+  "app.skins.modal.make-edit-first-tooltip": {
+    "message": "先にスキンを編集してください！"
+  },
   "app.skins.modal.no-cape-tooltip": {
     "message": "マントなし"
+  },
+  "app.skins.modal.none-cape-option": {
+    "message": "なし"
   },
   "app.skins.modal.replace-texture-button": {
     "message": "アップロード"
   },
+  "app.skins.modal.save-skin-button": {
+    "message": "スキンを保存"
+  },
+  "app.skins.modal.saving-tooltip": {
+    "message": "保存中…"
+  },
   "app.skins.modal.texture-section": {
     "message": "テクスチャ"
+  },
+  "app.skins.modal.upload-skin-first-tooltip": {
+    "message": "先にスキンをアップロードしてください！"
   },
   "app.skins.preview.edit-button": {
     "message": "編集"
   },
+  "app.skins.previewing-badge": {
+    "message": "プレビュー"
+  },
+  "app.skins.rate-limit.text": {
+    "message": "スキンの変更が頻繁すぎます。Mojang サーバーが後続のリクエストを一時的にブロックしました。しばらく待ってから再試行してください。"
+  },
+  "app.skins.rate-limit.title": {
+    "message": "ちょっと待って！"
+  },
+  "app.skins.reorder-error.text": {
+    "message": "スキンの順序を保存できませんでした。"
+  },
+  "app.skins.reorder-error.title": {
+    "message": "スキン並べ替え失敗"
+  },
   "app.skins.section.builders-and-biomes": {
     "message": "ビルダーズ＆バイオーム"
   },
+  "app.skins.section.chaos-cubed": {
+    "message": "カオスキューブ"
+  },
   "app.skins.section.chase-the-skies": {
     "message": "チェイス・ザ・スカイ"
+  },
+  "app.skins.section.default-skins": {
+    "message": "デフォルトスキン"
   },
   "app.skins.section.minecon-earth-2017": {
     "message": "MINECON Earth 2017"
@@ -328,6 +2215,9 @@
   },
   "app.skins.section.modrinth-pride": {
     "message": "Modrinth プライド"
+  },
+  "app.skins.section.modrinth-pride.tooltip": {
+    "message": "Pride 月間に Modrinth の Pride 募金活動に寄付したため、これらのスキンを受け取りました。"
   },
   "app.skins.section.mounts-of-mayhem": {
     "message": "マウント・オブ・メイヘム"
@@ -347,8 +2237,41 @@
   "app.skins.section.tiny-takeover": {
     "message": "タイニー・テイクオーバー"
   },
+  "app.skins.sign-in.button": {
+    "message": "ログイン"
+  },
+  "app.skins.sign-in.description": {
+    "message": "Modrinth アプリのスキン管理機能を使用するには、Minecraft アカウントにログインしてください。"
+  },
   "app.skins.sign-in.rinthbot-alt": {
     "message": "ワクワクしている Modrinth ボット"
+  },
+  "app.skins.sign-in.title": {
+    "message": "ログインしてください"
+  },
+  "app.skins.title": {
+    "message": "スキンセレクター"
+  },
+  "app.splash.checking-updates": {
+    "message": "更新を確認中…"
+  },
+  "app.splash.updating-directory": {
+    "message": "アプリディレクトリを更新中…"
+  },
+  "app.survey.description": {
+    "message": "Modrinth App の使用体験についていくつか質問してもよろしいですか？"
+  },
+  "app.survey.feedback": {
+    "message": "このフィードバックは Modrinth チームに直接送信され、今後のアップデートの改善に役立てられます！"
+  },
+  "app.survey.hey-there": {
+    "message": "こんにちは、Modrinth ユーザー！"
+  },
+  "app.survey.no-thanks": {
+    "message": "結構です"
+  },
+  "app.survey.take": {
+    "message": "アンケートに参加"
   },
   "app.update-popup.body.download-complete": {
     "message": "Modrinth App v{version} のダウンロードが完了しました。今すぐ更新するには再読み込みするか、Modrinth Appを閉じる際に自動更新されます。"
@@ -368,6 +2291,9 @@
   "app.update-popup.download-complete": {
     "message": "ダウンロード完了"
   },
+  "app.update-popup.reload": {
+    "message": "再読み込みして更新"
+  },
   "app.update-popup.title": {
     "message": "アップデートが利用可能です"
   },
@@ -376,6 +2302,15 @@
   },
   "app.update.complete-toast.title": {
     "message": "バージョン {version} が正常にインストールされました！"
+  },
+  "app.url-confirm.install": {
+    "message": "インストール"
+  },
+  "app.url-confirm.install-name": {
+    "message": "{name} をインストール"
+  },
+  "app.url-confirm.installing-from": {
+    "message": "Modrinth から {version} をインストール中"
   },
   "app.world.server-modal.placeholder-address": {
     "message": "example.modrinth.gg"
@@ -394,6 +2329,9 @@
   },
   "app.world.world-item.players-online": {
     "message": "{count} 人がオンライン"
+  },
+  "app.worlds.title": {
+    "message": "ワールド"
   },
   "friends.action.add-friend": {
     "message": "フレンドを追加"
@@ -445,6 +2383,27 @@
   },
   "friends.heading.pending": {
     "message": "保留中"
+  },
+  "friends.modal.accept": {
+    "message": "承認"
+  },
+  "friends.modal.cancel": {
+    "message": "キャンセル"
+  },
+  "friends.modal.ignore": {
+    "message": "無視"
+  },
+  "friends.modal.no-pending-requests": {
+    "message": "現在保留中のフレンドリクエストはありません :C"
+  },
+  "friends.modal.sent-you-request": {
+    "message": "{username} がフレンドリクエストを送信しました"
+  },
+  "friends.modal.view-friend-requests": {
+    "message": "フレンドリクエストを表示"
+  },
+  "friends.modal.you-sent-request": {
+    "message": "{username} にフレンドリクエストを送信しました"
   },
   "friends.no-friends-match": {
     "message": "フレンド「{query}」は見つかりませんでした"
@@ -566,6 +2525,30 @@
   "instance.settings.tabs.general.name": {
     "message": "名前"
   },
+  "instance.settings.tabs.general.update-channel": {
+    "message": "更新チャンネル"
+  },
+  "instance.settings.tabs.general.update-channel.alpha": {
+    "message": "Alpha 版"
+  },
+  "instance.settings.tabs.general.update-channel.alpha.description": {
+    "message": "リリース版、Beta 版、Alpha 版が利用可能な更新として表示されます。"
+  },
+  "instance.settings.tabs.general.update-channel.beta": {
+    "message": "Beta 版"
+  },
+  "instance.settings.tabs.general.update-channel.beta.description": {
+    "message": "リリース版と Beta 版が利用可能な更新として表示されます。"
+  },
+  "instance.settings.tabs.general.update-channel.release": {
+    "message": "リリース版"
+  },
+  "instance.settings.tabs.general.update-channel.release.description": {
+    "message": "リリース版のみが利用可能な更新として表示されます。"
+  },
+  "instance.settings.tabs.general.update-channel.select": {
+    "message": "更新チャンネルを選択"
+  },
   "instance.settings.tabs.hooks": {
     "message": "起動フック"
   },
@@ -613,6 +2596,21 @@
   },
   "instance.settings.tabs.java": {
     "message": "Javaとメモリ"
+  },
+  "instance.settings.tabs.java.custom-environment-variables": {
+    "message": "カスタム環境変数"
+  },
+  "instance.settings.tabs.java.custom-java-arguments": {
+    "message": "カスタム Java 引数"
+  },
+  "instance.settings.tabs.java.custom-java-installation": {
+    "message": "カスタム Java インストール"
+  },
+  "instance.settings.tabs.java.enter-environment-variables": {
+    "message": "環境変数を入力…"
+  },
+  "instance.settings.tabs.java.enter-java-arguments": {
+    "message": "Java 引数を入力…"
   },
   "instance.settings.tabs.java.environment-variables": {
     "message": "環境変数"
@@ -670,6 +2668,9 @@
   },
   "instance.worlds.copy_address": {
     "message": "アドレスをコピー"
+  },
+  "instance.worlds.create_shortcut": {
+    "message": "ショートカットを作成"
   },
   "instance.worlds.dont_show_on_home": {
     "message": "ホームに表示しない"
@@ -766,5 +2767,62 @@
   },
   "unknown-pack-warning-modal.warning.title": {
     "message": "不明なファイルの警告"
+  },
+  "minecraft-login-modal.title": {
+    "message": "Minecraft にログイン"
+  },
+  "minecraft-login-modal.description": {
+    "message": "希望するログイン方法を選択してください。"
+  },
+  "minecraft-login-modal.microsoft-label": {
+    "message": "Microsoft"
+  },
+  "minecraft-login-modal.microsoft-description": {
+    "message": "Microsoft アカウントでログイン（公式ライセンス）。"
+  },
+  "minecraft-login-modal.offline-label": {
+    "message": "オフラインモード"
+  },
+  "minecraft-login-modal.offline-description": {
+    "message": "認証なしでプレイできます。一部のスキンと認証が必要なサーバーは利用できません。"
+  },
+  "minecraft-login-modal.yggdrasil-label": {
+    "message": "サードパーティログイン（Yggdrasil）"
+  },
+  "minecraft-login-modal.yggdrasil-description": {
+    "message": "authlib-injector 対応の認証サーバーにログインします（例：LittleSkin）。"
+  },
+  "minecraft-login-modal.username-label": {
+    "message": "ユーザー名"
+  },
+  "minecraft-login-modal.username-placeholder": {
+    "message": "ユーザー名を入力"
+  },
+  "minecraft-login-modal.username-error": {
+    "message": "ユーザー名は 3～16 文字で、英数字とアンダースコアのみ使用できます。"
+  },
+  "minecraft-login-modal.server-url-label": {
+    "message": "サーバーアドレス"
+  },
+  "minecraft-login-modal.server-url-placeholder": {
+    "message": "https://example.com/api/yggdrasil"
+  },
+  "minecraft-login-modal.password-label": {
+    "message": "パスワード"
+  },
+  "minecraft-login-modal.password-placeholder": {
+    "message": "パスワードを入力"
+  },
+  "minecraft-login-modal.proceed-label": {
+    "message": "ログイン"
+  },
+  "minecraft-login-modal.microsoft-help": {
+    "message": "ブラウザウィンドウが開き、ログインが完了します。"
+  },
+  "minecraft-login-modal.offline-help": {
+    "message": "ネットワーク接続は不要です。オフラインプレイやオフラインモードの LAN 接続に適しています。"
+  },
+  "minecraft-login-modal.yggdrasil-help": {
+    "message": "すべての authlib-injector 互換サーバーをサポートします。初回起動時に authlib-injector が自動ダウンロードされます。"
   }
 }

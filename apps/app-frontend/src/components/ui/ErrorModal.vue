@@ -19,8 +19,8 @@ import {
 import { computed, ref } from 'vue'
 
 import { ChatIcon } from '@/assets/icons'
-import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 import MinecraftLoginModal from '@/components/ui/modal/MinecraftLoginModal.vue'
+import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { set_default_user } from '@/helpers/auth.js'
 import { install_existing_instance } from '@/helpers/install'

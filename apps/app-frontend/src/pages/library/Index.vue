@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/ui'
-import { onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { instance_listener } from '@/helpers/events.js'
@@ -26,13 +26,19 @@ async function fetchInstances() {
 	instances.value = (await list().catch(handleError)) ?? []
 }
 
-await fetchInstances()
+let unlistenInstance: (() => void) | null = null
 
-const unlistenInstance = await instance_listener(async () => {
+onMounted(async () => {
 	await fetchInstances()
+	unlistenInstance = await instance_listener(async () => {
+		await fetchInstances()
+	})
 })
+
 onUnmounted(() => {
-	unlistenInstance()
+	if (unlistenInstance) {
+		unlistenInstance()
+	}
 })
 </script>
 

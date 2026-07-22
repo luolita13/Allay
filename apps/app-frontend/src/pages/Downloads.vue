@@ -1,715 +1,848 @@
-<script setup lang="ts">
-import {
-	PauseIcon,
-	PlayIcon,
-	RefreshCwIcon,
-	UpdatedIcon,
-	XIcon,
-} from '@modrinth/assets'
-import {
-	Avatar,
-	Badge,
-	ButtonStyled,
-	Card,
-	ProgressBar,
-	defineMessages,
-	injectNotificationManager,
-	useVIntl,
-} from '@modrinth/ui'
-import { convertFileSrc } from '@tauri-apps/api/core'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import { computed, onUnmounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-
-import { install_job_listener } from '@/helpers/events'
-import {
-	install_job_cancel,
-	install_job_dismiss,
-	install_job_list,
-	install_job_pause,
-	install_job_resume,
-	install_job_retry,
-	installJobInstanceId,
-	isInstallJobFinished,
-	type InstallJobSnapshot,
-	type InstallJobStatus,
-	type InstallPhaseId,
-} from '@/helpers/install'
-import { get_many as getInstances } from '@/helpers/instance'
-import { useBreadcrumbs } from '@/store/breadcrumbs'
-
-dayjs.extend(relativeTime)
-
-const { formatMessage } = useVIntl()
-const { handleError } = injectNotificationManager()
-const breadcrumbs = useBreadcrumbs()
-
-const messages = defineMessages({
-	title: {
-		id: 'app.downloads.title',
-		defaultMessage: 'Downloads',
-	},
-	noDownloads: {
-		id: 'app.downloads.no-downloads',
-		defaultMessage: 'No downloads',
-	},
-	noDownloadsDescription: {
-		id: 'app.downloads.no-downloads-description',
-		defaultMessage: 'There are no active or recent downloads.',
-	},
-	refresh: {
-		id: 'app.downloads.refresh',
-		defaultMessage: 'Refresh',
-	},
-	tabActive: {
-		id: 'app.downloads.tab.active',
-		defaultMessage: 'Active',
-	},
-	tabFinished: {
-		id: 'app.downloads.tab.finished',
-		defaultMessage: 'Finished',
-	},
-	tabActiveCount: {
-		id: 'app.downloads.tab.active-count',
-		defaultMessage: 'Active ({count})',
-	},
-	tabFinishedCount: {
-		id: 'app.downloads.tab.finished-count',
-		defaultMessage: 'Finished ({count})',
-	},
-	cancel: {
-		id: 'app.downloads.cancel',
-		defaultMessage: 'Cancel',
-	},
-	pause: {
-		id: 'app.downloads.pause',
-		defaultMessage: 'Pause',
-	},
-	resume: {
-		id: 'app.downloads.resume',
-		defaultMessage: 'Resume',
-	},
-	retry: {
-		id: 'app.downloads.retry',
-		defaultMessage: 'Retry',
-	},
-	dismiss: {
-		id: 'app.downloads.dismiss',
-		defaultMessage: 'Dismiss',
-	},
-	created: {
-		id: 'app.downloads.created',
-		defaultMessage: 'Created',
-	},
-	updated: {
-		id: 'app.downloads.updated',
-		defaultMessage: 'Updated',
-	},
-	error: {
-		id: 'app.downloads.error',
-		defaultMessage: 'Error',
-	},
-	unknownJob: {
-		id: 'app.downloads.unknown-job',
-		defaultMessage: 'Install job',
-	},
-})
-
-breadcrumbs.setRootContext({ name: formatMessage(messages.title), link: '/downloads' })
-
-// 阶段描述的 i18n 消息映射
-const phaseMessages = defineMessages({
-	preparing_instance: {
-		id: 'app.install.phase.preparing_instance',
-		defaultMessage: 'Preparing instance',
-	},
-	resolving_pack: {
-		id: 'app.install.phase.resolving_pack',
-		defaultMessage: 'Resolving pack',
-	},
-	downloading_pack_file: {
-		id: 'app.install.phase.downloading_pack_file',
-		defaultMessage: 'Downloading pack',
-	},
-	reading_pack_manifest: {
-		id: 'app.install.phase.reading_pack_manifest',
-		defaultMessage: 'Reading manifest',
-	},
-	downloading_content: {
-		id: 'app.install.phase.downloading_content',
-		defaultMessage: 'Downloading content',
-	},
-	extracting_overrides: {
-		id: 'app.install.phase.extracting_overrides',
-		defaultMessage: 'Extracting files',
-	},
-	resolving_minecraft: {
-		id: 'app.install.phase.resolving_minecraft',
-		defaultMessage: 'Resolving Minecraft',
-	},
-	resolving_loader: {
-		id: 'app.install.phase.resolving_loader',
-		defaultMessage: 'Resolving loader',
-	},
-	preparing_java: {
-		id: 'app.install.phase.preparing_java',
-		defaultMessage: 'Preparing Java',
-	},
-	downloading_minecraft: {
-		id: 'app.install.phase.downloading_minecraft',
-		defaultMessage: 'Downloading Minecraft',
-	},
-	running_loader_processors: {
-		id: 'app.install.phase.running_loader_processors',
-		defaultMessage: 'Running processors',
-	},
-	finalizing: {
-		id: 'app.install.phase.finalizing',
-		defaultMessage: 'Finalizing',
-	},
-	rolling_back: {
-		id: 'app.install.phase.rolling_back',
-		defaultMessage: 'Rolling back',
-	},
-})
-
-// 状态标签的 i18n 消息
-const statusMessages = defineMessages({
-	queued: {
-		id: 'app.downloads.status.queued',
-		defaultMessage: 'Queued',
-	},
-	running: {
-		id: 'app.downloads.status.running',
-		defaultMessage: 'Running',
-	},
-	paused: {
-		id: 'app.downloads.status.paused',
-		defaultMessage: 'Paused',
-	},
-	succeeded: {
-		id: 'app.downloads.status.succeeded',
-		defaultMessage: 'Succeeded',
-	},
-	failed: {
-		id: 'app.downloads.status.failed',
-		defaultMessage: 'Failed',
-	},
-	interrupted: {
-		id: 'app.downloads.status.interrupted',
-		defaultMessage: 'Interrupted',
-	},
-	canceled: {
-		id: 'app.downloads.status.canceled',
-		defaultMessage: 'Canceled',
-	},
-})
-
-// 状态对应的 Badge 颜色和类型
-const statusColorMap: Record<InstallJobStatus, string> = {
-	queued: 'yellow',
-	running: 'brand',
-	paused: 'orange',
-	succeeded: 'green',
-	failed: 'red',
-	interrupted: 'gray',
-	canceled: 'gray',
-}
-const statusTypeMap: Record<InstallJobStatus, string> = {
-	queued: 'queued',
-	running: 'running',
-	paused: 'paused',
-	succeeded: 'succeeded',
-	failed: 'failed',
-	interrupted: 'interrupted',
-	canceled: 'canceled',
-}
-
-const jobs = ref<InstallJobSnapshot[]>([])
-const instanceNames = ref<Record<string, string>>({})
-const loading = ref(false)
-const route = useRoute()
-const router = useRouter()
-
-const activeTab = computed<'active' | 'finished'>({
-	get() {
-		return route.query.tab === 'finished' ? 'finished' : 'active'
-	},
-	set(value) {
-		router.replace({ query: { ...route.query, tab: value } })
-	},
-})
-
-function getJobTitle(job: InstallJobSnapshot): string {
-	if (job.display?.title) return job.display.title
-	if (job.details.type === 'instance') return job.details.name
-	if (job.details.type === 'modpack' && job.details.title) return job.details.title
-	const instanceId = installJobInstanceId(job)
-	return (instanceId ? instanceNames.value[instanceId] : null) ?? formatMessage(messages.unknownJob)
-}
-
-function getDisplayIconUrl(icon: string | null | undefined): string | null {
-	if (!icon) return null
-	if (/^(https?:|data:|blob:|asset:|tauri:)/.test(icon)) return icon
-	return convertFileSrc(icon)
-}
-
-function getJobIconUrl(job: InstallJobSnapshot): string | null {
-	return getDisplayIconUrl(job.display?.icon)
-}
-
-function getPhaseLabel(phase: InstallPhaseId): string {
-	const messageDescriptor = phaseMessages[phase]
-	if (messageDescriptor) return formatMessage(messageDescriptor)
-	return phase.replace(/_/g, ' ')
-}
-
-function getStatusLabel(status: InstallJobStatus): string {
-	return formatMessage(statusMessages[status])
-}
-
-function getProgressFraction(job: InstallJobSnapshot): number | null {
-	if (job.status === 'succeeded') return 1
-	if (!job.progress || !job.progress.total || job.progress.total <= 0) return null
-	return Math.max(0, Math.min(1, job.progress.current / job.progress.total))
-}
-
-function formatRelativeTime(dateStr: string): string {
-	if (!dateStr) return '—'
-	return dayjs(dateStr).fromNow()
-}
-
-const activeJobs = computed(() => {
-	const active = jobs.value.filter((j) => !isInstallJobFinished(j.status))
-	active.sort((a, b) => a.created.localeCompare(b.created))
-	return active
-})
-
-const finishedJobs = computed(() => {
-	const finished = jobs.value.filter((j) => isInstallJobFinished(j.status))
-	finished.sort((a, b) => b.modified.localeCompare(a.modified))
-	return finished
-})
-
-const currentJobs = computed(() => (activeTab.value === 'active' ? activeJobs.value : finishedJobs.value))
-
-const hasCurrentJobs = computed(() => currentJobs.value.length > 0)
-
-async function refreshMetadata() {
-	const instanceIds = Array.from(
-		new Set(
-			jobs.value
-				.map((job) => installJobInstanceId(job))
-				.filter((id): id is string => !!id),
-		),
-	)
-
-	if (instanceIds.length === 0) {
-		instanceNames.value = {}
-		return
-	}
-
-	const instances = await getInstances(instanceIds).catch((err) => {
-		handleError(err)
-		return []
-	})
-
-	instanceNames.value = Object.fromEntries(instances.map((inst) => [inst.id, inst.name]))
-}
-
-async function refresh() {
-	loading.value = true
-	try {
-		const allJobs = await install_job_list(true).catch((err) => {
-			handleError(err)
-			return [] as InstallJobSnapshot[]
-		})
-		jobs.value = allJobs
-		await refreshMetadata()
-	} finally {
-		loading.value = false
-	}
-}
-
-// 操作处理
-async function cancelJob(jobId: string) {
-	try {
-		await install_job_cancel(jobId)
-	} catch (err: unknown) {
-		handleError(err	)
-	}
-	await refresh()
-}
-
-async function pauseJob(jobId: string) {
-	try {
-		await install_job_pause(jobId)
-	} catch (err: unknown) {
-		handleError(err)
-	}
-	await refresh()
-}
-
-async function resumeJob(jobId: string) {
-	try {
-		await install_job_resume(jobId)
-	} catch (err: unknown) {
-		handleError(err)
-	}
-	await refresh()
-}
-
-async function retryJob(jobId: string) {
-	try {
-		await install_job_retry(jobId)
-	} catch (err: unknown) {
-		handleError(err)
-	}
-	await refresh()
-}
-
-async function dismissJob(jobId: string) {
-	try {
-		await install_job_dismiss(jobId)
-	} catch (err: unknown) {
-		handleError(err)
-	}
-	await refresh()
-}
-
-// 监听 install_job 事件，实时更新
-const unlisten = await install_job_listener((updatedJob: InstallJobSnapshot) => {
-	const existingIndex = jobs.value.findIndex((j) => j.job_id === updatedJob.job_id)
-	if (existingIndex >= 0) {
-		const existing = jobs.value[existingIndex]
-		// 跳过过时的事件（modified 字段更早的更新）
-		if (existing.modified.localeCompare(updatedJob.modified) > 0) return
-		jobs.value = [...jobs.value.slice(0, existingIndex), updatedJob, ...jobs.value.slice(existingIndex + 1)]
-	} else {
-		jobs.value = [...jobs.value, updatedJob]
-	}
-	void refreshMetadata()
-})
-
-onUnmounted(() => {
-	unlisten()
-})
-
-// 初始加载
-await refresh()
-</script>
-
 <template>
-	<div class="p-6 flex flex-col gap-4">
-		<!-- 标题栏 -->
-		<div class="flex items-center justify-between">
-			<h1 class="m-0 text-2xl font-extrabold">
-				{{ formatMessage(messages.title) }}
-			</h1>
-			<ButtonStyled color="brand">
-				<button :disabled="loading" @click="refresh">
-					<RefreshCwIcon :class="{ 'animate-spin': loading }" />
+	<div class="flex flex-col gap-3 p-6">
+		<NavTabs
+			:active-index="tab === 'active' ? 0 : 1"
+			:links="downloadTabs"
+			mode="local"
+			@tab-click="selectTab"
+		/>
+
+		<div class="flex flex-wrap items-center gap-2">
+			<ButtonStyled type="transparent" size="small" @click="refreshDownloads">
+				<button :disabled="refreshing">
+					<RefreshCwIcon :class="{ 'animate-spin': refreshing }" />
 					{{ formatMessage(messages.refresh) }}
+				</button>
+			</ButtonStyled>
+			<div class="flex-1"></div>
+			<StyledInput
+				v-model="query"
+				:icon="SearchIcon"
+				:placeholder="formatMessage(messages.search)"
+				clearable
+				wrapper-class="flex-1 min-w-0"
+			/>
+			<DropdownSelect
+				v-model="provider"
+				class="!w-44"
+				name="download-provider"
+				:options="providerOptions"
+				:display-name="providerFilterLabel"
+			/>
+			<DropdownSelect
+				v-if="tab === 'history'"
+				v-model="historyStatus"
+				class="!w-44"
+				name="download-status"
+				:options="historyStatusOptions"
+				:display-name="historyStatusLabel"
+			/>
+			<ButtonStyled v-if="tab === 'history' && historyJobs.length" class="ml-auto" type="outlined">
+				<button @click="clearHistoryModal?.show()">
+					<TrashIcon />
+					{{ formatMessage(messages.clearHistory) }}
 				</button>
 			</ButtonStyled>
 		</div>
 
-		<!-- Tab switcher -->
-		<div v-if="jobs.length > 0" class="tab-bar">
-			<button
-				class="tab-button"
-				:class="{ 'tab-button--active': activeTab === 'active' }"
-				@click="activeTab = 'active'"
+		<div
+			v-if="visibleJobs.length || (tab === 'active' && legacyDownloads.length)"
+			class="flex flex-col gap-3"
+		>
+			<Card
+				v-for="bar in tab === 'active' ? legacyDownloads : []"
+				:key="String(bar.loading_bar_uuid ?? bar.id)"
+				class="!p-4"
 			>
-				{{ formatMessage(messages.tabActiveCount, { count: activeJobs.length }) }}
-			</button>
-			<button
-				class="tab-button"
-				:class="{ 'tab-button--active': activeTab === 'finished' }"
-				@click="activeTab = 'finished'"
-			>
-				{{ formatMessage(messages.tabFinishedCount, { count: finishedJobs.length }) }}
-			</button>
-		</div>
+				<div class="flex items-center gap-3">
+					<div
+						class="flex size-12 items-center justify-center rounded-xl bg-brand-highlight text-brand"
+					>
+						<DownloadIcon />
+					</div>
+					<div class="min-w-0 flex-grow">
+						<div class="truncate font-semibold text-contrast">{{ bar.title || bar.message }}</div>
+						<div class="truncate text-sm text-secondary">{{ bar.message }}</div>
+					</div>
+					<TagItem>
+						<component :is="providerIcon(legacyProvider(bar))" />
+						{{ providerLabel(legacyProvider(bar)) }}
+					</TagItem>
+					<Badge color="orange" :type="statusLabel('running')" />
+				</div>
+				<ProgressBar
+					class="mt-4"
+					full-width
+					:progress="legacyPercent(bar)"
+					:max="100"
+					:label="formatMessage(messages.progress)"
+					show-progress
+				/>
+			</Card>
 
-		<!-- 任务列表 -->
-		<template v-if="hasCurrentJobs">
-			<Card v-for="job in currentJobs" :key="job.job_id" class="job-card">
-				<div class="job-header">
-					<div class="job-header-left">
-						<Avatar
-							v-if="getJobIconUrl(job)"
-							:src="getJobIconUrl(job) ?? undefined"
-							:alt="getJobTitle(job)"
-							size="40px"
-						/>
-						<div v-else class="job-icon-placeholder">
-							<Avatar size="40px" />
+			<Card v-for="job in visibleJobs" :key="job.job_id" class="!p-0">
+				<div class="flex flex-wrap items-center gap-4 p-4">
+					<img
+						v-if="job.display?.icon"
+						:src="displayIcon(job.display.icon)"
+						alt=""
+						class="size-12 rounded-xl object-cover"
+					/>
+					<div
+						v-else
+						class="flex size-12 items-center justify-center rounded-xl bg-brand-highlight text-brand"
+					>
+						<DownloadIcon />
+					</div>
+					<div class="min-w-48 flex-grow">
+						<div class="flex flex-wrap items-center gap-2">
+							<h2 class="m-0 truncate text-lg font-semibold text-contrast">
+								{{ jobTitle(job) }}
+							</h2>
+							<TagItem>
+								<component :is="providerIcon(job.provider)" />
+								{{ providerLabel(job.provider) }}
+							</TagItem>
+							<Badge :color="statusColor(job.status)" :type="statusLabel(job.status)" />
+							<Badge
+								v-if="job.instance_deleted"
+								color="gray"
+								:type="formatMessage(messages.instanceDeleted)"
+							/>
 						</div>
-						<div class="job-title-group">
-							<span class="job-title">{{ getJobTitle(job) }}</span>
-							<Badge :type="statusTypeMap[job.status]" :color="statusColorMap[job.status]">
-								{{ getStatusLabel(job.status) }}
-							</Badge>
+						<div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-secondary">
+							<span>{{ phaseLabel(job.phase) }}</span>
+							<BulletDivider />
+							<span>{{ formatDate(job.finished ?? job.modified) }}</span>
+							<template v-if="installJobInstanceId(job)">
+								<BulletDivider />
+								<span>{{
+									formatMessage(messages.instanceTarget, {
+										instance: installJobInstanceId(job),
+									})
+								}}</span>
+							</template>
 						</div>
+						<div
+							v-if="downloadTelemetry(job).length"
+							class="mt-1 flex flex-wrap items-center gap-2 text-sm text-secondary"
+						>
+							<template
+								v-for="(metric, index) in downloadTelemetry(job)"
+								:key="`${index}-${metric}`"
+							>
+								<BulletDivider v-if="index > 0" />
+								<span>{{ metric }}</span>
+							</template>
+						</div>
+					</div>
+					<div class="flex flex-wrap items-center gap-2">
+						<ButtonStyled v-if="canCancel(job)" color="red" type="outlined" size="small">
+							<button :disabled="busy.has(job.job_id)" @click="cancel(job)">
+								<XIcon />{{ formatMessage(messages.cancel) }}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled v-if="canRetry(job)" color="brand" size="small">
+							<button :disabled="busy.has(job.job_id)" @click="retry(job)">
+								<RefreshCwIcon />{{ formatMessage(messages.retry) }}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled v-if="job.error" type="outlined" size="small">
+							<button :disabled="busy.has(job.job_id)" @click="copyDiagnostics(job)">
+								<ClipboardCopyIcon />{{ formatMessage(messages.copyDiagnostics) }}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled
+							v-if="installJobInstanceId(job) && !job.instance_deleted"
+							type="outlined"
+							size="small"
+						>
+							<button
+								@click="
+									router.push(
+										`/instance/${encodeURIComponent(installJobInstanceId(job)!)}`,
+									)
+								"
+							>
+								<ExternalIcon />{{ formatMessage(messages.openInstance) }}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled type="transparent" size="small">
+							<button @click="toggleExpanded(job.job_id)">
+								<ChevronDownIcon :class="expanded.has(job.job_id) ? 'rotate-180' : ''" />
+								{{
+									expanded.has(job.job_id)
+										? formatMessage(messages.hideDetails)
+										: formatMessage(messages.details)
+								}}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled v-if="tab === 'history'" circular type="transparent" size="small">
+							<button
+								v-tooltip="formatMessage(messages.deleteRecord)"
+								:aria-label="formatMessage(messages.deleteRecord)"
+								:disabled="busy.has(job.job_id)"
+								@click="remove(job)"
+							>
+								<TrashIcon />
+							</button>
+						</ButtonStyled>
 					</div>
 				</div>
 
-				<!-- 当前阶段：仅活跃任务显示 -->
-				<div v-if="!isInstallJobFinished(job.status)" class="job-phase">
-					{{ getPhaseLabel(job.phase) }}
-				</div>
-
-				<!-- 进度条：仅活跃任务显示 -->
-				<div
-					v-if="
-						!isInstallJobFinished(job.status) &&
-						(getProgressFraction(job) !== null || job.status === 'running' || job.status === 'paused')
-					"
-					class="job-progress"
-				>
+				<div v-if="showProgress(job)" class="px-4 pb-4">
 					<ProgressBar
-						:progress="getProgressFraction(job) ?? 0"
-						:show-progress="getProgressFraction(job) !== null"
+						full-width
+						:progress="jobPercent(job)"
+						:max="100"
+						:label="progressText(job)"
+						:waiting="job.status === 'queued'"
+						show-progress
 					/>
-					<span v-if="job.progress && job.progress.total > 0" class="job-progress-text">
-						{{ Math.round((job.progress.current / job.progress.total) * 100) }}%
-					</span>
 				</div>
 
-				<!-- 错误信息 -->
-				<div v-if="job.error" class="job-error">
-					<strong>{{ formatMessage(messages.error) }}:</strong> {{ job.error.message }}
-				</div>
-
-				<!-- 时间戳 -->
-				<div class="job-timestamps">
-					<span class="job-timestamp" :title="job.created">
-						{{ formatMessage(messages.created) }} {{ formatRelativeTime(job.created) }}
-					</span>
-					<span class="job-timestamp" :title="job.modified">
-						{{ formatMessage(messages.updated) }} {{ formatRelativeTime(job.modified) }}
-					</span>
-				</div>
-
-				<!-- 操作按钮 -->
-				<div class="job-actions">
-					<!-- Queued: Cancel -->
-					<template v-if="job.status === 'queued'">
-						<ButtonStyled color="red" type="outlined">
-							<button @click="cancelJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.cancel) }}
-							</button>
-						</ButtonStyled>
-					</template>
-
-					<!-- Running: Pause, Cancel -->
-					<template v-if="job.status === 'running'">
-						<ButtonStyled color="orange" type="outlined">
-							<button @click="pauseJob(job.job_id)">
-								<PauseIcon />
-								{{ formatMessage(messages.pause) }}
-							</button>
-						</ButtonStyled>
-						<ButtonStyled color="red" type="outlined">
-							<button @click="cancelJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.cancel) }}
-							</button>
-						</ButtonStyled>
-					</template>
-
-					<!-- Paused: Resume, Cancel -->
-					<template v-if="job.status === 'paused'">
-						<ButtonStyled color="brand" type="outlined">
-							<button @click="resumeJob(job.job_id)">
-								<PlayIcon />
-								{{ formatMessage(messages.resume) }}
-							</button>
-						</ButtonStyled>
-						<ButtonStyled color="red" type="outlined">
-							<button @click="cancelJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.cancel) }}
-							</button>
-						</ButtonStyled>
-					</template>
-
-					<!-- Failed/Interrupted: Retry, Dismiss -->
-					<template v-if="job.status === 'failed' || job.status === 'interrupted'">
-						<ButtonStyled color="brand" type="outlined">
-							<button @click="retryJob(job.job_id)">
-								<UpdatedIcon />
-								{{ formatMessage(messages.retry) }}
-							</button>
-						</ButtonStyled>
-						<ButtonStyled type="outlined">
-							<button @click="dismissJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.dismiss) }}
-							</button>
-						</ButtonStyled>
-					</template>
-
-					<!-- Succeeded: Dismiss -->
-					<template v-if="job.status === 'succeeded'">
-						<ButtonStyled type="outlined">
-							<button @click="dismissJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.dismiss) }}
-							</button>
-						</ButtonStyled>
-					</template>
-
-					<!-- Canceled: Dismiss -->
-					<template v-if="job.status === 'canceled'">
-						<ButtonStyled type="outlined">
-							<button @click="dismissJob(job.job_id)">
-								<XIcon />
-								{{ formatMessage(messages.dismiss) }}
-							</button>
-						</ButtonStyled>
-					</template>
+				<div
+					v-if="expanded.has(job.job_id)"
+					class="border-0 border-t border-solid border-divider p-4"
+				>
+					<Admonition
+						v-if="job.error"
+						class="mb-4"
+						type="critical"
+						:header="formatMessage(messages.errorDetails)"
+					>
+						{{ job.error.message }}
+					</Admonition>
+					<Table
+						v-if="job.items.length"
+						:columns="itemColumns"
+						:data="job.items"
+						row-key="id"
+						table-min-width="42rem"
+						virtualized
+						class="max-h-80 overflow-y-auto"
+					>
+						<template #cell-name="{ row }">
+							<div class="min-w-0 py-2">
+								<div class="truncate font-medium text-contrast">{{ row.name }}</div>
+								<div
+									v-if="row.project_id && row.version_id"
+									class="truncate text-xs text-secondary"
+								>
+									{{
+										formatMessage(messages.projectFile, {
+											projectId: row.project_id,
+											fileId: row.version_id,
+										})
+									}}
+								</div>
+								<div v-if="row.error" class="truncate text-xs text-red">
+									{{ itemError(row) }}
+								</div>
+								<ButtonStyled v-if="row.manual_url" type="transparent" size="small">
+									<button class="!px-0" @click.stop="openManualDownload(row)">
+										<ExternalIcon />{{ formatMessage(messages.manualDownload) }}
+									</button>
+								</ButtonStyled>
+							</div>
+						</template>
+						<template #cell-status="{ row }">
+							<Badge :color="itemStatusColor(row.status)" :type="statusLabel(row.status)" />
+						</template>
+						<template #cell-attempts="{ row }">
+							<span>{{ itemAttempts(row) }}</span>
+						</template>
+						<template #cell-progress="{ row }">
+							<span>{{ itemProgress(row) }}</span>
+						</template>
+					</Table>
+					<EmptyState
+						v-else
+						type="no-documents"
+						:heading="formatMessage(messages.noFileDetailsTitle)"
+						:description="formatMessage(messages.noFileDetails)"
+					/>
 				</div>
 			</Card>
-		</template>
-
-		<!-- 空状态 -->
-		<div v-else class="empty-state">
-			<h2 class="m-0 text-xl font-bold text-contrast">
-				{{ formatMessage(messages.noDownloads) }}
-			</h2>
-			<p class="m-0 text-secondary">
-				{{ formatMessage(messages.noDownloadsDescription) }}
-			</p>
 		</div>
+
+		<Card v-else>
+			<EmptyState
+				:type="query ? 'no-search-result' : 'no-tasks'"
+				:heading="formatMessage(query ? messages.noResultsTitle : messages.emptyTitle)"
+				:description="
+					formatMessage(query ? messages.noResultsDescription : messages.emptyDescription)
+				"
+			/>
+		</Card>
 	</div>
+
+	<ConfirmModal
+		ref="clearHistoryModal"
+		:danger="true"
+		:markdown="false"
+		:title="formatMessage(messages.clearHistoryTitle)"
+		:description="formatMessage(messages.confirmClear)"
+		:proceed-label="formatMessage(messages.clearHistory)"
+		@proceed="clearHistory"
+	/>
 </template>
 
-<style lang="scss" scoped>
-.tab-bar {
-	display: flex;
-	gap: var(--gap-sm, 0.5rem);
-	border-bottom: 2px solid var(--color-button-bg);
+<script setup lang="ts">
+import {
+	ChevronDownIcon,
+	ClipboardCopyIcon,
+	ClockIcon,
+	CurseForgeIcon,
+	DownloadIcon,
+	ExternalIcon,
+	ModrinthIcon,
+	RefreshCwIcon,
+	SearchIcon,
+	TrashIcon,
+	XIcon,
+} from '@modrinth/assets'
+import {
+	Admonition,
+	Badge,
+	BulletDivider,
+	ButtonStyled,
+	Card,
+	ConfirmModal,
+	defineMessages,
+	DropdownSelect,
+	EmptyState,
+	injectNotificationManager,
+	NavTabs,
+	ProgressBar,
+	StyledInput,
+	Table,
+	type TableColumn,
+	TagItem,
+	useFormatBytes,
+	useVIntl,
+} from '@modrinth/ui'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+import {
+	download_job_support_details,
+	installJobInstanceId,
+	type InstallJobSnapshot,
+	type InstallJobStatus,
+	type InstallPhaseId,
+} from '@/helpers/install'
+import type { LoadingBar } from '@/helpers/state'
+import { injectDownloadManager } from '@/providers/download-manager'
+
+type DownloadItem = InstallJobSnapshot['items'][number]
+
+const manager = injectDownloadManager()
+const router = useRouter()
+const { handleError } = injectNotificationManager()
+const { formatMessage } = useVIntl()
+const formatBytes = useFormatBytes()
+
+const tab = ref<'active' | 'history'>('active')
+const query = ref('')
+const provider = ref('all')
+const historyStatus = ref('all')
+const expanded = ref(new Set<string>())
+const busy = ref(new Set<string>())
+const refreshing = ref(false)
+const clearHistoryModal = ref<InstanceType<typeof ConfirmModal>>()
+
+const messages = defineMessages({
+		inProgress: { id: 'app.downloads.in-progress', defaultMessage: 'In progress' },
+		history: { id: 'app.downloads.history', defaultMessage: 'History' },
+		refresh: { id: 'app.downloads.refresh', defaultMessage: 'Refresh' },
+		search: { id: 'app.downloads.search', defaultMessage: 'Search downloads' },
+	allSources: { id: 'app.downloads.all-sources', defaultMessage: 'All sources' },
+	allStatuses: { id: 'app.downloads.all-statuses', defaultMessage: 'All statuses' },
+	application: { id: 'app.downloads.application', defaultMessage: 'Application' },
+	local: { id: 'app.downloads.local', defaultMessage: 'Local' },
+	clearHistory: { id: 'app.downloads.clear-history', defaultMessage: 'Clear history' },
+	clearHistoryTitle: {
+		id: 'app.downloads.clear-history-title',
+		defaultMessage: 'Clear download history?',
+	},
+	cancel: { id: 'app.downloads.cancel', defaultMessage: 'Cancel' },
+	retry: { id: 'app.downloads.retry', defaultMessage: 'Retry' },
+	copyDiagnostics: {
+		id: 'app.downloads.copy-diagnostics',
+		defaultMessage: 'Copy diagnostics',
+	},
+	openInstance: { id: 'app.downloads.open-instance', defaultMessage: 'Open instance' },
+	instanceDeleted: {
+		id: 'app.downloads.instance-deleted',
+		defaultMessage: 'Instance deleted',
+	},
+	details: { id: 'app.downloads.details', defaultMessage: 'Details' },
+	hideDetails: { id: 'app.downloads.hide-details', defaultMessage: 'Hide details' },
+	deleteRecord: { id: 'app.downloads.delete-record', defaultMessage: 'Delete record' },
+	errorDetails: { id: 'app.downloads.error-details', defaultMessage: 'Download failed' },
+	progress: { id: 'app.downloads.progress', defaultMessage: 'Progress' },
+	noFileDetailsTitle: {
+		id: 'app.downloads.no-file-details-title',
+		defaultMessage: 'No file details',
+	},
+	noFileDetails: {
+		id: 'app.downloads.no-file-details',
+		defaultMessage: 'No file details were recorded for this download.',
+	},
+	emptyTitle: { id: 'app.downloads.empty-title', defaultMessage: 'No downloads yet' },
+	emptyDescription: {
+		id: 'app.downloads.empty-description',
+		defaultMessage: 'New downloads and installation progress will appear here.',
+	},
+	noResultsTitle: {
+		id: 'app.downloads.no-results-title',
+		defaultMessage: 'No matching downloads',
+	},
+	noResultsDescription: {
+		id: 'app.downloads.no-results-description',
+		defaultMessage: 'Try changing your search or filters.',
+	},
+	confirmClear: {
+		id: 'app.downloads.confirm-clear',
+		defaultMessage:
+			'Completed, failed, interrupted, and canceled records will be permanently deleted.',
+	},
+	instanceTarget: {
+		id: 'app.downloads.instance-target',
+		defaultMessage: 'Instance: {instance}',
+	},
+	notAvailable: { id: 'app.downloads.not-available', defaultMessage: '\u2014' },
+	itemName: { id: 'app.downloads.item-name', defaultMessage: 'File' },
+	itemStatus: { id: 'app.downloads.item-status', defaultMessage: 'Status' },
+	itemAttempts: { id: 'app.downloads.item-attempts', defaultMessage: 'Attempts' },
+	attemptProgress: {
+		id: 'app.downloads.item-attempt-progress',
+		defaultMessage: '{attempt}/{maxAttempts}',
+	},
+	itemProgress: { id: 'app.downloads.item-progress', defaultMessage: 'Downloaded' },
+	manualDownload: {
+		id: 'app.curseforge.manual-downloads.open',
+		defaultMessage: 'Open',
+	},
+	manualDownloadRequired: {
+		id: 'app.downloads.manual-download-required',
+		defaultMessage: 'CurseForge requires this file to be downloaded manually.',
+	},
+	projectFile: {
+		id: 'app.curseforge.manual-downloads.project-file',
+		defaultMessage: 'Project {projectId} \u00b7 File {fileId}',
+	},
+	downloadSource: {
+		id: 'app.downloads.download-source',
+		defaultMessage: 'Source: {source}',
+	},
+	downloadSourceOfficial: {
+		id: 'app.downloads.source.official',
+		defaultMessage: 'Official',
+	},
+	downloadSourceBmclapi: {
+		id: 'app.downloads.source.bmclapi',
+		defaultMessage: 'OpenBMCLAPI',
+	},
+	downloadSourceMcim: { id: 'app.downloads.source.mcim', defaultMessage: 'MCIM' },
+	downloadSourceAlternate: {
+		id: 'app.downloads.source.alternate',
+		defaultMessage: 'Alternate source',
+	},
+	downloadSpeed: {
+		id: 'app.downloads.download-speed',
+		defaultMessage: 'Speed: {speed}/s',
+	},
+	downloadEtaSeconds: {
+		id: 'app.downloads.download-eta-seconds',
+		defaultMessage: '{seconds}s remaining',
+	},
+	downloadEtaMinutes: {
+		id: 'app.downloads.download-eta-minutes',
+		defaultMessage: '{minutes}m remaining',
+	},
+	downloadEtaHours: {
+		id: 'app.downloads.download-eta-hours',
+		defaultMessage: '{hours}h {minutes}m remaining',
+	},
+	downloadFallbacks: {
+		id: 'app.downloads.download-fallbacks',
+		defaultMessage: '{count} fallbacks',
+	},
+})
+
+const statusMessages = defineMessages({
+	queued: { id: 'app.downloads.status.queued', defaultMessage: 'Queued' },
+	running: { id: 'app.downloads.status.running', defaultMessage: 'Running' },
+	canceling: { id: 'app.downloads.status.canceling', defaultMessage: 'Canceling' },
+	waiting_for_user: {
+		id: 'app.downloads.status.waiting-for-user',
+		defaultMessage: 'Action needed',
+	},
+	succeeded: { id: 'app.downloads.status.succeeded', defaultMessage: 'Completed' },
+	failed: { id: 'app.downloads.status.failed', defaultMessage: 'Failed' },
+	interrupted: { id: 'app.downloads.status.interrupted', defaultMessage: 'Interrupted' },
+	canceled: { id: 'app.downloads.status.canceled', defaultMessage: 'Canceled' },
+	completed: { id: 'app.downloads.item-status.completed', defaultMessage: 'Completed' },
+	skipped: { id: 'app.downloads.item-status.skipped', defaultMessage: 'Skipped' },
+	downloading: { id: 'app.downloads.item-status.downloading', defaultMessage: 'Downloading' },
+	verifying: { id: 'app.downloads.item-status.verifying', defaultMessage: 'Verifying' },
+	writing: { id: 'app.downloads.item-status.writing', defaultMessage: 'Writing' },
+})
+
+const phaseMessages = defineMessages({
+	preparing_instance: {
+		id: 'app.downloads.phase.preparing-instance',
+		defaultMessage: 'Preparing instance',
+	},
+	resolving_pack: {
+		id: 'app.downloads.phase.resolving-pack',
+		defaultMessage: 'Resolving modpack',
+	},
+	downloading_pack_file: {
+		id: 'app.downloads.phase.downloading-pack-file',
+		defaultMessage: 'Downloading modpack',
+	},
+	reading_pack_manifest: {
+		id: 'app.downloads.phase.reading-pack-manifest',
+		defaultMessage: 'Reading manifest',
+	},
+	downloading_content: {
+		id: 'app.downloads.phase.downloading-content',
+		defaultMessage: 'Downloading content',
+	},
+	extracting_overrides: {
+		id: 'app.downloads.phase.extracting-overrides',
+		defaultMessage: 'Extracting overrides',
+	},
+	resolving_minecraft: {
+		id: 'app.downloads.phase.resolving-minecraft',
+		defaultMessage: 'Resolving Minecraft',
+	},
+	resolving_loader: {
+		id: 'app.downloads.phase.resolving-loader',
+		defaultMessage: 'Resolving loader',
+	},
+	preparing_java: {
+		id: 'app.downloads.phase.preparing-java',
+		defaultMessage: 'Preparing Java',
+	},
+	downloading_minecraft: {
+		id: 'app.downloads.phase.downloading-minecraft',
+		defaultMessage: 'Downloading Minecraft',
+	},
+	running_loader_processors: {
+		id: 'app.downloads.phase.running-loader-processors',
+		defaultMessage: 'Installing loader',
+	},
+	finalizing: { id: 'app.downloads.phase.finalizing', defaultMessage: 'Finalizing' },
+	rolling_back: {
+		id: 'app.downloads.phase.rolling-back',
+		defaultMessage: 'Rolling back changes',
+	},
+})
+
+const legacyDownloads = manager.legacyDownloads
+const historyJobs = manager.historyJobs
+const providerOptions = ['all', 'modrinth', 'curse_forge', 'minecraft', 'java', 'application', 'local']
+const historyStatusOptions = ['all', 'succeeded', 'failed', 'interrupted', 'canceled']
+const downloadTabs = computed(() => [
+	{
+		href: 'active',
+		label: formatMessage(messages.inProgress),
+		icon: DownloadIcon,
+	},
+	{ href: 'history', label: formatMessage(messages.history), icon: ClockIcon },
+])
+const itemColumns = computed<TableColumn[]>(() => [
+	{ key: 'name', label: formatMessage(messages.itemName), width: '48%' },
+	{ key: 'status', label: formatMessage(messages.itemStatus), width: '18%' },
+	{ key: 'attempts', label: formatMessage(messages.itemAttempts), width: '16%' },
+	{ key: 'progress', label: formatMessage(messages.itemProgress), width: '18%', align: 'right' },
+])
+const sourceJobs = computed(() =>
+	tab.value === 'active' ? manager.activeJobs.value : manager.historyJobs.value,
+)
+const visibleJobs = computed(() => {
+	const normalized = query.value.trim().toLowerCase()
+	return sourceJobs.value.filter((job) => {
+		if (provider.value !== 'all' && job.provider !== provider.value) return false
+		if (
+			tab.value === 'history' &&
+			historyStatus.value !== 'all' &&
+			job.status !== historyStatus.value
+		)
+			return false
+		return (
+			!normalized ||
+			jobTitle(job).toLowerCase().includes(normalized) ||
+			job.job_id.includes(normalized)
+		)
+	})
+})
+
+function jobTitle(job: InstallJobSnapshot) {
+	return (
+		job.display?.title ||
+		(job.details.type === 'instance' ? job.details.name : null) ||
+		(job.details.type === 'modpack' ? job.details.title : null) ||
+		(job.details.type === 'import' ? job.details.instance_folder : null) ||
+		(job.kind === 'install_curseforge_file' ? job.job_id : null) ||
+		job.job_id
+	)
 }
 
-.tab-button {
-	position: relative;
-	padding: 0.75rem 1rem;
-	background: transparent;
-	border: none;
-	color: var(--color-text);
-	font-size: 0.9375rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: color 0.15s ease;
+function displayIcon(icon: string) {
+	return /^(https?:|data:|blob:|asset:|tauri:)/.test(icon) ? icon : convertFileSrc(icon)
+}
 
-	&:hover {
-		color: var(--color-contrast);
+function providerLabel(value: InstallJobSnapshot['provider']) {
+	return (
+		{
+			modrinth: 'Modrinth',
+			curse_forge: 'CurseForge',
+			minecraft: 'Minecraft',
+			java: 'Java',
+			application: formatMessage(messages.application),
+			local: formatMessage(messages.local),
+		} as Record<string, string>
+	)[value]
+}
+
+function providerFilterLabel(value: string) {
+	return value === 'all'
+		? formatMessage(messages.allSources)
+		: providerLabel(value as InstallJobSnapshot['provider'])
+}
+
+function providerIcon(value: InstallJobSnapshot['provider']) {
+	return value === 'curse_forge' ? CurseForgeIcon : value === 'modrinth' ? ModrinthIcon : DownloadIcon
+}
+
+function legacyProvider(bar: LoadingBar): InstallJobSnapshot['provider'] {
+	if (bar.bar_type?.type === 'pack_download') return 'curse_forge'
+	if (bar.bar_type?.type === 'minecraft_download') return 'minecraft'
+	if (bar.bar_type?.type === 'java_download') return 'java'
+	if (bar.bar_type?.type === 'launcher_update') return 'application'
+	return 'local'
+}
+
+function historyStatusLabel(value: string) {
+	return value === 'all' ? formatMessage(messages.allStatuses) : statusLabel(value)
+}
+
+function statusLabel(status: string) {
+	return status in statusMessages
+		? formatMessage(statusMessages[status as keyof typeof statusMessages])
+		: status
+}
+
+function phaseLabel(phase: InstallPhaseId) {
+	return formatMessage(phaseMessages[phase])
+}
+
+function statusColor(status: InstallJobStatus): 'green' | 'red' | 'orange' | 'blue' | 'gray' {
+	if (status === 'succeeded') return 'green'
+	if (status === 'failed' || status === 'interrupted' || status === 'canceled') return 'red'
+	if (status === 'running' || status === 'waiting_for_user' || status === 'canceling')
+		return 'orange'
+	return 'blue'
+}
+
+function itemStatusColor(
+	status: DownloadItem['status'],
+): 'green' | 'red' | 'orange' | 'blue' | 'gray' {
+	if (status === 'completed') return 'green'
+	if (status === 'failed' || status === 'canceled') return 'red'
+	if (status === 'waiting_for_user') return 'orange'
+	if (status === 'skipped') return 'gray'
+	return 'blue'
+}
+
+function canCancel(job: InstallJobSnapshot) {
+	return job.status === 'queued' || job.status === 'running'
+}
+
+function canRetry(job: InstallJobSnapshot) {
+	return job.status === 'failed' || job.status === 'interrupted' || job.status === 'canceled'
+}
+
+function showProgress(job: InstallJobSnapshot) {
+	return ['queued', 'running', 'canceling'].includes(job.status)
+}
+
+function jobPercent(job: InstallJobSnapshot) {
+	const progress = job.progress?.secondary ?? job.progress
+	if (!progress?.total) return job.status === 'succeeded' ? 100 : 0
+	return Math.min(100, Math.max(0, Math.round((progress.current / progress.total) * 100)))
+}
+
+function progressText(job: InstallJobSnapshot) {
+		const summary = job.summary ?? {}
+		if (summary.bytes_total)
+			return `${formatBytes(summary.bytes_downloaded)} / ${formatBytes(summary.bytes_total)}`
+		if (summary.files_total) return `${summary.files_completed} / ${summary.files_total}`
+		return phaseLabel(job.phase)
 	}
 
-	&--active {
-		color: var(--color-contrast);
-
-		&::after {
-			content: '';
-			position: absolute;
-			bottom: -2px;
-			left: 0;
-			right: 0;
-			height: 2px;
-			background: var(--color-brand);
-			border-radius: 2px 2px 0 0;
+	function downloadTelemetry(job: InstallJobSnapshot) {
+		const summary = job.summary ?? {}
+		const metrics: string[] = []
+		if (summary.source) {
+			metrics.push(
+				formatMessage(messages.downloadSource, { source: downloadSourceLabel(summary.source) }),
+			)
 		}
+		if (summary.speed_bytes_per_second && summary.speed_bytes_per_second > 0) {
+			metrics.push(
+				formatMessage(messages.downloadSpeed, { speed: formatBytes(summary.speed_bytes_per_second) }),
+			)
+		}
+		if (summary.eta_seconds != null) {
+			metrics.push(formatDownloadEta(summary.eta_seconds))
+		}
+		if (summary.fallback_count > 0) {
+			metrics.push(formatMessage(messages.downloadFallbacks, { count: summary.fallback_count }))
+		}
+		return metrics
+	}
+
+function downloadSourceLabel(source: string) {
+	switch (source) {
+		case 'official':
+			return formatMessage(messages.downloadSourceOfficial)
+		case 'bmclapi':
+			return formatMessage(messages.downloadSourceBmclapi)
+		case 'mcim':
+			return formatMessage(messages.downloadSourceMcim)
+		default:
+			return formatMessage(messages.downloadSourceAlternate)
 	}
 }
 
-.job-card {
-	display: flex;
-	flex-direction: column;
-	gap: var(--gap-sm, 0.5rem);
+function formatDownloadEta(seconds: number) {
+	const clamped = Math.max(0, Math.round(seconds))
+	if (clamped < 60) {
+		return formatMessage(messages.downloadEtaSeconds, { seconds: clamped })
+	}
+	const minutes = Math.floor(clamped / 60)
+	if (minutes < 60) {
+		return formatMessage(messages.downloadEtaMinutes, { minutes })
+	}
+	return formatMessage(messages.downloadEtaHours, {
+		hours: Math.floor(minutes / 60),
+		minutes: minutes % 60,
+	})
 }
 
-.job-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+function itemProgress(item: DownloadItem) {
+	if (!item.bytes_total) return formatMessage(messages.notAvailable)
+	return `${formatBytes(item.bytes_downloaded)} / ${formatBytes(item.bytes_total)}`
 }
 
-.job-header-left {
-	display: flex;
-	align-items: center;
-	gap: var(--gap-md, 0.75rem);
+function itemAttempts(item: DownloadItem) {
+	if (!item.attempt || !item.max_attempts) return formatMessage(messages.notAvailable)
+	return formatMessage(messages.attemptProgress, {
+		attempt: item.attempt,
+		maxAttempts: item.max_attempts,
+	})
 }
 
-.job-title-group {
-	display: flex;
-	align-items: center;
-	gap: var(--gap-sm, 0.5rem);
-	flex-wrap: wrap;
+function itemError(item: DownloadItem) {
+	if (item.error?.includes('requires manual download')) {
+		return formatMessage(messages.manualDownloadRequired)
+	}
+	return item.error ?? ''
 }
 
-.job-title {
-	font-size: 1rem;
-	font-weight: 700;
-	color: var(--color-contrast);
+async function openManualDownload(item: DownloadItem) {
+	if (item.manual_url) await openUrl(item.manual_url)
 }
 
-.job-phase {
-	font-size: 0.875rem;
-	color: var(--color-secondary);
-	font-weight: 500;
+function legacyPercent(bar: LoadingBar) {
+	if (!bar.total) return 0
+	return Math.min(100, Math.max(0, Math.round(((bar.current ?? 0) / bar.total) * 100)))
 }
 
-.job-progress {
-	display: flex;
-	align-items: center;
-	gap: var(--gap-sm, 0.5rem);
+function formatDate(value: string) {
+	return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
+		new Date(value),
+	)
 }
 
-.job-progress-text {
-	font-size: 0.75rem;
-	font-weight: 600;
-	color: var(--color-secondary);
-	white-space: nowrap;
+function selectTab(index: number) {
+	tab.value = index === 0 ? 'active' : 'history'
 }
 
-.job-error {
-	font-size: 0.875rem;
-	color: var(--color-red);
-	background: rgba(255, 0, 0, 0.06);
-	border-radius: 0.375rem;
-	padding: 0.5rem 0.75rem;
-	border: 1px solid rgba(255, 0, 0, 0.15);
+function toggleExpanded(jobId: string) {
+	const next = new Set(expanded.value)
+	if (next.has(jobId)) {
+		next.delete(jobId)
+	} else {
+		next.add(jobId)
+	}
+	expanded.value = next
 }
 
-.job-timestamps {
-	display: flex;
-	gap: var(--gap-md, 0.75rem);
-	flex-wrap: wrap;
+async function withBusy(jobId: string, action: () => Promise<void>) {
+	busy.value = new Set([...busy.value, jobId])
+	try {
+		await action()
+	} catch (error) {
+		handleError(error)
+	} finally {
+		const next = new Set(busy.value)
+		next.delete(jobId)
+		busy.value = next
+	}
 }
 
-.job-timestamp {
-	font-size: 0.75rem;
-	color: var(--color-secondary);
+async function cancel(job: InstallJobSnapshot) {
+	await withBusy(job.job_id, () => manager.cancel(job.job_id))
 }
 
-.job-actions {
-	display: flex;
-	gap: var(--gap-sm, 0.5rem);
-	flex-wrap: wrap;
-	padding-top: 0.25rem;
+async function retry(job: InstallJobSnapshot) {
+	await withBusy(job.job_id, () => manager.retry(job.job_id))
 }
 
-.empty-state {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: var(--gap-sm, 0.5rem);
-	padding: 3rem 1rem;
-	text-align: center;
+async function remove(job: InstallJobSnapshot) {
+	await withBusy(job.job_id, () => manager.remove(job.job_id))
 }
-</style>
+
+async function copyDiagnostics(job: InstallJobSnapshot) {
+	await withBusy(job.job_id, async () =>
+		navigator.clipboard.writeText(await download_job_support_details(job.job_id)),
+	)
+}
+
+async function clearHistory() {
+	try {
+		await manager.clearHistory()
+	} catch (error) {
+		handleError(error)
+	}
+}
+
+async function refreshDownloads() {
+	if (refreshing.value) return
+	refreshing.value = true
+	try {
+		await manager.refresh()
+	} catch (error) {
+		handleError(error)
+	} finally {
+		refreshing.value = false
+	}
+}
+
+onMounted(() => {
+	manager.start()
+})
+
+onUnmounted(() => {
+	manager.dispose()
+})
+</script>

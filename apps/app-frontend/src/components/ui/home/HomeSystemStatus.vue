@@ -11,8 +11,8 @@ import {
 import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/ui'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-import { get_system_info, type SystemInfo } from '@/helpers/system'
 import { list } from '@/helpers/instance'
+import { get_system_info, type SystemInfo } from '@/helpers/system'
 
 const { handleError } = injectNotificationManager()
 

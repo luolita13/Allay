@@ -767,9 +767,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Aangepaste Java-installatie"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Aangepaste geheugentoewijzing"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Voer omgevingsvariabelen in…"
   },

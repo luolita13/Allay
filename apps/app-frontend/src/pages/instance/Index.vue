@@ -310,11 +310,10 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { useQueryClient } from '@tanstack/vue-query'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { computed, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
@@ -328,6 +327,7 @@ import { instance_listener, process_listener } from '@/helpers/events'
 import { install_existing_instance, install_pack_to_existing_instance } from '@/helpers/install'
 import { get, get_full_path, kill, run } from '@/helpers/instance'
 import { type InstanceContentData, loadInstanceContentData } from '@/helpers/instance-content'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_by_instance_id } from '@/helpers/process'
 import type { GameInstance } from '@/helpers/types'
 import { createInstanceShortcut, showInstanceInFolder } from '@/helpers/utils.js'
@@ -518,7 +518,6 @@ async function updatePlayState() {
 	playing.value = Array.isArray(runningProcesses) && runningProcesses.length > 0
 }
 
-await fetchInstance()
 watch(
 	() => route.params.id,
 	async () => {
@@ -743,37 +742,43 @@ const handleOptionsClick = async (args: { option: string; item: unknown }) => {
 	}
 }
 
-const unlistenInstances = await instance_listener(
-	async (event: { instance_id: string; event: string }) => {
-		if (event.instance_id !== route.params.id) return
-		if (event.event === 'removed' || route.path === '/') {
-			if (route.path !== '/') {
-				await router.push({ path: '/' })
-			}
-			return
-		}
-		instance.value = await get(route.params.id as string).catch((err) => {
-			if (String(err).includes('not managed')) {
-				router.push({ path: '/' })
-				return undefined
-			}
-			return handleError(err)
-		})
-		if (!instance.value?.link?.project_id) {
-			linkedProjectV3.value = undefined
-			isServerInstance.value = false
-		}
-	},
-)
+let unlistenInstances: (() => void) | null = null
+let unlistenProcesses: (() => void) | null = null
 
-const unlistenProcesses = await process_listener((e: { event: string; instance_id: string }) => {
-	if (e.event === 'finished' && e.instance_id === route.params.id) {
-		playing.value = false
-	}
+onMounted(async () => {
+	await fetchInstance()
+	unlistenInstances = await instance_listener(
+		async (event: { instance_id: string; event: string }) => {
+			if (event.instance_id !== route.params.id) return
+			if (event.event === 'removed' || route.path === '/') {
+				if (route.path !== '/') {
+					await router.push({ path: '/' })
+				}
+				return
+			}
+			instance.value = await get(route.params.id as string).catch((err) => {
+				if (String(err).includes('not managed')) {
+					router.push({ path: '/' })
+					return undefined
+				}
+				return handleError(err)
+			})
+			if (!instance.value?.link?.project_id) {
+				linkedProjectV3.value = undefined
+				isServerInstance.value = false
+			}
+		},
+	)
+
+	unlistenProcesses = await process_listener((e: { event: string; instance_id: string }) => {
+		if (e.event === 'finished' && e.instance_id === route.params.id) {
+			playing.value = false
+		}
+	})
 })
 
 const icon = computed(() =>
-	instance.value?.icon_path ? convertFileSrc(instance.value.icon_path) : null,
+	instance.value ? getInstanceIconSrc(instance.value) : getInstanceIconSrc({ loader: 'vanilla' }),
 )
 
 const settingsModal = ref<InstanceType<typeof InstanceSettingsModal>>()

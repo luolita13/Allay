@@ -228,3 +228,112 @@ pub async fn fetch_xml<T: DeserializeOwned>(
 pub fn format_url(path: &str) -> String {
     format!("{}/{}", &*dotenvy::var("BASE_URL").unwrap(), path)
 }
+
+/// Resolve a loader metadata URL using BMCLAPI mirror if configured.
+///
+/// `BMCLAPI_VERSION_LIST_SOURCE` env var controls behavior:
+/// - 0 = BMCLAPI first (use mirror directly)
+/// - 1 = Auto / official first (default, matches Modrinth production)
+/// - 2 = Official only
+///
+/// Note: daedalus_client does not implement fallback between sources, so "auto"
+/// currently uses the official URL directly. Set to 0 to force BMCLAPI.
+pub fn resolve_loader_meta_url(official_url: &str) -> String {
+    let source = dotenvy::var("BMCLAPI_VERSION_LIST_SOURCE")
+        .ok()
+        .and_then(|x| x.parse::<i32>().ok())
+        .unwrap_or(1);
+
+    if source == 0 {
+        rewrite_loader_meta_to_bmclapi(official_url)
+            .unwrap_or_else(|| official_url.to_string())
+    } else {
+        official_url.to_string()
+    }
+}
+
+fn rewrite_loader_meta_to_bmclapi(url: &str) -> Option<String> {
+    const REPLACEMENTS: &[(&str, &str)] = &[
+        // Fabric Meta API
+        (
+            "https://meta.fabricmc.net/v2",
+            "https://bmclapi2.bangbang93.com/fabric-meta/v2",
+        ),
+        // Quilt Meta API
+        (
+            "https://meta.quiltmc.org/v3",
+            "https://bmclapi2.bangbang93.com/quilt-meta/v3",
+        ),
+        // Forge metadata
+        (
+            "https://files.minecraftforge.net/",
+            "https://bmclapi2.bangbang93.com/maven/",
+        ),
+        // Forge Maven
+        (
+            "https://maven.minecraftforge.net/",
+            "https://bmclapi2.bangbang93.com/maven/",
+        ),
+        // NeoForged Maven
+        (
+            "https://maven.neoforged.net/",
+            "https://bmclapi2.bangbang93.com/maven/",
+        ),
+        // Fabric Maven
+        (
+            "https://maven.fabricmc.net/",
+            "https://bmclapi2.bangbang93.com/maven/",
+        ),
+        // Quilt Maven
+        (
+            "https://maven.quiltmc.org/repository/release/",
+            "https://bmclapi2.bangbang93.com/maven/",
+        ),
+    ];
+
+    for (from, to) in REPLACEMENTS {
+        if url.starts_with(from) {
+            return Some(url.replacen(from, to, 1));
+        }
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rewrite_loader_meta_to_bmclapi() {
+        assert_eq!(
+            rewrite_loader_meta_to_bmclapi("https://meta.fabricmc.net/v2/versions"),
+            Some("https://bmclapi2.bangbang93.com/fabric-meta/v2/versions".to_string())
+        );
+        assert_eq!(
+            rewrite_loader_meta_to_bmclapi("https://meta.quiltmc.org/v3/versions"),
+            Some("https://bmclapi2.bangbang93.com/quilt-meta/v3/versions".to_string())
+        );
+        assert_eq!(
+            rewrite_loader_meta_to_bmclapi(
+                "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json"
+            ),
+            Some(
+                "https://bmclapi2.bangbang93.com/maven/net/minecraftforge/forge/maven-metadata.json"
+                    .to_string()
+            )
+        );
+        assert_eq!(
+            rewrite_loader_meta_to_bmclapi(
+                "https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml"
+            ),
+            Some(
+                "https://bmclapi2.bangbang93.com/maven/releases/net/neoforged/neoforge/maven-metadata.xml"
+                    .to_string()
+            )
+        );
+        assert_eq!(
+            rewrite_loader_meta_to_bmclapi("https://example.com/file"),
+            None
+        );
+    }
+}

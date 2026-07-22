@@ -929,9 +929,6 @@
   "app.home.system-status.available": {
     "message": "可用"
   },
-  "app.home.system-status.browse-modpacks": {
-    "message": "浏览整合包"
-  },
   "app.home.system-status.cpu": {
     "message": "CPU"
   },
@@ -941,20 +938,11 @@
   "app.home.system-status.instances": {
     "message": "实例"
   },
-  "app.home.system-status.java-versions": {
-    "message": "Java 版本"
-  },
   "app.home.system-status.memory": {
     "message": "内存"
   },
   "app.home.system-status.network": {
     "message": "网络"
-  },
-  "app.home.system-status.new-instance": {
-    "message": "新建实例"
-  },
-  "app.home.system-status.system-memory": {
-    "message": "系统内存"
   },
   "app.home.system-status.title": {
     "message": "系统状态"
@@ -1463,14 +1451,8 @@
   "app.library.create-new-instance": {
     "message": "创建新实例"
   },
-  "app.library.custom": {
-    "message": "自定义"
-  },
   "app.library.jump-back-in": {
     "message": "继续游玩"
-  },
-  "app.library.modpacks": {
-    "message": "整合包"
   },
   "app.library.no-instances": {
     "message": "未找到实例"
@@ -1484,17 +1466,8 @@
   "app.library.overview.title": {
     "message": "你的实例库"
   },
-  "app.library.saved": {
-    "message": "已收藏"
-  },
   "app.library.search.placeholder": {
     "message": "搜索实例..."
-  },
-  "app.library.servers": {
-    "message": "服务器"
-  },
-  "app.library.shared-with-me": {
-    "message": "与我共享"
   },
   "app.library.title": {
     "message": "库"
@@ -1675,6 +1648,36 @@
   },
   "app.game-link.no": {
     "message": "否"
+  },
+  "app.game-link.tab.host": {
+    "message": "创建大厅"
+  },
+  "app.game-link.tab.join": {
+    "message": "加入大厅"
+  },
+  "app.game-link.copied": {
+    "message": "已复制！"
+  },
+  "app.game-link.mc-status.running": {
+    "message": "Minecraft 运行中"
+  },
+  "app.game-link.mc-status.stopped": {
+    "message": "Minecraft 未运行"
+  },
+  "app.game-link.port.label": {
+    "message": "端口"
+  },
+  "app.game-link.join.timeout": {
+    "message": "连接超时。大厅码可能无效或主机已离线。"
+  },
+  "app.game-link.cancel": {
+    "message": "取消"
+  },
+  "app.game-link.retry": {
+    "message": "重试"
+  },
+  "app.game-link.join.hint": {
+    "message": "正在建立点对点网络，最多可能需要 15 秒。"
   },
   "app.minecraft-auth.contact-support": {
     "message": "联系支持"
@@ -2009,11 +2012,32 @@
   "app.resource-management.game-file-source.title": {
     "message": "游戏文件下载源"
   },
+  "app.resource-management.version-list-source.auto": {
+    "message": "自动（推荐）"
+  },
+  "app.resource-management.version-list-source.bmclapi-first": {
+    "message": "BMCLAPI 优先"
+  },
+  "app.resource-management.version-list-source.description": {
+    "message": "Minecraft 版本列表和加载器元数据（Forge、NeoForge、Fabric、Quilt）的来源。自动：优先尝试官方源，失败后回退到 BMCLAPI。BMCLAPI 优先：优先尝试镜像源，失败后回退到官方源。"
+  },
+  "app.resource-management.version-list-source.mojang-only": {
+    "message": "仅官方源"
+  },
+  "app.resource-management.version-list-source.title": {
+    "message": "版本列表源"
+  },
   "app.resource-management.max-concurrent-downloads.description": {
     "message": "启动器同时下载文件的最大数量。如果你的网络连接较差，请设为较低的值。（需重启应用生效）"
   },
   "app.resource-management.max-concurrent-downloads.title": {
     "message": "最大并发下载数"
+  },
+  "app.resource-management.max-chunks-per-file.description": {
+    "message": "对于大文件（>1MB），启动器会使用 HTTP Range 请求将下载拆分为多个并行分块。分块数越多，高带宽连接下下载越快。（需重启应用生效）"
+  },
+  "app.resource-management.max-chunks-per-file.title": {
+    "message": "单文件最大分块下载数"
   },
   "app.resource-management.max-concurrent-writes.description": {
     "message": "启动器同时写入磁盘的最大文件数。如果你经常遇到 I/O 错误，请设为较低的值。（需重启应用生效）"
@@ -2581,9 +2605,6 @@
   },
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "自定义Java安装"
-  },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "自定义内存分配"
   },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "输入环境变量……"

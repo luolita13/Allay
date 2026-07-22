@@ -1,16 +1,44 @@
 <script setup lang="ts">
-import { Combobox, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
+import { CheckIcon, ImageIcon, TrashIcon, UploadIcon } from '@modrinth/assets'
+import { ButtonStyled, Combobox, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
-import { convertFileSrc } from '@tauri-apps/api/core'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
+import { createObjectUrlFromPath } from '@/helpers/image-url'
 import { get, set } from '@/helpers/settings.ts'
 import { getOS } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
-import type { ColorTheme, FeatureFlag } from '@/store/theme.ts'
+import type { AccentColor, ColorTheme } from '@/store/theme.ts'
+import { ACCENT_COLOR_OPTIONS } from '@/store/theme.ts'
 
 const themeStore = useTheming()
 const { formatMessage } = useVIntl()
+
+const backgroundBlur = computed({
+	get: () => themeStore.backgroundBlur,
+	set: (value) => themeStore.setBackgroundBlur(value),
+})
+
+const backgroundOpacity = computed({
+	get: () => themeStore.backgroundOpacity,
+	set: (value) => themeStore.setBackgroundOpacity(value),
+})
+
+const backgroundPreviewUrl = ref<string | null>(null)
+
+watch(
+	() => themeStore.backgroundImagePath,
+	async (path) => {
+		if (backgroundPreviewUrl.value) {
+			URL.revokeObjectURL(backgroundPreviewUrl.value)
+			backgroundPreviewUrl.value = null
+		}
+		if (path) {
+			backgroundPreviewUrl.value = await createObjectUrlFromPath(path)
+		}
+	},
+	{ immediate: true },
+)
 
 async function selectBackgroundImage() {
 	const selected = await open({
@@ -18,11 +46,11 @@ async function selectBackgroundImage() {
 		filters: [
 			{
 				name: 'Images',
-				extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'],
+				extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif', 'avif'],
 			},
 		],
 	})
-	if (selected) {
+	if (selected && typeof selected === 'string') {
 		themeStore.setBackgroundImagePath(selected)
 	}
 }
@@ -30,11 +58,6 @@ async function selectBackgroundImage() {
 function clearBackgroundImage() {
 	themeStore.setBackgroundImagePath(null)
 }
-
-const worldsInHomeFlag: FeatureFlag = 'worlds_in_home'
-const skipNonEssentialWarningsFlag: FeatureFlag = 'skip_non_essential_warnings'
-const skipUnknownPackWarningFlag: FeatureFlag = 'skip_unknown_pack_warning'
-const showPlayTimeFlag: FeatureFlag = 'show_instance_play_time'
 
 const messages = defineMessages({
 	colorThemeTitle: {
@@ -44,6 +67,74 @@ const messages = defineMessages({
 	colorThemeDescription: {
 		id: 'app.appearance-settings.color-theme.description',
 		defaultMessage: 'Select your preferred color theme for Modrinth App.',
+	},
+	accentColorTitle: {
+		id: 'app.appearance-settings.accent-color.title',
+		defaultMessage: 'Accent color',
+	},
+	accentColorDescription: {
+		id: 'app.appearance-settings.accent-color.description',
+		defaultMessage: 'Choose the color used for buttons, selections, and highlights.',
+	},
+	accentColorPink: {
+		id: 'app.appearance-settings.accent-color.pink',
+		defaultMessage: 'Pink',
+	},
+	accentColorOrange: {
+		id: 'app.appearance-settings.accent-color.orange',
+		defaultMessage: 'Orange',
+	},
+	accentColorGreen: {
+		id: 'app.appearance-settings.accent-color.green',
+		defaultMessage: 'Green',
+	},
+	accentColorBlue: {
+		id: 'app.appearance-settings.accent-color.blue',
+		defaultMessage: 'Blue',
+	},
+	accentColorPurple: {
+		id: 'app.appearance-settings.accent-color.purple',
+		defaultMessage: 'Purple',
+	},
+	customBackgroundTitle: {
+		id: 'app.appearance-settings.custom-background.title',
+		defaultMessage: 'Launcher background',
+	},
+	customBackgroundDescription: {
+		id: 'app.appearance-settings.custom-background.description',
+		defaultMessage: 'Choose a custom image and fine-tune how it blends with the launcher interface.',
+	},
+	customBackgroundEmpty: {
+		id: 'app.appearance-settings.custom-background.empty',
+		defaultMessage: 'No custom background selected',
+	},
+	customBackgroundChoose: {
+		id: 'app.appearance-settings.custom-background.choose',
+		defaultMessage: 'Choose image',
+	},
+	customBackgroundReplace: {
+		id: 'app.appearance-settings.custom-background.replace',
+		defaultMessage: 'Replace image',
+	},
+	customBackgroundRemove: {
+		id: 'app.appearance-settings.custom-background.remove',
+		defaultMessage: 'Remove',
+	},
+	customBackgroundBlur: {
+		id: 'app.appearance-settings.custom-background.blur',
+		defaultMessage: 'Background blur',
+	},
+	customBackgroundBlurDescription: {
+		id: 'app.appearance-settings.custom-background.blur-description',
+		defaultMessage: 'Soften image details to keep launcher content easy to read.',
+	},
+	customBackgroundOpacity: {
+		id: 'app.appearance-settings.custom-background.opacity',
+		defaultMessage: 'Background visibility',
+	},
+	customBackgroundOpacityDescription: {
+		id: 'app.appearance-settings.custom-background.opacity-description',
+		defaultMessage: 'Control how strongly the image shows through the interface.',
 	},
 	advancedRenderingTitle: {
 		id: 'app.appearance-settings.advanced-rendering.title',
@@ -98,14 +189,6 @@ const messages = defineMessages({
 		id: 'app.appearance-settings.select-option',
 		defaultMessage: 'Select an option',
 	},
-	jumpBackIntoWorldsTitle: {
-		id: 'app.appearance-settings.jump-back-into-worlds.title',
-		defaultMessage: 'Jump back into worlds',
-	},
-	jumpBackIntoWorldsDescription: {
-		id: 'app.appearance-settings.jump-back-into-worlds.description',
-		defaultMessage: 'Includes recent worlds in the "Jump back in" section on the Home page.',
-	},
 	toggleSidebarTitle: {
 		id: 'app.appearance-settings.toggle-sidebar.title',
 		defaultMessage: 'Toggle sidebar',
@@ -114,57 +197,15 @@ const messages = defineMessages({
 		id: 'app.appearance-settings.toggle-sidebar.description',
 		defaultMessage: 'Enables the ability to toggle the sidebar.',
 	},
-	unknownPackWarningTitle: {
-		id: 'app.appearance-settings.unknown-pack-warning.title',
-		defaultMessage: 'Warn me before installing unknown modpacks',
-	},
-	unknownPackWarningDescription: {
-		id: 'app.appearance-settings.unknown-pack-warning.description',
-		defaultMessage:
-			"If you attempt to install a Modrinth Pack file (.mrpack) that isn't hosted on Modrinth, we'll make sure you understand the risks before installing it.",
-	},
-	skipNonEssentialWarningsTitle: {
-		id: 'app.appearance-settings.skip-non-essential-warnings.title',
-		defaultMessage: 'Skip non-essential warnings',
-	},
-	skipNonEssentialWarningsDescription: {
-		id: 'app.appearance-settings.skip-non-essential-warnings.description',
-		defaultMessage:
-			'Automatically skips low-risk confirmations like duplicate modpack installs, normal content deletion, bulk updates, unlinking modpacks, and repair prompts. Dangerous warnings will still be shown.',
-	},
-	showPlayTimeTitle: {
-		id: 'app.appearance-settings.show-play-time.title',
-		defaultMessage: 'Show play time',
-	},
-	showPlayTimeDescription: {
-		id: 'app.appearance-settings.show-play-time.description',
-		defaultMessage: `Displays how much time you've spent playing an instance.`,
-	},
-	backgroundImageTitle: {
-		id: 'app.appearance-settings.background-image.title',
-		defaultMessage: 'Background image',
-	},
-	backgroundImageDescription: {
-		id: 'app.appearance-settings.background-image.description',
-		defaultMessage: 'Set a custom background image for the launcher.',
-	},
-	selectImageButton: {
-		id: 'app.appearance-settings.background-image.select-button',
-		defaultMessage: 'Select image',
-	},
-	clearImageButton: {
-		id: 'app.appearance-settings.background-image.clear-button',
-		defaultMessage: 'Clear',
-	},
-	backgroundBlurTitle: {
-		id: 'app.appearance-settings.background-blur.title',
-		defaultMessage: 'Background blur',
-	},
-	backgroundBlurDescription: {
-		id: 'app.appearance-settings.background-blur.description',
-		defaultMessage: 'Adjust the blur amount applied to the background image.',
-	},
 })
+
+const accentColorOptions: Array<{ value: AccentColor; color: string; label: string }> = [
+	{ value: 'pink', color: 'var(--color-pink)', label: formatMessage(messages.accentColorPink) },
+	{ value: 'orange', color: 'var(--color-orange)', label: formatMessage(messages.accentColorOrange) },
+	{ value: 'green', color: 'var(--color-green)', label: formatMessage(messages.accentColorGreen) },
+	{ value: 'blue', color: 'var(--color-blue)', label: formatMessage(messages.accentColorBlue) },
+	{ value: 'purple', color: 'var(--color-purple)', label: formatMessage(messages.accentColorPurple) },
+]
 
 const os = ref(await getOS())
 const settings = ref(await get())
@@ -194,6 +235,129 @@ watch(
 		:theme-options="themeStore.getThemeOptions()"
 		system-theme-color="system"
 	/>
+
+	<div class="mt-6">
+		<h2 class="m-0 text-lg font-semibold text-contrast">
+			{{ formatMessage(messages.accentColorTitle) }}
+		</h2>
+		<p class="m-0 mt-1">{{ formatMessage(messages.accentColorDescription) }}</p>
+
+		<div
+			class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5"
+			role="radiogroup"
+			:aria-label="formatMessage(messages.accentColorTitle)"
+		>
+			<button
+				v-for="accentColor in accentColorOptions"
+				:key="accentColor.value"
+				type="button"
+				role="radio"
+				:aria-checked="themeStore.selectedAccentColor === accentColor.value"
+				class="flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97]"
+				:class="
+					themeStore.selectedAccentColor === accentColor.value
+						? 'border-brand bg-brand-highlight text-brand'
+						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+				"
+				@click="themeStore.setAccentColor(accentColor.value)"
+			>
+				<span
+					class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
+					:style="{ backgroundColor: accentColor.color }"
+				/>
+				<span class="truncate">{{ accentColor.label }}</span>
+				<CheckIcon
+					v-if="themeStore.selectedAccentColor === accentColor.value"
+					class="ml-auto size-4 shrink-0"
+				/>
+			</button>
+		</div>
+	</div>
+
+	<div class="mt-6">
+		<h2 class="m-0 text-lg font-semibold text-contrast">
+			{{ formatMessage(messages.customBackgroundTitle) }}
+		</h2>
+		<p class="m-0 mt-1">{{ formatMessage(messages.customBackgroundDescription) }}</p>
+
+		<div
+			class="relative mt-3 h-44 overflow-hidden rounded-2xl border border-solid border-divider bg-bg"
+		>
+			<div
+				v-if="backgroundPreviewUrl"
+				class="absolute -inset-10 bg-cover bg-center"
+				:style="{
+					backgroundImage: `url(&quot;${backgroundPreviewUrl}&quot;)`,
+					filter: `blur(${themeStore.backgroundBlur}px)`,
+					opacity: themeStore.backgroundOpacity / 100,
+				}"
+			/>
+			<div class="absolute inset-0 bg-bg/35" />
+			<div class="relative flex h-full items-center justify-center">
+				<div
+					v-if="!backgroundPreviewUrl"
+					class="flex flex-col items-center gap-2 text-secondary"
+				>
+					<ImageIcon class="size-8" />
+					<span class="font-semibold">{{ formatMessage(messages.customBackgroundEmpty) }}</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-3 flex flex-wrap gap-2">
+			<ButtonStyled>
+				<button type="button" @click="selectBackgroundImage">
+					<UploadIcon />
+					{{
+						formatMessage(
+							backgroundPreviewUrl ? messages.customBackgroundReplace : messages.customBackgroundChoose,
+						)
+					}}
+				</button>
+			</ButtonStyled>
+			<ButtonStyled v-if="backgroundPreviewUrl" color="red" type="outlined">
+				<button type="button" @click="clearBackgroundImage">
+					<TrashIcon />
+					{{ formatMessage(messages.customBackgroundRemove) }}
+				</button>
+			</ButtonStyled>
+		</div>
+
+		<div v-if="backgroundPreviewUrl" class="mt-5 grid gap-5 lg:grid-cols-2">
+			<div class="flex flex-col gap-2">
+				<h3 class="m-0 font-semibold text-contrast">
+					{{ formatMessage(messages.customBackgroundBlur) }}
+				</h3>
+				<Slider
+					id="custom-background-blur"
+					v-model="backgroundBlur"
+					:min="0"
+					:max="40"
+					:step="1"
+					unit="px"
+				/>
+				<p class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.customBackgroundBlurDescription) }}
+				</p>
+			</div>
+			<div class="flex flex-col gap-2">
+				<h3 class="m-0 font-semibold text-contrast">
+					{{ formatMessage(messages.customBackgroundOpacity) }}
+				</h3>
+				<Slider
+					id="custom-background-opacity"
+					v-model="backgroundOpacity"
+					:min="10"
+					:max="100"
+					:step="5"
+					unit="%"
+				/>
+				<p class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.customBackgroundOpacityDescription) }}
+				</p>
+			</div>
+		</div>
+	</div>
 
 	<div class="mt-6 flex items-center justify-between">
 		<div>
@@ -237,7 +401,6 @@ watch(
 		<Combobox
 			id="launcher-visibility"
 			:model-value="String(settings.launcher_visibility)"
-			@update:model-value="(v: string) => settings.launcher_visibility = Number(v)"
 			name="Launcher visibility dropdown"
 			class="max-w-56"
 			:options="[
@@ -247,25 +410,7 @@ watch(
 				{ value: '2', label: 'Hide, exit on game exit' },
 				{ value: '0', label: 'Exit immediately' },
 			]"
-		/>
-	</div>
-
-	<div class="mt-6 flex items-center justify-between">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.showPlayTimeTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.showPlayTimeDescription) }}</p>
-		</div>
-		<Toggle
-			:model-value="themeStore.getFeatureFlag(showPlayTimeFlag)"
-			@update:model-value="
-				() => {
-					const newValue = !themeStore.getFeatureFlag(showPlayTimeFlag)
-					themeStore.featureFlags[showPlayTimeFlag] = newValue
-					settings.feature_flags[showPlayTimeFlag] = newValue
-				}
-			"
+			@update:model-value="(v: string) => settings.launcher_visibility = Number(v)"
 		/>
 	</div>
 
@@ -317,64 +462,6 @@ watch(
 	<div class="mt-6 flex items-center justify-between">
 		<div>
 			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.jumpBackIntoWorldsTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.jumpBackIntoWorldsDescription) }}</p>
-		</div>
-		<Toggle
-			:model-value="themeStore.getFeatureFlag(worldsInHomeFlag)"
-			@update:model-value="
-				() => {
-					const newValue = !themeStore.getFeatureFlag(worldsInHomeFlag)
-					themeStore.featureFlags[worldsInHomeFlag] = newValue
-					settings.feature_flags[worldsInHomeFlag] = newValue
-				}
-			"
-		/>
-	</div>
-
-	<div class="mt-6 flex items-center justify-between gap-4">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.unknownPackWarningTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.unknownPackWarningDescription) }}</p>
-		</div>
-		<Toggle
-			:model-value="!themeStore.getFeatureFlag(skipUnknownPackWarningFlag)"
-			@update:model-value="
-				(e) => {
-					const warnBeforeUnknownPackInstall = !!e
-					const skipUnknownPackWarning = !warnBeforeUnknownPackInstall
-					themeStore.featureFlags[skipUnknownPackWarningFlag] = skipUnknownPackWarning
-					settings.feature_flags[skipUnknownPackWarningFlag] = skipUnknownPackWarning
-				}
-			"
-		/>
-	</div>
-
-	<div class="mt-6 flex items-center justify-between gap-4">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.skipNonEssentialWarningsTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.skipNonEssentialWarningsDescription) }}</p>
-		</div>
-		<Toggle
-			:model-value="themeStore.getFeatureFlag(skipNonEssentialWarningsFlag)"
-			@update:model-value="
-				() => {
-					const newValue = !themeStore.getFeatureFlag(skipNonEssentialWarningsFlag)
-					themeStore.featureFlags[skipNonEssentialWarningsFlag] = newValue
-					settings.feature_flags[skipNonEssentialWarningsFlag] = newValue
-				}
-			"
-		/>
-	</div>
-
-	<div class="mt-6 flex items-center justify-between">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
 				{{ formatMessage(messages.toggleSidebarTitle) }}
 			</h2>
 			<p class="m-0 mt-1">{{ formatMessage(messages.toggleSidebarDescription) }}</p>
@@ -388,65 +475,6 @@ watch(
 					themeStore.toggleSidebar = settings.toggle_sidebar
 				}
 			"
-		/>
-	</div>
-
-	<hr class="mt-6 mb-6 border-solid border-[var(--color-button-bg)]" />
-
-	<h2 class="m-0 text-lg font-semibold text-contrast">
-		{{ formatMessage(messages.backgroundImageTitle) }}
-	</h2>
-	<p class="m-0 mt-1">{{ formatMessage(messages.backgroundImageDescription) }}</p>
-
-	<div class="mt-4 flex items-center gap-4">
-		<button class="btn btn-highlight" @click="selectBackgroundImage">
-			{{ formatMessage(messages.selectImageButton) }}
-		</button>
-		<button
-			v-if="themeStore.backgroundImagePath"
-			class="btn"
-			@click="clearBackgroundImage"
-		>
-			{{ formatMessage(messages.clearImageButton) }}
-		</button>
-	</div>
-
-	<div v-if="themeStore.backgroundImagePath" class="mt-4">
-		<div
-			class="relative w-full h-32 rounded-xl overflow-hidden border border-solid border-[var(--color-button-bg)]"
-		>
-			<img
-				:src="convertFileSrc(themeStore.backgroundImagePath)"
-				class="w-full h-full object-cover"
-			/>
-			<div
-				class="absolute inset-0"
-				:style="{
-					backdropFilter: `blur(${themeStore.backgroundBlur}px)`,
-					backgroundColor: 'rgba(0,0,0,0.4)',
-				}"
-			/>
-		</div>
-	</div>
-
-	<div
-		v-if="themeStore.backgroundImagePath"
-		class="mt-4 flex flex-col gap-2"
-	>
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.backgroundBlurTitle) }}
-			</h2>
-			<p class="m-0 mt-1">
-				{{ formatMessage(messages.backgroundBlurDescription) }}
-			</p>
-		</div>
-		<Slider
-			v-model="themeStore.backgroundBlur"
-			:min="0"
-			:max="50"
-			:step="1"
-			unit="px"
 		/>
 	</div>
 </template>

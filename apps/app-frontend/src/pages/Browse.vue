@@ -27,7 +27,6 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { useQueryClient } from '@tanstack/vue-query'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { LocationQuery } from 'vue-router'
@@ -46,6 +45,7 @@ import {
 	get as getInstance,
 	get_installed_project_ids as getInstalledProjectIds,
 } from '@/helpers/instance'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_loader_versions as getLoaderManifest } from '@/helpers/metadata'
 import { get_categories, get_game_versions, get_loaders } from '@/helpers/tags'
 import { get_instance_worlds } from '@/helpers/worlds'
@@ -108,17 +108,9 @@ const {
 } = serverInstallContent
 
 debugLog('fetching tags (categories, loaders, gameVersions)')
-const [categories, loaders, availableGameVersions] = await Promise.all([
-	get_categories()
-		.catch(handleError)
-		.then(ref<Labrinth.Tags.v2.Category[]>),
-	get_loaders()
-		.catch(handleError)
-		.then(ref<Labrinth.Tags.v2.Loader[]>),
-	get_game_versions()
-		.catch(handleError)
-		.then(ref<Labrinth.Tags.v2.GameVersion[]>),
-])
+const categories = ref<Labrinth.Tags.v2.Category[]>([])
+const loaders = ref<Labrinth.Tags.v2.Loader[]>([])
+const availableGameVersions = ref<Labrinth.Tags.v2.GameVersion[]>([])
 
 const tags: Ref<Tags> = computed(() => ({
 	gameVersions: availableGameVersions.value ?? [],
@@ -182,7 +174,18 @@ watch(
 
 watchServerContextChanges()
 
-await initInstanceContext()
+onMounted(async () => {
+	const [loadedCategories, loadedLoaders, loadedGameVersions] = await Promise.all([
+		get_categories().catch(handleError),
+		get_loaders().catch(handleError),
+		get_game_versions().catch(handleError),
+	])
+	if (loadedCategories) categories.value = loadedCategories
+	if (loadedLoaders) loaders.value = loadedLoaders
+	if (loadedGameVersions) availableGameVersions.value = loadedGameVersions
+
+	await initInstanceContext()
+})
 
 async function refreshInstalledProjectIds() {
 	if (!route.query.i) return
@@ -605,7 +608,7 @@ const installContext = computed(() => {
 			name: instance.value.name,
 			loader: instance.value.loader,
 			gameVersion: instance.value.game_version,
-			iconSrc: instance.value.icon_path ? convertFileSrc(instance.value.icon_path) : null,
+			iconSrc: getInstanceIconSrc(instance.value),
 			backUrl: `/instance/${encodeURIComponent(instance.value.id)}${isFromWorlds.value ? '/worlds' : ''}`,
 			backLabel: formatMessage(messages.backToInstance),
 			heading: formatMessage(

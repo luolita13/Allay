@@ -770,9 +770,6 @@
   "instance.settings.tabs.java.custom-java-installation": {
     "message": "Egyedi Java telepítés"
   },
-  "instance.settings.tabs.java.custom-memory-allocation": {
-    "message": "Egyéni memóriakiosztás"
-  },
   "instance.settings.tabs.java.enter-environment-variables": {
     "message": "Írja be a környezeti változókat..."
   },

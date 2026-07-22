@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import {
 	ArrowLeftIcon,
+	BoxesIcon,
+	BoxImportIcon,
 	CheckIcon,
 	ChevronDownIcon,
 	ImageIcon,
+	PackageIcon,
 	SearchIcon,
 	UploadIcon,
 	XIcon,
 } from '@modrinth/assets'
 import {
 	Avatar,
-	ButtonStyled,
 	Card,
 	commonMessages,
 	defineMessages,
@@ -19,13 +21,34 @@ import {
 	Toggle,
 	useVIntl,
 } from '@modrinth/ui'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
+import anvilIcon from '@/assets/minecraft-icons/Anvil.png'
+import cleanroomIcon from '@/assets/minecraft-icons/Cleanroom.png'
+import cobblestoneIcon from '@/assets/minecraft-icons/CobbleStone.png'
+import commandBlockIcon from '@/assets/minecraft-icons/CommandBlock.png'
+import eggIcon from '@/assets/minecraft-icons/Egg.png'
+import fabricIcon from '@/assets/minecraft-icons/Fabric.png'
+import goldBlockIcon from '@/assets/minecraft-icons/GoldBlock.png'
+import grassIcon from '@/assets/minecraft-icons/Grass.png'
+import labymodIcon from '@/assets/minecraft-icons/LabyMod.png'
+import neoforgeIcon from '@/assets/minecraft-icons/NeoForge.png'
+import optifabricIcon from '@/assets/minecraft-icons/OptiFabric.png'
+import quiltIcon from '@/assets/minecraft-icons/Quilt.png'
+import redstoneLampIcon from '@/assets/minecraft-icons/RedstoneLampOn.png'
 import { install_create_instance } from '@/helpers/install'
-import { get_game_versions, get_loader_versions } from '@/helpers/metadata'
 import { list } from '@/helpers/instance'
+import { get_game_versions, get_loader_versions } from '@/helpers/metadata'
 import type { InstanceLoader } from '@/helpers/types'
+
+const versionIconMap: Record<string, string> = {
+	latest: goldBlockIcon,
+	release: grassIcon,
+	snapshot: redstoneLampIcon,
+	'old-beta': cobblestoneIcon,
+	'old-alpha': cobblestoneIcon,
+}
 
 const router = useRouter()
 const { formatMessage } = useVIntl()
@@ -36,6 +59,42 @@ const messages = defineMessages({
 	title: {
 		id: 'app.create-instance.title',
 		defaultMessage: 'Create new instance',
+	},
+	stepSetupType: {
+		id: 'app.create-instance.step.setup-type',
+		defaultMessage: 'Setup type',
+	},
+	setupTypeTitle: {
+		id: 'app.create-instance.setup-type.title',
+		defaultMessage: 'Choose instance type',
+	},
+	setupTypeDescription: {
+		id: 'app.create-instance.setup-type.description',
+		defaultMessage: 'An instance is a Minecraft setup with a specific loader, version, and mods.',
+	},
+	customSetupTitle: {
+		id: 'app.create-instance.setup-type.custom.title',
+		defaultMessage: 'Custom setup',
+	},
+	customSetupDescription: {
+		id: 'app.create-instance.setup-type.custom.description',
+		defaultMessage: 'Start from scratch by picking a loader and game version.',
+	},
+	modpackSetupTitle: {
+		id: 'app.create-instance.setup-type.modpack.title',
+		defaultMessage: 'Install modpack',
+	},
+	modpackSetupDescription: {
+		id: 'app.create-instance.setup-type.modpack.description',
+		defaultMessage: 'Browse modpacks on Modrinth or import one from a file.',
+	},
+	importSetupTitle: {
+		id: 'app.create-instance.setup-type.import.title',
+		defaultMessage: 'Import instance',
+	},
+	importSetupDescription: {
+		id: 'app.create-instance.setup-type.import.description',
+		defaultMessage: 'Import an instance from Prism, CurseForge, or similar.',
 	},
 	stepVersion: {
 		id: 'app.create-instance.step.version',
@@ -166,10 +225,27 @@ const messages = defineMessages({
 })
 
 // Steps
+const STEP_SETUP_TYPE = 0
 const STEP_VERSION = 1
 const STEP_LOADER = 2
 const STEP_CONFIG = 3
-const step = ref(STEP_VERSION)
+const step = ref(STEP_SETUP_TYPE)
+
+type SetupType = 'custom' | 'modpack' | 'import'
+const setupType = ref<SetupType | null>(null)
+
+function selectSetupType(type: SetupType) {
+	setupType.value = type
+	if (type === 'modpack') {
+		router.push('/browse/modpack')
+		return
+	}
+	if (type === 'import') {
+		router.push('/library')
+		return
+	}
+	step.value = STEP_VERSION
+}
 
 // Data
 interface GameVersion {
@@ -178,22 +254,31 @@ interface GameVersion {
 	releaseTime: string
 }
 
-const manifest = await get_game_versions().catch((err) => {
-	handleError(err)
-	return null
+const manifest = ref<any>(null)
+
+async function loadManifest() {
+	const result = await get_game_versions().catch((err) => {
+		handleError(err)
+		return null
+	})
+	manifest.value = result
+}
+
+onMounted(() => {
+	loadManifest()
 })
 
 const allVersions = computed<GameVersion[]>(() => {
-	if (!manifest) return []
-	return manifest.versions.map((v: any) => ({
+	if (!manifest.value) return []
+	return manifest.value.versions.map((v: any) => ({
 		id: v.id,
 		type: versionTypeFromApi(v.type),
 		releaseTime: v.releaseTime,
 	}))
 })
 
-const latestRelease = computed(() => manifest?.latest?.release ?? null)
-const latestSnapshot = computed(() => manifest?.latest?.snapshot ?? null)
+const latestRelease = computed(() => manifest.value?.latest?.release ?? null)
+const latestSnapshot = computed(() => manifest.value?.latest?.snapshot ?? null)
 
 function versionTypeFromApi(type: string): GameVersion['type'] {
 	switch (type) {
@@ -267,6 +352,12 @@ function toggleGroup(id: string) {
 
 const selectedGameVersion = ref<string | null>(null)
 
+const selectedGameVersionIcon = computed(() => {
+	const version = allVersions.value.find((v) => v.id === selectedGameVersion.value)
+	if (!version) return grassIcon
+	return versionIconMap[version.type] ?? grassIcon
+})
+
 function selectGameVersion(version: string) {
 	selectedGameVersion.value = version
 	step.value = STEP_LOADER
@@ -290,16 +381,16 @@ const expandedLoaderCards = ref<Record<string, boolean>>({})
 
 const SUPPORTED_LOADERS = ['vanilla', 'forge', 'neoforge', 'fabric', 'quilt']
 
-const loaderInfoMap: Record<string, { label: string; iconChar: string; colorClass: string }> = {
-	vanilla: { label: 'Vanilla', iconChar: 'V', colorClass: 'loader-icon-vanilla' },
-	forge: { label: 'Forge', iconChar: 'F', colorClass: 'loader-icon-forge' },
-	neoforge: { label: 'NeoForge', iconChar: 'N', colorClass: 'loader-icon-neoforge' },
-	fabric: { label: 'Fabric', iconChar: 'A', colorClass: 'loader-icon-fabric' },
-	quilt: { label: 'Quilt', iconChar: 'Q', colorClass: 'loader-icon-quilt' },
-	optifine: { label: 'OptiFine', iconChar: 'O', colorClass: 'loader-icon-optifine' },
-	liteloader: { label: 'LiteLoader', iconChar: 'L', colorClass: 'loader-icon-liteloader' },
-	cleanroom: { label: 'Cleanroom', iconChar: 'C', colorClass: 'loader-icon-cleanroom' },
-	labymod: { label: 'LabyMod', iconChar: 'B', colorClass: 'loader-icon-labymod' },
+const loaderInfoMap: Record<string, { label: string; icon: string }> = {
+	vanilla: { label: 'Vanilla', icon: commandBlockIcon },
+	forge: { label: 'Forge', icon: anvilIcon },
+	neoforge: { label: 'NeoForge', icon: neoforgeIcon },
+	fabric: { label: 'Fabric', icon: fabricIcon },
+	quilt: { label: 'Quilt', icon: quiltIcon },
+	optifine: { label: 'OptiFine', icon: optifabricIcon },
+	liteloader: { label: 'LiteLoader', icon: eggIcon },
+	cleanroom: { label: 'Cleanroom', icon: cleanroomIcon },
+	labymod: { label: 'LabyMod', icon: labymodIcon },
 }
 
 const loaders = computed(() => [
@@ -408,12 +499,17 @@ function selectLoaderVersion(versionId: string) {
 
 watch(
 	() => selectedGameVersion.value,
-	() => {
+	async () => {
 		loaderVersionsCache.value = {}
 		loaderVersions.value = []
 		selectedLoaderVersion.value = null
 		expandedLoaderCards.value = {}
 		selectLoader('vanilla')
+
+		// Pre-fetch loader manifests in the background so compatibility/version
+		// counts are shown immediately without requiring the user to expand each card.
+		const loadersToFetch = SUPPORTED_LOADERS.filter((l) => l !== 'vanilla')
+		await Promise.allSettled(loadersToFetch.map(fetchLoaderManifest))
 	},
 )
 
@@ -535,9 +631,17 @@ function versionGroupClass(id: string): string {
 		<div class="flex items-center gap-2 mb-4">
 			<div
 				class="step-item"
-				:class="{ 'step-item-active': step >= STEP_VERSION, 'step-item-current': step === STEP_VERSION }"
+				:class="{ 'step-item-active': step >= STEP_SETUP_TYPE, 'step-item-current': step === STEP_SETUP_TYPE }"
 			>
 				<span class="step-number">1</span>
+				<span>{{ formatMessage(messages.stepSetupType) }}</span>
+			</div>
+			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_VERSION }" />
+			<div
+				class="step-item"
+				:class="{ 'step-item-active': step >= STEP_VERSION, 'step-item-current': step === STEP_VERSION }"
+			>
+				<span class="step-number">2</span>
 				<span>{{ formatMessage(messages.stepVersion) }}</span>
 			</div>
 			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_LOADER }" />
@@ -545,7 +649,7 @@ function versionGroupClass(id: string): string {
 				class="step-item"
 				:class="{ 'step-item-active': step >= STEP_LOADER, 'step-item-current': step === STEP_LOADER }"
 			>
-				<span class="step-number">2</span>
+				<span class="step-number">3</span>
 				<span>{{ formatMessage(messages.stepLoader) }}</span>
 			</div>
 			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_CONFIG }" />
@@ -553,10 +657,47 @@ function versionGroupClass(id: string): string {
 				class="step-item"
 				:class="{ 'step-item-active': step >= STEP_CONFIG, 'step-item-current': step === STEP_CONFIG }"
 			>
-				<span class="step-number">3</span>
+				<span class="step-number">4</span>
 				<span>{{ formatMessage(messages.stepConfig) }}</span>
 			</div>
 		</div>
+
+		<!-- Step 0: Setup type selection -->
+		<template v-if="step === STEP_SETUP_TYPE">
+			<Card class="p-4">
+				<div class="flex flex-col gap-4">
+					<h2 class="m-0 text-lg font-semibold text-contrast">
+						{{ formatMessage(messages.setupTypeTitle) }}
+					</h2>
+					<p class="m-0 text-secondary">
+						{{ formatMessage(messages.setupTypeDescription) }}
+					</p>
+					<div class="setup-type-grid">
+							<button class="setup-type-button" @click="selectSetupType('custom')">
+								<BoxesIcon class="setup-type-icon" />
+								<h3 class="setup-type-title">{{ formatMessage(messages.customSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.customSetupDescription) }}
+								</p>
+							</button>
+							<button class="setup-type-button" @click="selectSetupType('modpack')">
+								<PackageIcon class="setup-type-icon" />
+								<h3 class="setup-type-title">{{ formatMessage(messages.modpackSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.modpackSetupDescription) }}
+								</p>
+							</button>
+							<button class="setup-type-button" @click="selectSetupType('import')">
+								<BoxImportIcon class="setup-type-icon" />
+								<h3 class="setup-type-title">{{ formatMessage(messages.importSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.importSetupDescription) }}
+								</p>
+							</button>
+						</div>
+				</div>
+			</Card>
+		</template>
 
 		<!-- Step 1: Game version selection -->
 		<template v-if="step === STEP_VERSION">
@@ -584,7 +725,7 @@ function versionGroupClass(id: string): string {
 						>
 							<div class="flex items-center gap-3">
 								<div class="version-icon" :class="versionGroupClass(group.id)">
-									{{ group.label.charAt(0) }}
+									<img :src="versionIconMap[group.id] ?? grassIcon" class="mc-icon" />
 								</div>
 								<div class="flex flex-col">
 									<span class="font-semibold text-contrast">{{ group.label }}</span>
@@ -603,7 +744,7 @@ function versionGroupClass(id: string): string {
 							>
 								<div class="flex items-center gap-3 flex-1 min-w-0">
 									<div class="version-icon small" :class="versionGroupClass(group.id)">
-										{{ v.id.charAt(0) }}
+										<img :src="versionIconMap[group.id] ?? grassIcon" class="mc-icon" />
 									</div>
 									<div class="flex flex-col min-w-0">
 										<span class="font-semibold text-contrast truncate">{{ v.id }}</span>
@@ -626,7 +767,9 @@ function versionGroupClass(id: string): string {
 			<Card class="p-4">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-3">
-						<div class="version-icon version-icon-release">M</div>
+						<div class="version-icon version-icon-release">
+							<img :src="selectedGameVersionIcon" class="mc-icon" />
+						</div>
 						<div class="flex flex-col">
 							<span class="text-sm text-secondary">{{ formatMessage(messages.selectedGameVersion) }}</span>
 							<span class="font-semibold text-contrast text-lg">{{ selectedGameVersion }}</span>
@@ -656,7 +799,9 @@ function versionGroupClass(id: string): string {
 						@click="opt.id === 'vanilla' ? selectLoader('vanilla') : expandLoaderCard(opt.id)"
 					>
 						<div class="flex items-center gap-3 flex-1">
-							<div class="loader-icon" :class="opt.colorClass">{{ opt.iconChar }}</div>
+							<div class="loader-icon" :class="`loader-icon-${opt.id}`">
+								<img :src="opt.icon" class="mc-icon" />
+							</div>
 							<div class="flex flex-col">
 								<span class="font-semibold text-contrast">{{ opt.label }}</span>
 								<span class="text-xs text-secondary">
@@ -963,5 +1108,76 @@ function versionGroupClass(id: string): string {
 .loader-group-card-selected {
 	border-color: var(--color-brand);
 	box-shadow: 0 0 0 1px var(--color-brand);
+}
+
+.mc-icon {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	image-rendering: pixelated;
+}
+
+.setup-type-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.setup-type-button {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	text-align: left;
+	gap: 0.5rem;
+	padding: 1.5rem;
+	background: var(--color-button-bg);
+	border: 1px solid var(--color-surface-5);
+	border-radius: 0.75rem;
+	box-shadow: var(--shadow-button);
+	color: var(--color-contrast);
+	cursor: pointer;
+	transition:
+		scale 0.125s ease-in-out,
+		background-color 0.25s ease-in-out,
+		border-color 0.25s ease-in-out;
+	height: 100%;
+	min-height: 10rem;
+}
+
+.setup-type-button:hover {
+	background: var(--color-surface-3);
+	border-color: var(--color-brand);
+}
+
+.setup-type-button:active {
+	scale: 0.98;
+}
+
+.setup-type-icon {
+	width: 2.5rem;
+	height: 2.5rem;
+	color: var(--color-brand);
+	margin-bottom: 0.5rem;
+	flex-shrink: 0;
+}
+
+.setup-type-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.setup-type-desc {
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--color-secondary);
+	line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+	.setup-type-grid {
+		grid-template-columns: 1fr;
+	}
 }
 </style>

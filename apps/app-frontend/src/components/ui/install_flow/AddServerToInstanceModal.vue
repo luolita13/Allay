@@ -10,12 +10,12 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { useQueryClient } from '@tanstack/vue-query'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { computed, ref } from 'vue'
 
 import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { list } from '@/helpers/instance'
+import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { add_server_to_instance, get_instance_worlds } from '@/helpers/worlds.ts'
 
 const { handleError } = injectNotificationManager()
@@ -120,7 +120,7 @@ async function addServer(instance) {
 						@click="modal.hide()"
 					>
 						<Avatar
-							:src="instance.icon_path ? convertFileSrc(instance.icon_path) : null"
+							:src="getInstanceIconSrc(instance)"
 							class="mr-2 [--size:2rem]"
 						/>
 						{{ instance.name }}

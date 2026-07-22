@@ -2,7 +2,7 @@
 import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/ui'
 import type { SearchResult } from '@modrinth/utils'
 import dayjs from 'dayjs'
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import RowDisplay from '@/components/RowDisplay.vue'
@@ -107,9 +107,6 @@ async function refreshFeaturedProjects() {
 	await Promise.all([fetchFeaturedModpacks(), fetchFeaturedMods()])
 }
 
-await fetchInstances()
-await refreshFeaturedProjects()
-
 const featuredRows = computed(() => {
 	const rows: Array<{
 		label: string
@@ -137,18 +134,27 @@ const featuredRows = computed(() => {
 	return rows
 })
 
-const unlistenInstance = await instance_listener(
-	async (e: { event: string; instance_id: string }) => {
-		await fetchInstances()
+let unlistenInstance: (() => void) | null = null
 
-		if (e.event === 'added' || e.event === 'created' || e.event === 'removed') {
-			await refreshFeaturedProjects()
-		}
-	},
-)
+onMounted(async () => {
+	await fetchInstances()
+	await refreshFeaturedProjects()
+
+	unlistenInstance = await instance_listener(
+		async (e: { event: string; instance_id: string }) => {
+			await fetchInstances()
+
+			if (e.event === 'added' || e.event === 'created' || e.event === 'removed') {
+				await refreshFeaturedProjects()
+			}
+		},
+	)
+})
 
 onUnmounted(() => {
-	unlistenInstance()
+	if (unlistenInstance) {
+		unlistenInstance()
+	}
 })
 </script>
 

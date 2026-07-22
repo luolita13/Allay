@@ -71,6 +71,9 @@ pub struct State {
     /// to keep API functionality while the app is performing intensive tasks.
     pub api_semaphore: FetchSemaphore,
 
+    /// Maximum number of parallel chunks for a single file download (chunked/Range download)
+    pub max_chunks_per_file: usize,
+
     /// Discord RPC
     pub discord_rpc: DiscordGuard,
 
@@ -207,6 +210,7 @@ impl State {
             fetch_semaphore,
             io_semaphore,
             api_semaphore,
+            max_chunks_per_file: settings.max_chunks_per_file,
             discord_rpc,
             process_manager,
             friends_socket,

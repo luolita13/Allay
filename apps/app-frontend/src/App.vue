@@ -59,7 +59,7 @@ import {
 import { renderString } from '@modrinth/utils'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getVersion } from '@tauri-apps/api/app'
-import { convertFileSrc, invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -137,14 +137,32 @@ import { setupLoadingStateProvider } from '@/providers/setup/loading-state'
 import { useError } from '@/store/error.js'
 import { useTheming } from '@/store/state'
 
+import { createObjectUrlFromPath } from './helpers/image-url'
 import { generateSkinPreviews } from './helpers/rendering/batch-skin-renderer'
 import { get_available_capes, get_available_skins } from './helpers/skins'
 import { AppNotificationManager } from './providers/app-notifications'
 import { AppPopupNotificationManager } from './providers/app-popup-notifications'
+import { createDownloadManager, provideDownloadManager } from './providers/download-manager'
 
 const themeStore = useTheming()
 const router = useRouter()
 const route = useRoute()
+
+const backgroundUrl = ref(null)
+
+watch(
+	() => themeStore.backgroundImagePath,
+	async (path) => {
+		if (backgroundUrl.value) {
+			URL.revokeObjectURL(backgroundUrl.value)
+			backgroundUrl.value = null
+		}
+		if (path) {
+			backgroundUrl.value = await createObjectUrlFromPath(path)
+		}
+	},
+	{ immediate: true },
+)
 const APP_LEFT_NAV_WIDTH = '4rem'
 const APP_SIDEBAR_WIDTH = 300
 const INTERCOM_BUBBLE_DEFAULT_PADDING = 20
@@ -241,6 +259,9 @@ provideModalBehavior({
 	onHide: () => {}, // Ads disabled: show_ads_window()
 })
 
+const downloadManager = createDownloadManager(handleError)
+provideDownloadManager(downloadManager)
+
 const {
 	installationModal,
 	unknownPackWarningModal,
@@ -314,6 +335,7 @@ onUnmounted(async () => {
 	document.querySelector('body').removeEventListener('auxclick', handleAuxClick)
 	unsubscribeSidebarToggle()
 	clearDelayedUpdatePopup()
+	downloadManager.dispose()
 
 	await unlistenUpdateDownload?.()
 })
@@ -465,6 +487,7 @@ async function setupApp() {
 	if (os.value !== 'MacOS') await getCurrentWindow().setDecorations(native_decorations)
 
 	themeStore.setThemeState(theme)
+	themeStore.setAccentColor(themeStore.selectedAccentColor)
 	themeStore.collapsedNavigation = collapsed_navigation
 	themeStore.advancedRendering = advanced_rendering
 	themeStore.hideNametagSkinsPage = hide_nametag_skins_page
@@ -472,6 +495,8 @@ async function setupApp() {
 	themeStore.devMode = developer_mode
 	themeStore.featureFlags = feature_flags
 	stateInitialized.value = true
+
+	await downloadManager.start()
 
 	isMaximized.value = await getCurrentWindow().isMaximized()
 
@@ -644,6 +669,11 @@ watch(stateInitialized, (ready) => {
 		if (routerToken) {
 			loading.end(routerToken)
 			routerToken = null
+		}
+
+		// Redirect away from experimental GameLink page if the feature flag is disabled
+		if (route.path.startsWith('/gamelink') && !themeStore.getFeatureFlag('game_link')) {
+			router.replace('/')
 		}
 
 		queryClient.prefetchQuery({
@@ -1482,16 +1512,19 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		:class="{ 'has-background-image': !!themeStore.backgroundImagePath }"
 	>
 		<div
-			v-if="themeStore.backgroundImagePath"
+			v-if="backgroundUrl"
 			class="app-global-background"
 		>
 			<img
-				:src="convertFileSrc(themeStore.backgroundImagePath)"
+				:src="backgroundUrl"
 				class="app-global-background-image"
 			/>
 			<div
 				class="app-global-background-overlay"
-				:style="{ backdropFilter: `blur(${themeStore.backgroundBlur}px)` }"
+				:style="{
+					backdropFilter: `blur(${themeStore.backgroundBlur}px)`,
+					opacity: themeStore.backgroundOpacity / 100,
+				}"
 			/>
 		</div>
 		<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
@@ -1555,6 +1588,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				<ChangeSkinIcon />
 			</NavButton>
 			<NavButton
+				v-if="themeStore.getFeatureFlag('game_link')"
 				v-tooltip.right="formatMessage(messages.navGameLink)"
 				to="/gamelink"
 				:is-primary="(r) => r.path === '/gamelink'"
@@ -1755,11 +1789,17 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				{{ formatMessage(messages.authUnreachableBody) }}
 			</Admonition>
 			<RouterView v-slot="{ Component }">
-				<template v-if="Component">
-					<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
-						<component :is="Component"></component>
-					</Suspense>
-				</template>
+				<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
+					<component :is="Component" />
+					<template #fallback>
+						<div class="flex items-center justify-center h-full w-full">
+							<div class="flex flex-col items-center gap-3">
+								<div class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"></div>
+								<span class="text-sm text-[--color-text-secondary]">Loading...</span>
+							</div>
+						</div>
+					</template>
+				</Suspense>
 			</RouterView>
 		</div>
 		<div

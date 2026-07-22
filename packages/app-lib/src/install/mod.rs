@@ -1,4 +1,5 @@
 pub mod control;
+pub mod diagnostics;
 pub mod events;
 pub mod model;
 pub mod recovery;
@@ -8,15 +9,19 @@ pub mod store;
 pub use control::{JobControl, JobGuard};
 pub use events::InstallProgressReporter;
 pub use model::{
-    InstallErrorView, InstallJavaStep, InstallJobKind, InstallJobSnapshot,
-    InstallJobStatus, InstallModpackPreview, InstallPhaseDetails,
-    InstallPhaseId, InstallPostInstallEdit, InstallProgress,
-    InstallProgressSecondary, InstallRequest,
+    DownloadItemSnapshot, DownloadItemStatus, DownloadJobSummary,
+    InstallApiErrorDetails, InstallErrorContext, InstallErrorView,
+    InstallInterruptReason, InstallJavaStep, InstallJobEvent,
+    InstallJobEventKind, InstallJobKind, InstallJobProvider,
+    InstallJobSnapshot, InstallJobStatus, InstallModpackPreview,
+    InstallPhaseDetails, InstallPhaseId, InstallPostInstallEdit,
+    InstallProgress, InstallProgressSecondary, InstallRequest,
 };
 pub use runner::{
-    cancel_job, create_instance, create_modpack_instance, dismiss_job,
-    duplicate_instance, get_job, import_instance, install_content_to_instance,
-    install_curseforge_file, install_existing_instance,
-    install_pack_to_existing_instance, list_jobs, pause_job, resume_job,
-    retry_job,
+    cancel_job, clear_job_history, create_instance, create_modpack_instance,
+    dismiss_job, duplicate_instance, get_job, import_instance,
+    install_content_to_instance, install_curseforge_file,
+    install_existing_instance, install_pack_to_existing_instance,
+    job_support_details, list_jobs, pause_job, resume_job, retry_job,
+    retry_job_as_new,
 };

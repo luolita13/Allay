@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import dayjs from 'dayjs'
 import { PlusIcon, SearchIcon } from '@modrinth/assets'
 import { ButtonStyled, defineMessages, useVIntl } from '@modrinth/ui'
+import dayjs from 'dayjs'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
