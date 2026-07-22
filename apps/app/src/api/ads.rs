@@ -11,6 +11,7 @@ use tokio::sync::RwLock;
 pub struct AdsState {
     pub shown: bool,
     pub modal_shown: bool,
+    pub consent_overlay_shown: bool,
     pub occluded: bool,
     pub last_click: Option<Instant>,
     pub malicious_origins: HashSet<String>,
@@ -254,6 +255,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             app.manage(RwLock::new(AdsState {
                 shown: true,
                 modal_shown: false,
+                consent_overlay_shown: false,
                 occluded: false,
                 last_click: None,
                 malicious_origins: HashSet::new(),
@@ -604,13 +606,17 @@ pub async fn hide_ads_window<R: Runtime>(
     app: tauri::AppHandle<R>,
     reset: Option<bool>,
 ) -> crate::api::Result<()> {
-    if let Some(webview) = app.webviews().get("ads-window") {
-        let state = app.state::<RwLock<AdsState>>();
-        let mut state = state.write().await;
+    let reset = reset.unwrap_or(false);
+    let state = app.state::<RwLock<AdsState>>();
+    let mut state = state.write().await;
 
-        if reset.unwrap_or(false) {
-            state.shown = false;
-        } else {
+    if reset {
+        state.shown = false;
+        state.consent_overlay_shown = false;
+    }
+
+    if let Some(webview) = app.webviews().get("ads-window") {
+        if !reset {
             state.modal_shown = true;
         }
 
