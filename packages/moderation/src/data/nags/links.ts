@@ -324,31 +324,33 @@ export const linksNags: Nag[] = [
 		},
 		status: 'required',
 		shouldShow: (context: NagContext) => {
-			const gplLicenses = [
-				'GPL-2.0',
-				'GPL-2.0+',
-				'GPL-2.0-only',
-				'GPL-2.0-or-later',
-				'GPL-3.0',
-				'GPL-3.0+',
-				'GPL-3.0-only',
-				'GPL-3.0-or-later',
-				'LGPL-2.1',
-				'LGPL-2.1+',
-				'LGPL-2.1-only',
-				'LGPL-2.1-or-later',
-				'LGPL-3.0',
-				'LGPL-3.0+',
-				'LGPL-3.0-only',
-				'LGPL-3.0-or-later',
-				'AGPL-3.0',
-				'AGPL-3.0+',
-				'AGPL-3.0-only',
-				'AGPL-3.0-or-later',
-				'MPL-2.0',
-			]
+				if (context.projectV3.project_types.includes('datapack')) return false
 
-			const isGplLicense = gplLicenses.includes(context.project.license.id)
+				const gplLicenses = [
+					'GPL-2.0',
+					'GPL-2.0+',
+					'GPL-2.0-only',
+					'GPL-2.0-or-later',
+					'GPL-3.0',
+					'GPL-3.0+',
+					'GPL-3.0-only',
+					'GPL-3.0-or-later',
+					'LGPL-2.1',
+					'LGPL-2.1+',
+					'LGPL-2.1-only',
+					'LGPL-2.1-or-later',
+					'LGPL-3.0',
+					'LGPL-3.0+',
+					'LGPL-3.0-only',
+					'LGPL-3.0-or-later',
+					'AGPL-3.0',
+					'AGPL-3.0+',
+					'AGPL-3.0-only',
+					'AGPL-3.0-or-later',
+					'MPL-2.0',
+				]
+
+				const isGplLicense = gplLicenses.includes(context.project.license.id)
 			const hasSourceUrl = !!context.project.source_url
 			const hasAdditionalFiles = (context: NagContext) => {
 				let hasAdditional = true
