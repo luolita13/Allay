@@ -23,14 +23,14 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 <template>
 	<div class="flex h-full">
 		<!-- Sidebar -->
-		<nav class="w-52 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1 p-3">
-			<div class="mb-4 pl-2">
-				<h2 class="text-lg font-extrabold text-contrast">Settings</h2>
+		<nav class="settings-sidebar w-64 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1 p-4">
+			<div class="mb-5 pl-1">
+				<h2 class="text-xl font-extrabold text-contrast">Settings</h2>
 			</div>
 			<button
 				v-for="(tab, i) in settingsTabs"
 				:key="i"
-				class="mb-0.5 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors"
+				class="settings-tab mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors"
 				:class="
 					activeTab === i
 						? 'bg-brand/10 text-brand font-medium'
@@ -38,11 +38,11 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 				"
 				@click="activeTab = i"
 			>
-				<component :is="tab.icon" class="size-4 flex-shrink-0" />
+				<component :is="tab.icon" class="size-[18px] flex-shrink-0" />
 				<span class="truncate">{{ formatMessage(tab.name) }}</span>
 				<span
 					v-if="tab.badge"
-					class="ml-auto flex-shrink-0 rounded-full bg-surface-4 px-1.5 py-0.5 text-xs font-medium text-tertiary"
+					class="ml-auto flex-shrink-0 rounded-full bg-surface-4 px-2 py-0.5 text-xs font-medium text-tertiary"
 				>
 					{{ formatMessage(tab.badge) }}
 				</span>
@@ -50,9 +50,9 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 		</nav>
 
 		<!-- Content -->
-		<div class="flex-1 overflow-y-auto p-6">
+		<div class="flex-1 overflow-y-auto p-8">
 			<div class="mx-auto max-w-2xl">
-				<h2 class="mb-6 text-xl font-extrabold text-contrast">
+				<h2 class="mb-6 text-2xl font-extrabold text-contrast">
 					{{ formatMessage(settingsTabs[activeTab].name) }}
 				</h2>
 				<Suspense>
@@ -77,3 +77,13 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.settings-sidebar {
+	font-size: 0.875rem;
+}
+
+.settings-tab {
+	font-size: 0.9rem;
+}
+</style>

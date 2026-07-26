@@ -3,7 +3,8 @@
 	<div
 		ref="skinPreviewContainer"
 		class="relative w-full h-full overflow-visible cursor-grab"
-		@click="onCanvasClick"
+		@click="handleCanvasClick"
+		@mousemove="onContainerMouseMove"
 	>
 		<div
 			class="absolute left-0 right-0 z-10 flex items-center justify-center pointer-events-none"
@@ -69,6 +70,9 @@
 				</Group>
 			</Suspense>
 
+			<!-- Particle background -->
+			<primitive v-if="particleBgPoints" :object="particleBgPoints" />
+
 			<Suspense>
 				<TresMesh
 					:position="spotlightPosition"
@@ -91,6 +95,22 @@
 			<TresDirectionalLight :position="[-3, 4, -2]" :intensity="1.2" />
 		</TresCanvas>
 
+		<!-- Click particles overlay -->
+		<div class="pointer-events-none absolute inset-0 overflow-visible z-20">
+			<span
+				v-for="p in clickParticleList"
+				:key="p.id"
+				class="click-particle"
+				:style="{
+					left: `${p.x}px`,
+					top: `${p.y}px`,
+					transform: `translate(-50%, -50%) rotate(${p.rotate}deg) scale(${p.scale})`,
+				}"
+			>
+				{{ p.emoji }}
+			</span>
+		</div>
+
 		<div v-if="showLoading" class="absolute inset-0 flex items-center justify-center">
 			<div class="text-primary">Loading...</div>
 		</div>
@@ -99,7 +119,7 @@
 
 <script setup lang="ts">
 import { ClassicPlayerModel, SlimPlayerModel, UnfoldHorizontalIcon } from '@modrinth/assets'
-import { TresCanvas } from '@tresjs/core'
+import { TresCanvas, useRenderLoop } from '@tresjs/core'
 import * as THREE from 'three'
 import {
 	computed,
@@ -147,6 +167,10 @@ const props = withDefaults(
 		fov?: number
 		initialRotation?: number
 		animationConfig?: SkinPreviewAnimationConfig
+		// Visual effect toggles (driven by app theme store)
+		clickParticles?: boolean
+		headTracking?: boolean
+		particleBackground?: boolean
 	}>(),
 	{
 		variant: 'CLASSIC',
@@ -163,6 +187,9 @@ const props = withDefaults(
 			randomAnimationInterval: 8000,
 			transitionDuration: 0.2,
 		}),
+		clickParticles: false,
+		headTracking: false,
+		particleBackground: false,
 	},
 )
 
@@ -349,6 +376,144 @@ const animatedModelGroupScale = computed<SkinPreviewTuple>(() => {
 	return [x * clickImpulseScaleX.value, y * clickImpulseScaleY.value, z]
 })
 
+// === Effect: Click particles (DOM overlay) ===
+interface ClickParticle {
+	id: number
+	x: number
+	y: number
+	emoji: string
+	rotate: number
+	scale: number
+}
+const clickParticleList = ref<ClickParticle[]>([])
+let particleIdCounter = 0
+const PARTICLE_EMOJIS = ['⭐', '✨', '💫', '★', '✦', '◆', '▲']
+
+function spawnClickParticle(x: number, y: number) {
+	if (!props.clickParticles) return
+	const id = particleIdCounter++
+	clickParticleList.value.push({
+		id,
+		x,
+		y,
+		emoji: PARTICLE_EMOJIS[Math.floor(Math.random() * PARTICLE_EMOJIS.length)],
+		rotate: (Math.random() - 0.5) * 90,
+		scale: 0.8 + Math.random() * 0.6,
+	})
+	// Auto-remove after animation
+	setTimeout(() => {
+		clickParticleList.value = clickParticleList.value.filter((p) => p.id !== id)
+	}, 900)
+}
+
+function handleCanvasClick(event: MouseEvent) {
+	if (props.clickParticles && skinPreviewContainer.value) {
+		const rect = skinPreviewContainer.value.getBoundingClientRect()
+		spawnClickParticle(event.clientX - rect.left, event.clientY - rect.top)
+	}
+	onCanvasClick()
+}
+
+// === Effect: Head tracking ===
+const headObject = ref<THREE.Object3D | null>(null)
+const mouseTargetX = ref(0)
+const mouseTargetY = ref(0)
+
+watch(scene, (newScene) => {
+	if (!newScene) {
+		headObject.value = null
+		return
+	}
+	headObject.value = newScene.getObjectByName('Head') ?? null
+})
+
+function onContainerMouseMove(event: MouseEvent) {
+	if (!props.headTracking || !skinPreviewContainer.value) return
+	const rect = skinPreviewContainer.value.getBoundingClientRect()
+	// Normalize to -1..1
+	mouseTargetX.value = ((event.clientX - rect.left) / rect.width) * 2 - 1
+	mouseTargetY.value = -(((event.clientY - rect.top) / rect.height) * 2 - 1)
+}
+
+const { onLoop: onHeadTrackLoop } = useRenderLoop()
+onHeadTrackLoop(() => {
+	if (!props.headTracking || !headObject.value) return
+	// Lerp head rotation towards mouse target
+	const targetY = mouseTargetX.value * 0.5 // yaw: max ~28°
+	const targetX = mouseTargetY.value * 0.35 // pitch: max ~20°
+	headObject.value.rotation.y += (targetY - headObject.value.rotation.y) * 0.08
+	headObject.value.rotation.x += (targetX - headObject.value.rotation.x) * 0.08
+})
+
+// === Effect: Particle background (Three.js Points) ===
+const particleBgPoints = ref<THREE.Points | null>(null)
+const PARTICLE_BG_COUNT = 70
+
+function createParticleBackground() {
+	const count = PARTICLE_BG_COUNT
+	const geometry = new THREE.BufferGeometry()
+	const positions = new Float32Array(count * 3)
+	const speeds = new Float32Array(count)
+	for (let i = 0; i < count; i++) {
+		positions[i * 3] = (Math.random() - 0.5) * 8
+		positions[i * 3 + 1] = Math.random() * 8 - 2
+		positions[i * 3 + 2] = (Math.random() - 0.5) * 4 - 1
+		speeds[i] = 0.003 + Math.random() * 0.005
+	}
+	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+	const material = new THREE.PointsMaterial({
+		color: 0xffffff,
+		size: 0.07,
+		transparent: true,
+		opacity: 0.5,
+		sizeAttenuation: true,
+		depthWrite: false,
+	})
+
+	const points = new THREE.Points(geometry, material)
+	points.userData.speeds = speeds
+	particleBgPoints.value = points
+}
+
+function disposeParticleBackground() {
+	if (!particleBgPoints.value) return
+	particleBgPoints.value.geometry.dispose()
+	;(particleBgPoints.value.material as THREE.Material).dispose()
+	particleBgPoints.value = null
+}
+
+watch(
+	() => props.particleBackground,
+	(enabled) => {
+		if (enabled) {
+			createParticleBackground()
+		} else {
+			disposeParticleBackground()
+		}
+	},
+)
+
+const { onLoop: onParticleBgLoop } = useRenderLoop()
+onParticleBgLoop(() => {
+	if (!particleBgPoints.value) return
+	const points = particleBgPoints.value
+	const positions = points.geometry.attributes.position.array as Float32Array
+	const speeds = points.userData.speeds as Float32Array
+	for (let i = 0; i < positions.length / 3; i++) {
+		positions[i * 3 + 1] += speeds[i]
+		if (positions[i * 3 + 1] > 6) {
+			positions[i * 3 + 1] = -2
+			positions[i * 3] = (Math.random() - 0.5) * 8
+		}
+	}
+	points.geometry.attributes.position.needsUpdate = true
+})
+
+onUnmounted(() => {
+	disposeParticleBackground()
+})
+
 defineExpose({
 	playAnimation,
 	playClickInteraction,
@@ -366,5 +531,28 @@ defineExpose({
 	box-shadow:
 		inset -0.5px -0.5px 0px rgba(0, 0, 0, 0.25),
 		inset 0.5px 0.5px 0px rgba(255, 255, 255, 0.05);
+}
+
+.click-particle {
+	position: absolute;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--color-brand, #ff496e);
+	text-shadow: 0 0 8px currentColor;
+	pointer-events: none;
+	user-select: none;
+	animation: click-particle-rise 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+	will-change: transform, opacity;
+}
+
+@keyframes click-particle-rise {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, calc(-50% - 60px)) rotate(var(--rotate, 45deg))
+			scale(0.3);
+	}
 }
 </style>

@@ -14,6 +14,9 @@
 					:cape-src="selectedCapeTexture"
 					framing="modal"
 					:initial-rotation="Math.PI / 8"
+					:click-particles="themeStore.skinClickParticles"
+					:head-tracking="themeStore.skinHeadTracking"
+					:particle-background="themeStore.skinParticleBackground"
 					class="h-full w-full"
 				/>
 			</div>
@@ -158,6 +161,9 @@ import {
 	type SkinModel,
 	type SkinTextureUrl,
 } from '@/helpers/skins.ts'
+import { useTheming } from '@/store/state'
+
+const themeStore = useTheming()
 
 const CAPE_LIST_MAX_HEIGHT = 334
 const messages = defineMessages({

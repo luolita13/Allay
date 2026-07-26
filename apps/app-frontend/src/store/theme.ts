@@ -11,6 +11,9 @@ const LS_KEY_ACCENT_COLOR = 'modrinth-app-accent-color'
 const LS_KEY_ACTIVE_THEME_PACK = 'modrinth-app-active-theme-pack'
 const LS_KEY_APP_IMAGE_VIEWER = 'modrinth-app-image-viewer'
 const LS_KEY_SETTINGS_AS_PAGE = 'modrinth-app-settings-as-page'
+const LS_KEY_SKIN_CLICK_PARTICLES = 'modrinth-app-skin-click-particles'
+const LS_KEY_SKIN_HEAD_TRACKING = 'modrinth-app-skin-head-tracking'
+const LS_KEY_SKIN_PARTICLE_BG = 'modrinth-app-skin-particle-bg'
 
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
@@ -70,6 +73,11 @@ export type ThemeStore = {
 
 	// Settings: render as full page instead of modal
 	settingsAsPage: boolean
+
+	// Skin preview visual effects
+	skinClickParticles: boolean
+	skinHeadTracking: boolean
+	skinParticleBackground: boolean
 }
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
@@ -91,6 +99,9 @@ export const DEFAULT_THEME_STORE: ThemeStore = {
 
 	useAppImageViewer: false,
 	settingsAsPage: false,
+	skinClickParticles: true,
+	skinHeadTracking: true,
+	skinParticleBackground: false,
 }
 
 export const useTheming = defineStore('themeStore', {
@@ -126,6 +137,18 @@ export const useTheming = defineStore('themeStore', {
 		const savedSettingsAsPage = localStorage.getItem(LS_KEY_SETTINGS_AS_PAGE)
 		if (savedSettingsAsPage !== null) {
 			stored.settingsAsPage = savedSettingsAsPage === 'true'
+		}
+		const savedSkinClickParticles = localStorage.getItem(LS_KEY_SKIN_CLICK_PARTICLES)
+		if (savedSkinClickParticles !== null) {
+			stored.skinClickParticles = savedSkinClickParticles === 'true'
+		}
+		const savedSkinHeadTracking = localStorage.getItem(LS_KEY_SKIN_HEAD_TRACKING)
+		if (savedSkinHeadTracking !== null) {
+			stored.skinHeadTracking = savedSkinHeadTracking === 'true'
+		}
+		const savedSkinParticleBg = localStorage.getItem(LS_KEY_SKIN_PARTICLE_BG)
+		if (savedSkinParticleBg !== null) {
+			stored.skinParticleBackground = savedSkinParticleBg === 'true'
 		}
 		return stored
 	},
@@ -200,6 +223,18 @@ export const useTheming = defineStore('themeStore', {
 		setSettingsAsPage(value: boolean) {
 			this.settingsAsPage = value
 			localStorage.setItem(LS_KEY_SETTINGS_AS_PAGE, String(value))
+		},
+		setSkinClickParticles(value: boolean) {
+			this.skinClickParticles = value
+			localStorage.setItem(LS_KEY_SKIN_CLICK_PARTICLES, String(value))
+		},
+		setSkinHeadTracking(value: boolean) {
+			this.skinHeadTracking = value
+			localStorage.setItem(LS_KEY_SKIN_HEAD_TRACKING, String(value))
+		},
+		setSkinParticleBackground(value: boolean) {
+			this.skinParticleBackground = value
+			localStorage.setItem(LS_KEY_SKIN_PARTICLE_BG, String(value))
 		},
 
 		// ---- Theme pack system ----

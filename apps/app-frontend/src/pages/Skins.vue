@@ -1046,6 +1046,9 @@ onMounted(async () => {
 					:variant="skinVariant"
 					:nametag="skinNametag"
 					:initial-rotation="Math.PI / 8"
+					:click-particles="themeStore.skinClickParticles"
+					:head-tracking="themeStore.skinHeadTracking"
+					:particle-background="themeStore.skinParticleBackground"
 				>
 					<template v-if="hasPendingSkinChange" #nametag-badge>
 						<div

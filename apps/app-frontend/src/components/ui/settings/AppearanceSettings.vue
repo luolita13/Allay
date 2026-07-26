@@ -180,6 +180,33 @@ const messages = defineMessages({
 		defaultMessage:
 			'Display the settings panel as a full page instead of a modal dialog.',
 	},
+	skinClickParticlesTitle: {
+		id: 'app.appearance-settings.skin-click-particles.title',
+		defaultMessage: 'Skin preview click particles',
+	},
+	skinClickParticlesDescription: {
+		id: 'app.appearance-settings.skin-click-particles.description',
+		defaultMessage:
+			'Spawn pixel particles when clicking the 3D skin model on the Skins page.',
+	},
+	skinHeadTrackingTitle: {
+		id: 'app.appearance-settings.skin-head-tracking.title',
+		defaultMessage: 'Skin preview head tracking',
+	},
+	skinHeadTrackingDescription: {
+		id: 'app.appearance-settings.skin-head-tracking.description',
+		defaultMessage:
+			'The skin model\'s head gently follows your mouse cursor as it moves over the preview.',
+	},
+	skinParticleBgTitle: {
+		id: 'app.appearance-settings.skin-particle-bg.title',
+		defaultMessage: 'Skin preview particle background',
+	},
+	skinParticleBgDescription: {
+		id: 'app.appearance-settings.skin-particle-bg.description',
+		defaultMessage:
+			'Add floating ambient particles behind the 3D skin model for extra atmosphere.',
+	},
 	toggleSidebarTitle: {
 		id: 'app.appearance-settings.toggle-sidebar.title',
 		defaultMessage: 'Toggle sidebar',
@@ -448,6 +475,54 @@ watch(
 			id="settings-as-page"
 			:model-value="themeStore.settingsAsPage"
 			@update:model-value="(e: boolean) => themeStore.setSettingsAsPage(!!e)"
+		/>
+	</div>
+
+	<div class="mt-8 mb-2 border-t border-surface-5 pt-6">
+		<h2 class="m-0 text-sm font-bold uppercase tracking-wide text-tertiary">
+			Skin Preview Effects
+		</h2>
+	</div>
+
+	<div class="mt-4 flex items-center justify-between gap-4">
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.skinClickParticlesTitle) }}
+			</h2>
+			<p class="m-0 mt-1">{{ formatMessage(messages.skinClickParticlesDescription) }}</p>
+		</div>
+		<Toggle
+			id="skin-click-particles"
+			:model-value="themeStore.skinClickParticles"
+			@update:model-value="(e: boolean) => themeStore.setSkinClickParticles(!!e)"
+		/>
+	</div>
+
+	<div class="mt-6 flex items-center justify-between gap-4">
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.skinHeadTrackingTitle) }}
+			</h2>
+			<p class="m-0 mt-1">{{ formatMessage(messages.skinHeadTrackingDescription) }}</p>
+		</div>
+		<Toggle
+			id="skin-head-tracking"
+			:model-value="themeStore.skinHeadTracking"
+			@update:model-value="(e: boolean) => themeStore.setSkinHeadTracking(!!e)"
+		/>
+	</div>
+
+	<div class="mt-6 flex items-center justify-between gap-4">
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.skinParticleBgTitle) }}
+			</h2>
+			<p class="m-0 mt-1">{{ formatMessage(messages.skinParticleBgDescription) }}</p>
+		</div>
+		<Toggle
+			id="skin-particle-bg"
+			:model-value="themeStore.skinParticleBackground"
+			@update:model-value="(e: boolean) => themeStore.setSkinParticleBackground(!!e)"
 		/>
 	</div>
 </template>
