@@ -8,6 +8,7 @@ const LS_KEY_BG_PATH = 'modrinth-app-background-image-path'
 const LS_KEY_BG_BLUR = 'modrinth-app-background-blur'
 const LS_KEY_BG_OPACITY = 'modrinth-app-background-opacity'
 const LS_KEY_ACCENT_COLOR = 'modrinth-app-accent-color'
+const LS_KEY_CUSTOM_ACCENT_COLOR = 'modrinth-app-custom-accent-color'
 const LS_KEY_ACTIVE_THEME_PACK = 'modrinth-app-active-theme-pack'
 const LS_KEY_APP_IMAGE_VIEWER = 'modrinth-app-image-viewer'
 const LS_KEY_SETTINGS_AS_PAGE = 'modrinth-app-settings-as-page'
@@ -53,6 +54,7 @@ export type ColorTheme = (typeof THEME_OPTIONS)[number]
 export type ThemeStore = {
 	selectedTheme: ColorTheme
 	selectedAccentColor: AccentColor
+	customAccentColor: string | null
 	advancedRendering: boolean
 	hideNametagSkinsPage: boolean
 	toggleSidebar: boolean
@@ -83,6 +85,7 @@ export type ThemeStore = {
 export const DEFAULT_THEME_STORE: ThemeStore = {
 	selectedTheme: 'dark',
 	selectedAccentColor: 'pink',
+	customAccentColor: null,
 	advancedRendering: true,
 	hideNametagSkinsPage: false,
 	toggleSidebar: false,
@@ -125,6 +128,10 @@ export const useTheming = defineStore('themeStore', {
 		const savedAccentColor = localStorage.getItem(LS_KEY_ACCENT_COLOR) as AccentColor | null
 		if (savedAccentColor && ACCENT_COLOR_OPTIONS.includes(savedAccentColor)) {
 			stored.selectedAccentColor = savedAccentColor
+		}
+		const savedCustomAccent = localStorage.getItem(LS_KEY_CUSTOM_ACCENT_COLOR)
+		if (savedCustomAccent) {
+			stored.customAccentColor = savedCustomAccent
 		}
 		const savedActiveThemePack = localStorage.getItem(LS_KEY_ACTIVE_THEME_PACK)
 		if (savedActiveThemePack) {
@@ -169,12 +176,42 @@ export const useTheming = defineStore('themeStore', {
 				console.warn('Selected accent color is not available.')
 			}
 
+			// Clear custom color when selecting a preset
+			this.customAccentColor = null
+			localStorage.removeItem(LS_KEY_CUSTOM_ACCENT_COLOR)
+
 			const html = document.documentElement
+			// Clear any inline custom accent overrides
+			html.style.removeProperty('--color-brand')
+			html.style.removeProperty('--color-brand-highlight')
+			html.style.removeProperty('--color-brand-shadow')
+
 			for (const accentColor of ACCENT_COLOR_OPTIONS) {
 				html.classList.remove(`accent-${accentColor}`)
 			}
 			html.classList.add(`accent-${this.selectedAccentColor}`)
 			localStorage.setItem(LS_KEY_ACCENT_COLOR, this.selectedAccentColor)
+		},
+		setCustomAccentColor(hex: string) {
+			this.customAccentColor = hex
+			localStorage.setItem(LS_KEY_CUSTOM_ACCENT_COLOR, hex)
+
+			const html = document.documentElement
+			// Remove preset accent classes
+			for (const accentColor of ACCENT_COLOR_OPTIONS) {
+				html.classList.remove(`accent-${accentColor}`)
+			}
+
+			// Apply custom color via inline CSS variables
+			html.style.setProperty('--color-brand', hex)
+			html.style.setProperty(
+				'--color-brand-highlight',
+				`color-mix(in srgb, ${hex} 70%, white)`,
+			)
+			html.style.setProperty(
+				'--color-brand-shadow',
+				`color-mix(in srgb, ${hex} 68%, transparent)`,
+			)
 		},
 		setThemeClass() {
 			const html = document.getElementsByTagName('html')[0]

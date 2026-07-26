@@ -154,12 +154,13 @@ const backgroundUrl = ref(null)
 watch(
 	() => themeStore.backgroundImagePath,
 	async (path) => {
-		if (backgroundUrl.value) {
-			URL.revokeObjectURL(backgroundUrl.value)
-			backgroundUrl.value = null
-		}
+		// Do NOT revoke the old URL here — the blob URL is cached per path
+		// and may be shared by other consumers (e.g. AppearanceSettings preview).
+		// Caching is managed by createObjectUrlFromPath / revokePathUrl.
 		if (path) {
 			backgroundUrl.value = await createObjectUrlFromPath(path)
+		} else {
+			backgroundUrl.value = null
 		}
 	},
 	{ immediate: true },
@@ -489,7 +490,11 @@ async function setupApp() {
 	if (os.value !== 'MacOS') await getCurrentWindow().setDecorations(native_decorations)
 
 	themeStore.setThemeState(theme)
-	themeStore.setAccentColor(themeStore.selectedAccentColor)
+	if (themeStore.customAccentColor) {
+		themeStore.setCustomAccentColor(themeStore.customAccentColor)
+	} else {
+		themeStore.setAccentColor(themeStore.selectedAccentColor)
+	}
 	themeStore.collapsedNavigation = collapsed_navigation
 	themeStore.advancedRendering = advanced_rendering
 	themeStore.hideNametagSkinsPage = hide_nametag_skins_page

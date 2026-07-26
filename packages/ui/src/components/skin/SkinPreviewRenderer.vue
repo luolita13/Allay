@@ -4,7 +4,6 @@
 		ref="skinPreviewContainer"
 		class="relative w-full h-full overflow-visible cursor-grab"
 		@click="handleCanvasClick"
-		@mousemove="onContainerMouseMove"
 	>
 		<div
 			class="absolute left-0 right-0 z-10 flex items-center justify-center pointer-events-none"
@@ -335,6 +334,9 @@ const isReady = computed(() => isModelLoaded.value && isTextureLoaded.value && h
 const { isPreviewVisible, showLoading } = useSkinPreviewLoading(isReady)
 
 onMounted(observeSubtitleElement)
+onMounted(() => {
+	window.addEventListener('mousemove', onGlobalMouseMove)
+})
 
 watch(hasSubtitle, () => nextTick(observeSubtitleElement), { flush: 'post' })
 watch(scene, syncDamageFlashShaderMaterials, { immediate: true })
@@ -342,6 +344,7 @@ watch(damageFlashIntensity, syncDamageFlashShaderMaterials)
 
 onUnmounted(() => {
 	subtitleResizeObserver?.disconnect()
+	window.removeEventListener('mousemove', onGlobalMouseMove)
 })
 
 const { fontSize: nametagFontSize } = useDynamicFontSize({
@@ -427,53 +430,92 @@ watch(scene, (newScene) => {
 	headObject.value = newScene.getObjectByName('Head') ?? null
 })
 
-function onContainerMouseMove(event: MouseEvent) {
+// Global mouse tracking — head follows cursor anywhere on screen
+function onGlobalMouseMove(event: MouseEvent) {
 	if (!props.headTracking || !skinPreviewContainer.value) return
 	const rect = skinPreviewContainer.value.getBoundingClientRect()
-	// Normalize to -1..1
-	mouseTargetX.value = ((event.clientX - rect.left) / rect.width) * 2 - 1
-	mouseTargetY.value = -(((event.clientY - rect.top) / rect.height) * 2 - 1)
+	// Compute mouse position relative to the container center, normalized to -1..1
+	// using the larger of width/height so diagonal movement feels natural.
+	const centerX = rect.left + rect.width / 2
+	const centerY = rect.top + rect.height / 2
+	const span = Math.max(rect.width, rect.height, 200)
+	mouseTargetX.value = Math.max(-1.5, Math.min(1.5, (event.clientX - centerX) / span))
+	mouseTargetY.value = Math.max(-1.5, Math.min(1.5, -(event.clientY - centerY) / span))
 }
 
 const { onLoop: onHeadTrackLoop } = useRenderLoop()
 onHeadTrackLoop(() => {
 	if (!props.headTracking || !headObject.value) return
 	// Lerp head rotation towards mouse target
-	const targetY = mouseTargetX.value * 0.5 // yaw: max ~28°
-	const targetX = mouseTargetY.value * 0.35 // pitch: max ~20°
-	headObject.value.rotation.y += (targetY - headObject.value.rotation.y) * 0.08
-	headObject.value.rotation.x += (targetX - headObject.value.rotation.x) * 0.08
+	const targetY = mouseTargetX.value * 0.6 // yaw
+	const targetX = mouseTargetY.value * 0.4 // pitch
+	headObject.value.rotation.y += (targetY - headObject.value.rotation.y) * 0.1
+	headObject.value.rotation.x += (targetX - headObject.value.rotation.x) * 0.1
 })
 
 // === Effect: Particle background (Three.js Points) ===
 const particleBgPoints = ref<THREE.Points | null>(null)
-const PARTICLE_BG_COUNT = 70
+const PARTICLE_BG_COUNT = 120
 
 function createParticleBackground() {
 	const count = PARTICLE_BG_COUNT
 	const geometry = new THREE.BufferGeometry()
 	const positions = new Float32Array(count * 3)
 	const speeds = new Float32Array(count)
+	const colors = new Float32Array(count * 3)
+	// Accent-ish palette: white, cyan, magenta, gold — visible on any background
+	const palette = [
+		[1.0, 1.0, 1.0],
+		[0.4, 0.9, 1.0],
+		[1.0, 0.5, 0.9],
+		[1.0, 0.85, 0.3],
+	]
 	for (let i = 0; i < count; i++) {
-		positions[i * 3] = (Math.random() - 0.5) * 8
-		positions[i * 3 + 1] = Math.random() * 8 - 2
-		positions[i * 3 + 2] = (Math.random() - 0.5) * 4 - 1
-		speeds[i] = 0.003 + Math.random() * 0.005
+		positions[i * 3] = (Math.random() - 0.5) * 10
+		positions[i * 3 + 1] = Math.random() * 10 - 2
+		positions[i * 3 + 2] = (Math.random() - 0.5) * 5 - 2
+		speeds[i] = 0.004 + Math.random() * 0.006
+		const c = palette[Math.floor(Math.random() * palette.length)]
+		colors[i * 3] = c[0]
+		colors[i * 3 + 1] = c[1]
+		colors[i * 3 + 2] = c[2]
 	}
 	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+	geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
 
+	// Use a circular sprite texture for softer particles
+	const sprite = makeCircleSprite()
 	const material = new THREE.PointsMaterial({
-		color: 0xffffff,
-		size: 0.07,
+		size: 0.18,
+		map: sprite,
 		transparent: true,
-		opacity: 0.5,
+		opacity: 0.85,
 		sizeAttenuation: true,
 		depthWrite: false,
+		blending: THREE.AdditiveBlending,
+		vertexColors: true,
 	})
 
 	const points = new THREE.Points(geometry, material)
 	points.userData.speeds = speeds
 	particleBgPoints.value = points
+}
+
+function makeCircleSprite(): THREE.Texture {
+	const size = 64
+	const canvas = document.createElement('canvas')
+	canvas.width = size
+	canvas.height = size
+	const ctx = canvas.getContext('2d')!
+	const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+	grad.addColorStop(0, 'rgba(255,255,255,1)')
+	grad.addColorStop(0.4, 'rgba(255,255,255,0.7)')
+	grad.addColorStop(1, 'rgba(255,255,255,0)')
+	ctx.fillStyle = grad
+	ctx.fillRect(0, 0, size, size)
+	const tex = new THREE.CanvasTexture(canvas)
+	tex.needsUpdate = true
+	return tex
 }
 
 function disposeParticleBackground() {

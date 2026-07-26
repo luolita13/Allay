@@ -70,28 +70,52 @@
 		"fs:allow-exists",
 		"fs:allow-mkdir",
 		{
-			"identifier": "fs:scope",
-			"allow": [
-				{
-					"path": "$APPDATA/profiles"
-				},
-				{
-					"path": "$APPDATA/profiles/**"
-				},
-				{
-					"path": "$APPCONFIG/profiles"
-				},
-				{
-					"path": "$APPCONFIG/profiles/**"
-				},
-				{
-					"path": "$CONFIG/profiles"
-				},
-				{
-					"path": "$CONFIG/profiles/**"
-				}
-			]
-		},
+				"identifier": "fs:scope",
+				"allow": [
+					{
+						"path": "$APPDATA/profiles"
+					},
+					{
+						"path": "$APPDATA/profiles/**"
+					},
+					{
+						"path": "$APPCONFIG/profiles"
+					},
+					{
+						"path": "$APPCONFIG/profiles/**"
+					},
+					{
+						"path": "$CONFIG/profiles"
+					},
+					{
+						"path": "$CONFIG/profiles/**"
+					},
+					{
+						"path": "$HOME/**"
+					},
+					{
+						"path": "$DOWNLOAD/**"
+					},
+					{
+						"path": "$PICTURE/**"
+					},
+					{
+						"path": "$DOCUMENT/**"
+					},
+					{
+						"path": "C:/**"
+					},
+					{
+						"path": "D:/**"
+					},
+					{
+						"path": "E:/**"
+					},
+					{
+						"path": "F:/**"
+					}
+				]
+			},
 		"auth:default",
 		"auth:allow-login-offline",
 		"auth:allow-login-yggdrasil",

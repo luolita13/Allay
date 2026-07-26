@@ -10,7 +10,8 @@ import { getOS } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
 import type { AccentColor, ColorTheme } from '@/store/theme.ts'
 import { ACCENT_COLOR_OPTIONS } from '@/store/theme.ts'
-import ThemePackManager from '@/components/ui/settings/ThemePackManager.vue'
+// Temporarily disabled — theme pack feature is a work in progress
+// import ThemePackManager from '@/components/ui/settings/ThemePackManager.vue'
 
 const themeStore = useTheming()
 const { formatMessage } = useVIntl()
@@ -30,12 +31,11 @@ const backgroundPreviewUrl = ref<string | null>(null)
 watch(
 	() => themeStore.backgroundImagePath,
 	async (path) => {
-		if (backgroundPreviewUrl.value) {
-			URL.revokeObjectURL(backgroundPreviewUrl.value)
-			backgroundPreviewUrl.value = null
-		}
+		// Do NOT revoke — blob URL is cached per path and shared across consumers.
 		if (path) {
 			backgroundPreviewUrl.value = await createObjectUrlFromPath(path)
+		} else {
+			backgroundPreviewUrl.value = null
 		}
 	},
 	{ immediate: true },
@@ -261,7 +261,7 @@ watch(
 		<p class="m-0 mt-1">{{ formatMessage(messages.accentColorDescription) }}</p>
 
 		<div
-			class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5"
+			class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6"
 			role="radiogroup"
 			:aria-label="formatMessage(messages.accentColorTitle)"
 		>
@@ -285,10 +285,43 @@ watch(
 				/>
 				<span class="truncate">{{ accentColor.label }}</span>
 				<CheckIcon
-					v-if="themeStore.selectedAccentColor === accentColor.value"
+					v-if="themeStore.selectedAccentColor === accentColor.value && !themeStore.customAccentColor"
 					class="ml-auto size-4 shrink-0"
 				/>
 			</button>
+
+			<!-- Custom color picker -->
+			<label
+				role="radio"
+				:aria-checked="!!themeStore.customAccentColor"
+				class="custom-accent-btn flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97] cursor-pointer"
+				:class="
+					themeStore.customAccentColor
+						? 'border-brand bg-brand-highlight text-brand'
+						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+				"
+			>
+				<span
+					class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
+					:style="{
+						backgroundColor: themeStore.customAccentColor || 'transparent',
+						backgroundImage: themeStore.customAccentColor
+							? 'none'
+							: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+					}"
+				/>
+				<span class="truncate">Custom</span>
+				<CheckIcon
+					v-if="themeStore.customAccentColor"
+					class="ml-auto size-4 shrink-0"
+				/>
+				<input
+					type="color"
+					class="sr-only"
+					:value="themeStore.customAccentColor || '#ff496e'"
+					@input="(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)"
+				/>
+			</label>
 		</div>
 	</div>
 
@@ -377,8 +410,8 @@ watch(
 		</div>
 	</div>
 
-	<!-- Theme pack manager: install / activate / export / delete reusable theme packs -->
-	<ThemePackManager />
+		<!-- Theme pack manager: temporarily disabled (feature is a work in progress) -->
+		<!-- <ThemePackManager /> -->
 
 	<div class="mt-6 flex items-center justify-between">
 		<div>

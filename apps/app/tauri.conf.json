@@ -113,7 +113,15 @@
 					"$CONFIG/profiles/**/resourcepacks/*",
 					"$APPDATA/profiles/**/shaderpacks/*",
 					"$APPCONFIG/profiles/**/shaderpacks/*",
-					"$CONFIG/profiles/**/shaderpacks/*"
+					"$CONFIG/profiles/**/shaderpacks/*",
+					"$HOME/**",
+					"$DOWNLOAD/**",
+					"$PICTURE/**",
+					"$DOCUMENT/**",
+					"C:/**",
+					"D:/**",
+					"E:/**",
+					"F:/**"
 				],
 				"enable": true
 			},
