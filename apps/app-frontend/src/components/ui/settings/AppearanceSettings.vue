@@ -2,7 +2,7 @@
 import { CheckIcon, ImageIcon, TrashIcon, UploadIcon } from '@modrinth/assets'
 import { ButtonStyled, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 
 import { createObjectUrlFromPath } from '@/helpers/image-url'
 import { get, set } from '@/helpers/settings.ts'
@@ -20,6 +20,12 @@ const backgroundBlur = computed({
 	get: () => themeStore.backgroundBlur,
 	set: (value) => themeStore.setBackgroundBlur(value),
 })
+
+const customAccentInput = useTemplateRef<HTMLInputElement>('customAccentInput')
+
+function openCustomAccentPicker() {
+	customAccentInput.value?.click()
+}
 
 const backgroundOpacity = computed({
 	get: () => themeStore.backgroundOpacity,
@@ -76,10 +82,6 @@ const messages = defineMessages({
 	accentColorDescription: {
 		id: 'app.appearance-settings.accent-color.description',
 		defaultMessage: 'Choose the color used for buttons, selections, and highlights.',
-	},
-	accentColorPink: {
-		id: 'app.appearance-settings.accent-color.pink',
-		defaultMessage: 'Pink',
 	},
 	accentColorOrange: {
 		id: 'app.appearance-settings.accent-color.orange',
@@ -218,7 +220,6 @@ const messages = defineMessages({
 })
 
 const accentColorOptions: Array<{ value: AccentColor; color: string; label: string }> = [
-	{ value: 'pink', color: 'var(--color-pink)', label: formatMessage(messages.accentColorPink) },
 	{ value: 'orange', color: 'var(--color-orange)', label: formatMessage(messages.accentColorOrange) },
 	{ value: 'green', color: 'var(--color-green)', label: formatMessage(messages.accentColorGreen) },
 	{ value: 'blue', color: 'var(--color-blue)', label: formatMessage(messages.accentColorBlue) },
@@ -261,10 +262,10 @@ watch(
 		<p class="m-0 mt-1">{{ formatMessage(messages.accentColorDescription) }}</p>
 
 		<div
-			class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-6"
-			role="radiogroup"
-			:aria-label="formatMessage(messages.accentColorTitle)"
-		>
+				class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5"
+				role="radiogroup"
+				:aria-label="formatMessage(messages.accentColorTitle)"
+			>
 			<button
 				v-for="accentColor in accentColorOptions"
 				:key="accentColor.value"
@@ -291,37 +292,41 @@ watch(
 			</button>
 
 			<!-- Custom color picker -->
-			<label
-				role="radio"
-				:aria-checked="!!themeStore.customAccentColor"
-				class="custom-accent-btn flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97] cursor-pointer"
-				:class="
-					themeStore.customAccentColor
-						? 'border-brand bg-brand-highlight text-brand'
-						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
-				"
-			>
-				<span
-					class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
-					:style="{
-						backgroundColor: themeStore.customAccentColor || 'transparent',
-						backgroundImage: themeStore.customAccentColor
-							? 'none'
-							: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-					}"
-				/>
-				<span class="truncate">Custom</span>
-				<CheckIcon
-					v-if="themeStore.customAccentColor"
-					class="ml-auto size-4 shrink-0"
-				/>
-				<input
-					type="color"
-					class="sr-only"
-					:value="themeStore.customAccentColor || '#ff496e'"
-					@input="(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)"
-				/>
-			</label>
+				<button
+					type="button"
+					role="radio"
+					:aria-checked="!!themeStore.customAccentColor"
+					class="custom-accent-btn flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97]"
+					:class="
+						themeStore.customAccentColor
+							? 'border-brand bg-brand-highlight text-brand'
+							: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+					"
+					@click="openCustomAccentPicker"
+				>
+					<span
+						class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
+						:style="{
+							backgroundColor: themeStore.customAccentColor || 'transparent',
+							backgroundImage: themeStore.customAccentColor
+								? 'none'
+								: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+						}"
+					/>
+					<span class="truncate">Custom</span>
+					<CheckIcon
+						v-if="themeStore.customAccentColor"
+						class="ml-auto size-4 shrink-0"
+					/>
+					<input
+						ref="customAccentInput"
+						type="color"
+						class="sr-only"
+						:value="themeStore.customAccentColor || '#ff496e'"
+						@input="(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)"
+						@click.stop
+					/>
+				</button>
 		</div>
 	</div>
 

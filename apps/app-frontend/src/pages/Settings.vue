@@ -23,7 +23,7 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 <template>
 	<div class="flex h-full">
 		<!-- Sidebar -->
-		<nav class="settings-sidebar w-64 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1 p-4">
+		<nav class="settings-sidebar w-64 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1/75 p-4 backdrop-blur-md">
 			<div class="mb-5 pl-1">
 				<h2 class="text-xl font-extrabold text-contrast">Settings</h2>
 			</div>

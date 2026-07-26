@@ -43,7 +43,7 @@ export const DEFAULT_FEATURE_FLAGS = {
 }
 
 export const THEME_OPTIONS = ['dark', 'light', 'oled', 'system'] as const
-export const ACCENT_COLOR_OPTIONS = ['pink', 'orange', 'green', 'blue', 'purple'] as const
+export const ACCENT_COLOR_OPTIONS = ['orange', 'green', 'blue', 'purple'] as const
 
 export type AccentColor = (typeof ACCENT_COLOR_OPTIONS)[number]
 
@@ -84,7 +84,7 @@ export type ThemeStore = {
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
 	selectedTheme: 'dark',
-	selectedAccentColor: 'pink',
+	selectedAccentColor: 'orange',
 	customAccentColor: null,
 	advancedRendering: true,
 	hideNametagSkinsPage: false,
