@@ -54,10 +54,6 @@ const messages = defineMessages({
 		id: 'app.about.easter-egg.override-authorized',
 		defaultMessage: 'System override authorized',
 	},
-	overrideUnlocked: {
-		id: 'app.about.easter-egg.override-unlocked',
-		defaultMessage: 'Hidden protocols unlocked',
-	},
 	hallOfFameTitle: {
 		id: 'app.about.easter-egg.hall-of-fame-title',
 		defaultMessage: 'Hall of Fame',
@@ -84,7 +80,7 @@ const showOverrideMessage = ref(false)
 const showHallOfFame = ref(false)
 const konamiActive = ref(false)
 
-const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+const konamiSequence = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a']
 const konamiBuffer = ref<string[]>([])
 
 const hallOfFame = [
@@ -96,11 +92,13 @@ const hallOfFame = [
 
 function onLogoClick() {
 	clickCount.value++
+	console.log('[About Easter Egg] logo click:', clickCount.value)
 	triggerEasterEgg()
 }
 
 function onVersionClick() {
 	clickCount.value++
+	console.log('[About Easter Egg] version click:', clickCount.value)
 	triggerEasterEgg()
 }
 
@@ -117,10 +115,14 @@ function triggerEasterEgg() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-	konamiBuffer.value.push(e.key)
+	const key = e.key.toLowerCase()
+	konamiBuffer.value.push(key)
 	konamiBuffer.value = konamiBuffer.value.slice(-konamiSequence.length)
 
+	console.log('[About Konami] buffer:', konamiBuffer.value.join(','))
+
 	if (konamiBuffer.value.join(',') === konamiSequence.join(',')) {
+		console.log('[About Konami] activated')
 		konamiActive.value = true
 		setTimeout(() => {
 			konamiActive.value = false
@@ -147,7 +149,7 @@ onUnmounted(() => {
 					'egg-spin': clickCount >= 5 && clickCount < 15,
 					'egg-pulse': clickCount >= 5,
 				}">
-				<ModrinthIcon class="logo-icon" @click="onLogoClick" />
+				<ModrinthIcon class="logo-icon" title="Psst... try clicking me" @click="onLogoClick" />
 			</div>
 			<h1 class="app-name">{{ formatMessage(messages.appName) }}</h1>
 			<div class="edition-badge">{{ formatMessage(messages.edition) }}</div>
@@ -164,7 +166,7 @@ onUnmounted(() => {
 		<dl class="metadata">
 			<div class="meta-row">
 				<dt>{{ formatMessage(messages.version) }}</dt>
-				<dd class="version-value" @click="onVersionClick">{{ version }}</dd>
+				<dd class="version-value" title="Also clickable" @click="onVersionClick">{{ version }}</dd>
 			</div>
 			<div class="meta-row">
 				<dt>{{ formatMessage(messages.platform) }}</dt>
@@ -206,7 +208,7 @@ onUnmounted(() => {
 				<ExternalIcon class="size-4" />
 				<span>{{ formatMessage(messages.viewSource) }}</span>
 			</button>
-			<button class="action-link" @click="openUrl('https://github.com/luolita13/issues')">
+			<button class="action-link" @click="openUrl('https://github.com/luolita13/code/issues')">
 				<ExternalIcon class="size-4" />
 				<span>{{ formatMessage(messages.reportIssue) }}</span>
 			</button>
