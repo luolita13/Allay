@@ -56,9 +56,7 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 					{{ formatMessage(settingsTabs[activeTab].name) }}
 				</h2>
 				<Suspense>
-					<Transition name="tab-fade" mode="out-in">
-						<component :is="TabContent" :key="activeTab" />
-					</Transition>
+					<component :is="TabContent" />
 					<template #fallback>
 						<div class="flex items-center justify-center py-12">
 							<div class="size-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
@@ -79,31 +77,3 @@ const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgres
 		</div>
 	</div>
 </template>
-
-<style>
-.tab-fade-enter-active,
-.tab-fade-leave-active {
-	transition:
-		opacity 0.2s ease,
-		transform 0.2s ease;
-}
-
-.tab-fade-enter-from,
-.tab-fade-leave-to {
-	opacity: 0;
-	transform: translateX(0.25rem);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.tab-fade-enter-active,
-	.tab-fade-leave-active {
-		transition: none;
-	}
-
-	.tab-fade-enter-from,
-	.tab-fade-leave-to {
-		opacity: 1;
-		transform: none;
-	}
-}
-</style>
