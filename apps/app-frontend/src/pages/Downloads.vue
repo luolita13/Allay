@@ -115,13 +115,15 @@
 							<BulletDivider />
 							<span>{{ formatDate(job.finished ?? job.modified) }}</span>
 							<template v-if="installJobInstanceId(job)">
-								<BulletDivider />
-								<span>{{
-									formatMessage(messages.instanceTarget, {
-										instance: installJobInstanceId(job),
-									})
-								}}</span>
-							</template>
+									<BulletDivider />
+									<span>{{
+										formatMessage(messages.instanceTarget, {
+											instance:
+												instanceNames[installJobInstanceId(job)!] ??
+												installJobInstanceId(job),
+										})
+									}}</span>
+								</template>
 						</div>
 						<div
 							v-if="downloadTelemetry(job).length"
@@ -202,67 +204,97 @@
 				</div>
 
 				<div
-					v-if="expanded.has(job.job_id)"
-					class="border-0 border-t border-solid border-divider p-4"
-				>
-					<Admonition
-						v-if="job.error"
-						class="mb-4"
-						type="critical"
-						:header="formatMessage(messages.errorDetails)"
+						v-if="expanded.has(job.job_id)"
+						class="border-0 border-t border-solid border-divider p-4"
 					>
-						{{ job.error.message }}
-					</Admonition>
-					<Table
-						v-if="job.items.length"
-						:columns="itemColumns"
-						:data="job.items"
-						row-key="id"
-						table-min-width="42rem"
-						virtualized
-						class="max-h-80 overflow-y-auto"
-					>
-						<template #cell-name="{ row }">
-							<div class="min-w-0 py-2">
-								<div class="truncate font-medium text-contrast">{{ row.name }}</div>
-								<div
-									v-if="row.project_id && row.version_id"
-									class="truncate text-xs text-secondary"
-								>
-									{{
-										formatMessage(messages.projectFile, {
-											projectId: row.project_id,
-											fileId: row.version_id,
-										})
-									}}
-								</div>
-								<div v-if="row.error" class="truncate text-xs text-red">
-									{{ itemError(row) }}
-								</div>
-								<ButtonStyled v-if="row.manual_url" type="transparent" size="small">
-									<button class="!px-0" @click.stop="openManualDownload(row)">
-										<ExternalIcon />{{ formatMessage(messages.manualDownload) }}
-									</button>
-								</ButtonStyled>
-							</div>
-						</template>
-						<template #cell-status="{ row }">
-							<Badge :color="itemStatusColor(row.status)" :type="statusLabel(row.status)" />
-						</template>
-						<template #cell-attempts="{ row }">
-							<span>{{ itemAttempts(row) }}</span>
-						</template>
-						<template #cell-progress="{ row }">
-							<span>{{ itemProgress(row) }}</span>
-						</template>
-					</Table>
-					<EmptyState
-						v-else
-						type="no-documents"
-						:heading="formatMessage(messages.noFileDetailsTitle)"
-						:description="formatMessage(messages.noFileDetails)"
-					/>
-				</div>
+						<Admonition
+							v-if="job.error"
+							class="mb-4"
+							type="critical"
+							:header="formatMessage(messages.errorDetails)"
+						>
+							{{ job.error.message }}
+						</Admonition>
+
+						<!-- Job context info -->
+						<div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+							<span class="text-secondary">
+								{{ formatMessage(messages.jobKindLabel) }}:
+								<span class="font-medium text-contrast">{{ kindLabel(job.kind) }}</span>
+							</span>
+							<span class="text-secondary">
+								{{ formatMessage(messages.targetLabel) }}:
+								<span class="font-medium text-contrast">{{
+									job.target.type === 'new_instance'
+										? formatMessage(messages.targetNewInstance)
+										: formatMessage(messages.targetExistingInstance)
+								}}</span>
+							</span>
+							<template v-if="installJobInstanceId(job) && !job.instance_deleted">
+								<span class="text-secondary">
+									{{ formatMessage(messages.openInstance) }}:
+									<span class="font-medium text-contrast">{{
+										instanceNames[installJobInstanceId(job)!] ??
+										installJobInstanceId(job)
+									}}</span>
+								</span>
+							</template>
+						</div>
+
+						<div v-if="job.items.length" class="flex flex-col gap-2">
+							<p class="m-0 text-xs text-secondary">
+								{{ formatMessage(messages.fileDetailsDescription) }}
+							</p>
+							<Table
+								:columns="itemColumns"
+								:data="job.items"
+								row-key="id"
+								table-min-width="42rem"
+								virtualized
+								class="max-h-80 overflow-y-auto"
+							>
+								<template #cell-name="{ row }">
+									<div class="min-w-0 py-2">
+										<div class="truncate font-medium text-contrast">{{ row.name }}</div>
+										<div
+											v-if="row.project_id && row.version_id"
+											class="truncate text-xs text-secondary"
+										>
+											{{
+												formatMessage(messages.projectFile, {
+													projectId: row.project_id,
+													fileId: row.version_id,
+												})
+											}}
+										</div>
+										<div v-if="row.error" class="truncate text-xs text-red">
+											{{ itemError(row) }}
+										</div>
+										<ButtonStyled v-if="row.manual_url" type="transparent" size="small">
+											<button class="!px-0" @click.stop="openManualDownload(row)">
+												<ExternalIcon />{{ formatMessage(messages.manualDownload) }}
+											</button>
+										</ButtonStyled>
+									</div>
+								</template>
+								<template #cell-status="{ row }">
+									<Badge :color="itemStatusColor(row.status)" :type="statusLabel(row.status)" />
+								</template>
+								<template #cell-attempts="{ row }">
+									<span>{{ itemAttempts(row) }}</span>
+								</template>
+								<template #cell-progress="{ row }">
+									<span>{{ itemProgress(row) }}</span>
+								</template>
+							</Table>
+						</div>
+						<EmptyState
+							v-else
+							type="no-documents"
+							:heading="formatMessage(messages.noFileDetailsTitle)"
+							:description="formatMessage(messages.noFileDetails)"
+						/>
+					</div>
 			</Card>
 		</div>
 
@@ -323,19 +355,20 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { convertFileSrc } from '@tauri-apps/api/core'
-import { openUrl } from '@tauri-apps/plugin-opener'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+	import { openUrl } from '@tauri-apps/plugin-opener'
+	import { computed, onMounted, ref, watch } from 'vue'
+	import { useRouter } from 'vue-router'
 
-import {
-	download_job_support_details,
-	installJobInstanceId,
-	type InstallJobSnapshot,
-	type InstallJobStatus,
-	type InstallPhaseId,
-} from '@/helpers/install'
-import type { LoadingBar } from '@/helpers/state'
-import { injectDownloadManager } from '@/providers/download-manager'
+	import { get_many } from '@/helpers/instance'
+	import {
+		download_job_support_details,
+		installJobInstanceId,
+		type InstallJobSnapshot,
+		type InstallJobStatus,
+		type InstallPhaseId,
+	} from '@/helpers/install'
+	import type { LoadingBar } from '@/helpers/state'
+	import { injectDownloadManager } from '@/providers/download-manager'
 
 type DownloadItem = InstallJobSnapshot['items'][number]
 
@@ -389,9 +422,9 @@ const messages = defineMessages({
 		defaultMessage: 'No file details',
 	},
 	noFileDetails: {
-		id: 'app.downloads.no-file-details',
-		defaultMessage: 'No file details were recorded for this download.',
-	},
+            id: 'app.downloads.no-file-details',
+            defaultMessage: 'Files will appear here as they are downloaded.',
+    },
 	emptyTitle: { id: 'app.downloads.empty-title', defaultMessage: 'No downloads yet' },
 	emptyDescription: {
 		id: 'app.downloads.empty-description',
@@ -469,10 +502,62 @@ const messages = defineMessages({
 		defaultMessage: '{hours}h {minutes}m remaining',
 	},
 	downloadFallbacks: {
-		id: 'app.downloads.download-fallbacks',
-		defaultMessage: '{count} fallbacks',
-	},
-})
+			id: 'app.downloads.download-fallbacks',
+			defaultMessage: '{count} fallbacks',
+		},
+		curseforgeFileInstall: {
+			id: 'app.downloads.curseforge-file-install',
+			defaultMessage: 'CurseForge file install',
+		},
+		jobKindLabel: {
+			id: 'app.downloads.job-kind',
+			defaultMessage: 'Type',
+		},
+		targetLabel: {
+			id: 'app.downloads.target-label',
+			defaultMessage: 'Target',
+		},
+		targetNewInstance: {
+			id: 'app.downloads.target-new-instance',
+			defaultMessage: 'New instance',
+		},
+		targetExistingInstance: {
+			id: 'app.downloads.target-existing-instance',
+			defaultMessage: 'Existing instance',
+		},
+		fileDetailsDescription: {
+			id: 'app.downloads.file-details-description',
+			defaultMessage: 'Individual files in this download job',
+		},
+		kindCreateInstance: {
+			id: 'app.downloads.kind.create-instance',
+			defaultMessage: 'Create instance',
+		},
+		kindCreateModpack: {
+			id: 'app.downloads.kind.create-modpack',
+			defaultMessage: 'Create modpack instance',
+		},
+		kindImportInstance: {
+			id: 'app.downloads.kind.import-instance',
+			defaultMessage: 'Import instance',
+		},
+		kindDuplicateInstance: {
+			id: 'app.downloads.kind.duplicate-instance',
+			defaultMessage: 'Duplicate instance',
+		},
+		kindInstallExisting: {
+			id: 'app.downloads.kind.install-existing',
+			defaultMessage: 'Install to instance',
+		},
+		kindInstallPack: {
+			id: 'app.downloads.kind.install-pack',
+			defaultMessage: 'Install modpack to instance',
+		},
+		kindInstallContent: {
+			id: 'app.downloads.kind.install-content',
+			defaultMessage: 'Install content',
+		},
+	})
 
 const statusMessages = defineMessages({
 	queued: { id: 'app.downloads.status.queued', defaultMessage: 'Queued' },
@@ -547,6 +632,36 @@ const phaseMessages = defineMessages({
 
 const legacyDownloads = manager.legacyDownloads
 const historyJobs = manager.historyJobs
+
+// Instance name cache: instance_id -> instance_name
+const instanceNames = ref<Record<string, string>>({})
+
+async function refreshInstanceNames() {
+	const allJobs = [...manager.activeJobs.value, ...manager.historyJobs.value]
+	const idsToResolve = allJobs
+		.map((job) => installJobInstanceId(job))
+		.filter((id): id is string => !!id && !instanceNames.value[id])
+
+	if (idsToResolve.length === 0) return
+
+	try {
+		const instances = await get_many(idsToResolve)
+		for (const inst of instances) {
+			if (inst.id && inst.name) {
+				instanceNames.value[inst.id] = inst.name
+			}
+		}
+	} catch {
+		// Silently ignore — raw IDs will be used as fallback
+	}
+}
+
+// Refresh instance names when jobs change
+watch(
+	() => [manager.activeJobs.value.length, manager.historyJobs.value.length],
+	() => void refreshInstanceNames(),
+)
+
 const providerOptions = ['all', 'modrinth', 'curse_forge', 'minecraft', 'java', 'application', 'local']
 const historyStatusOptions = ['all', 'succeeded', 'failed', 'interrupted', 'canceled']
 const downloadTabs = computed(() => [
@@ -585,15 +700,31 @@ const visibleJobs = computed(() => {
 })
 
 function jobTitle(job: InstallJobSnapshot) {
-	return (
-		job.display?.title ||
-		(job.details.type === 'instance' ? job.details.name : null) ||
-		(job.details.type === 'modpack' ? job.details.title : null) ||
-		(job.details.type === 'import' ? job.details.instance_folder : null) ||
-		(job.kind === 'install_curseforge_file' ? job.job_id : null) ||
-		job.job_id
-	)
-}
+			return (
+				job.display?.title ||
+				(job.details.type === 'instance' ? job.details.name : null) ||
+				(job.details.type === 'modpack' ? job.details.title : null) ||
+				(job.details.type === 'import' ? job.details.instance_folder : null) ||
+				(job.kind === 'install_curseforge_file'
+					? formatMessage(messages.curseforgeFileInstall)
+					: null) ||
+				job.job_id
+			)
+		}
+
+	function kindLabel(kind: InstallJobSnapshot['kind']) {
+		const labels: Record<string, string> = {
+			create_instance: formatMessage(messages.kindCreateInstance),
+			create_modpack_instance: formatMessage(messages.kindCreateModpack),
+			import_instance: formatMessage(messages.kindImportInstance),
+			duplicate_instance: formatMessage(messages.kindDuplicateInstance),
+			install_existing_instance: formatMessage(messages.kindInstallExisting),
+			install_pack_to_existing_instance: formatMessage(messages.kindInstallPack),
+			install_content: formatMessage(messages.kindInstallContent),
+			install_curseforge_file: formatMessage(messages.curseforgeFileInstall),
+		}
+		return labels[kind] ?? kind
+	}
 
 function displayIcon(icon: string) {
 	return /^(https?:|data:|blob:|asset:|tauri:)/.test(icon) ? icon : convertFileSrc(icon)
@@ -663,7 +794,7 @@ function itemStatusColor(
 }
 
 function canCancel(job: InstallJobSnapshot) {
-	return job.status === 'queued' || job.status === 'running'
+    return job.status === 'queued' || job.status === 'running' || job.status === 'paused'
 }
 
 function canRetry(job: InstallJobSnapshot) {
@@ -839,10 +970,8 @@ async function refreshDownloads() {
 }
 
 onMounted(() => {
-	manager.start()
-})
-
-onUnmounted(() => {
-	manager.dispose()
-})
+		// Ensure the manager is started (no-op if already running from App.vue).
+		// Also trigger a refresh to catch any jobs that started while we were away.
+		void manager.refresh().then(() => void refreshInstanceNames())
+	})
 </script>

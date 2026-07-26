@@ -117,6 +117,14 @@ export default new createRouter({
 			},
 		},
 		{
+			path: '/settings',
+			name: 'Settings',
+			component: Pages.Settings,
+			meta: {
+				breadcrumb: [{ name: 'Settings' }],
+			},
+		},
+		{
 			path: '/create',
 			name: 'CreateInstance',
 			component: Pages.CreateInstance,

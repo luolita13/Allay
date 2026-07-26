@@ -70,6 +70,7 @@ import type { GameInstance } from '@/helpers/types'
 
 dayjs.extend(relativeTime)
 
+const { handleError } = injectNotificationManager()
 const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
@@ -126,9 +127,7 @@ const currentDeleteInstance = ref<string | null>(null)
 
 async function doDeleteInstance() {
 	if (currentDeleteInstance.value) {
-		await remove(currentDeleteInstance.value).catch((e) => {
-			console.error('Failed to delete instance:', e)
-		})
+		await remove(currentDeleteInstance.value).catch(handleError)
 	}
 }
 

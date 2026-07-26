@@ -255,6 +255,9 @@ fn main() {
         .plugin(api::worlds::init())
         .plugin(api::curseforge::init())
         .plugin(api::link::init())
+        .plugin(api::crash_diagnosis::init())
+        .plugin(api::theme_pack::init())
+        .plugin(api::translation::init())
         .manage(PendingUpdateData::default())
         .invoke_handler(tauri::generate_handler![
             initialize_state,

@@ -7,4 +7,6 @@ import Servers from './Servers.vue'
 import Skins from './Skins.vue'
 import Worlds from './Worlds.vue'
 
-export { Browse, CreateInstance, Downloads, GameLink, Index, Servers, Skins, Worlds }
+import Settings from './Settings.vue'
+
+export { Browse, CreateInstance, Downloads, GameLink, Index, Servers, Settings, Skins, Worlds }

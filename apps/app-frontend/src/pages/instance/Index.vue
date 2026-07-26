@@ -198,17 +198,21 @@
 										action: () => exportModal?.show(),
 									},
 									{
-										id: 'create-shortcut',
-										action: () => createShortcut(),
-									},
-								]"
-							>
-								<MoreVerticalIcon />
-								<template #share-instance> <UserPlusIcon /> {{ formatMessage(messages.shareInstance) }} </template>
-								<template #host-a-server> <ServerIcon /> {{ formatMessage(messages.createServer) }} </template>
-								<template #open-folder> <FolderOpenIcon /> {{ formatMessage(messages.openFolder) }} </template>
-								<template #export-mrpack> <PackageIcon /> {{ formatMessage(messages.exportModpack) }} </template>
-								<template #create-shortcut> <ExternalIcon /> {{ formatMessage(messages.createShortcut) }} </template>
+								id: 'create-shortcut',
+								action: () => createShortcut(),
+							},
+							{
+								id: 'diagnose-crash',
+								action: () => showCrashDiagnosis(instance.value?.id),
+							},
+						]">
+						<MoreVerticalIcon />
+						<template #share-instance> <UserPlusIcon /> {{ formatMessage(messages.shareInstance) }} </template>
+						<template #host-a-server> <ServerIcon /> {{ formatMessage(messages.createServer) }} </template>
+						<template #open-folder> <FolderOpenIcon /> {{ formatMessage(messages.openFolder) }} </template>
+						<template #export-mrpack> <PackageIcon /> {{ formatMessage(messages.exportModpack) }} </template>
+						<template #create-shortcut> <ExternalIcon /> {{ formatMessage(messages.createShortcut) }} </template>
+						<template #diagnose-crash> <TerminalSquareIcon /> {{ formatMessage(messages.diagnoseCrash) }} </template>
 							</OverflowMenu>
 						</ButtonStyled>
 					</div>
@@ -313,7 +317,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
@@ -365,7 +369,8 @@ const messages = defineMessages({
 	openFolder: { id: 'app.instance.open-folder', defaultMessage: 'Open folder' },
 	exportModpack: { id: 'app.instance.export-modpack', defaultMessage: 'Export modpack' },
 	createShortcut: { id: 'app.instance.create-shortcut', defaultMessage: 'Create shortcut' },
-	addContent: { id: 'app.instance.add-content', defaultMessage: 'Add content' },
+		diagnoseCrash: { id: 'app.instance.diagnose-crash', defaultMessage: 'Diagnose crash' },
+		addContent: { id: 'app.instance.add-content', defaultMessage: 'Add content' },
 	edit: { id: 'app.instance.edit', defaultMessage: 'Edit' },
 	copyPath: { id: 'app.instance.copy-path', defaultMessage: 'Copy path' },
 	copyLink: { id: 'app.instance.copy-link', defaultMessage: 'Copy link' },
@@ -387,6 +392,9 @@ const messages = defineMessages({
 
 const { playServerProject } = injectServerInstall()
 const queryClient = useQueryClient()
+const showCrashDiagnosis = inject('showCrashDiagnosis', (instanceId) => {
+	console.warn('showCrashDiagnosis not provided', instanceId)
+})
 const route = useRoute()
 
 const router = useRouter()

@@ -51,6 +51,9 @@ impl InstallJobState {
                 phase,
                 progress: None,
                 details: InstallPhaseDetails::Empty,
+                last_progress_at: None,
+                last_progress_bytes: 0,
+                speed_bytes_per_second: None,
             },
             paths: InstallJobPaths::default(),
             context: None,
@@ -90,6 +93,37 @@ impl InstallJobState {
                 phase,
                 details: details.clone(),
             });
+        }
+
+        // Compute rolling-window speed from the delta between this update
+        // and the previous one, rather than the global average since phase
+        // start. This gives the user a real-time transfer rate that reflects
+        // current network conditions, not a smoothed average.
+        if let Some(ref new_progress) = progress {
+            let now = Utc::now();
+            let current_bytes = self
+                .progress
+                .progress
+                .as_ref()
+                .and_then(|p| p.secondary.as_ref())
+                .map_or(new_progress.current, |sec| sec.current);
+
+            if let Some(last_at) = self.progress.last_progress_at {
+                let elapsed_ms = now
+                    .signed_duration_since(last_at)
+                    .num_milliseconds()
+                    .max(1) as u64;
+                let delta = current_bytes.saturating_sub(
+                    self.progress.last_progress_bytes,
+                );
+                if delta > 0 && elapsed_ms > 0 {
+                    self.progress.speed_bytes_per_second =
+                        Some(delta.saturating_mul(1_000) / elapsed_ms);
+                }
+            }
+
+            self.progress.last_progress_at = Some(now);
+            self.progress.last_progress_bytes = current_bytes;
         }
 
         self.progress.phase = phase;
@@ -301,36 +335,45 @@ impl InstallJobState {
             }
         );
         if actively_downloading && summary.bytes_downloaded > 0 {
-            let phase_started = self.events.iter().rev().find_map(|event| {
-                matches!(
-                    &event.kind,
-                    InstallJobEventKind::PhaseStarted { phase, .. }
-                        if *phase == self.progress.phase
-                )
-                .then_some(event.at)
-            });
-            if let Some(started) = phase_started {
-                let elapsed_ms = Utc::now()
-                    .signed_duration_since(started)
-                    .num_milliseconds()
-                    .max(1) as u64;
-                let speed = summary
-                    .bytes_downloaded
-                    .saturating_mul(1_000)
-                    .checked_div(elapsed_ms)
-                    .unwrap_or(0);
-                if speed > 0 {
-                    summary.speed_bytes_per_second = Some(speed);
-                    summary.eta_seconds =
-                        summary.bytes_total.and_then(|total| {
-                            total
-                                .saturating_sub(summary.bytes_downloaded)
-                                .checked_add(speed - 1)
-                                .and_then(|remaining| {
-                                    remaining.checked_div(speed)
-                                })
+            // Prefer the rolling-window instantaneous speed computed in
+            // set_progress(); fall back to the phase-average only if no
+            // speed sample has been recorded yet.
+            summary.speed_bytes_per_second =
+                self.progress.speed_bytes_per_second.or_else(|| {
+                    let phase_started =
+                        self.events.iter().rev().find_map(|event| {
+                            matches!(
+                                &event.kind,
+                                InstallJobEventKind::PhaseStarted {
+                                    phase, ..
+                                } if *phase == self.progress.phase
+                            )
+                            .then_some(event.at)
                         });
-                }
+                    phase_started.and_then(|started| {
+                        let elapsed_ms = Utc::now()
+                            .signed_duration_since(started)
+                            .num_milliseconds()
+                            .max(1) as u64;
+                        let speed = summary
+                            .bytes_downloaded
+                            .saturating_mul(1_000)
+                            .checked_div(elapsed_ms)
+                            .unwrap_or(0);
+                        (speed > 0).then_some(speed)
+                    })
+                });
+
+            if let Some(speed) = summary.speed_bytes_per_second {
+                summary.eta_seconds =
+                    summary.bytes_total.and_then(|total| {
+                        total
+                            .saturating_sub(summary.bytes_downloaded)
+                            .checked_add(speed - 1)
+                            .and_then(|remaining| {
+                                remaining.checked_div(speed)
+                            })
+                    });
             }
         }
         summary
@@ -812,6 +855,15 @@ pub struct InstallProgressState {
     pub phase: InstallPhaseId,
     pub progress: Option<InstallProgress>,
     pub details: InstallPhaseDetails,
+    /// Timestamp of the most recent progress update (for speed calculation)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_progress_at: Option<DateTime<Utc>>,
+    /// Bytes downloaded at the most recent progress update
+    #[serde(default)]
+    pub last_progress_bytes: u64,
+    /// Rolling-window download speed (bytes/sec), computed from recent updates
+    #[serde(default)]
+    pub speed_bytes_per_second: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, Eq, PartialEq)]

@@ -26,109 +26,102 @@ function dismiss() {
 function openGitHub() {
 	openUrl('https://github.com/luolita13')
 }
-
-function openRepo() {
-	openUrl('https://github.com/luolita13/code')
-}
 </script>
 
 <template>
 	<NewModal
 		ref="modal"
-		header="Welcome to this customized build of Modrinth App"
 		:closable="false"
 		:close-on-click-outside="false"
 		:close-on-esc="false"
-		max-width="560px"
+		max-width="520px"
+		:hide-header="true"
 	>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center gap-3">
-				<div class="p-3 rounded-xl bg-brand-highlight">
-					<ModrinthIcon class="size-8 text-brand" />
-				</div>
-				<div>
-					<p class="m-0 font-bold text-contrast text-lg">Modrinth App — Custom Edition</p>
-					<p class="m-0 text-sm text-secondary">Unofficial modified distribution</p>
-				</div>
+		<div class="flex flex-col items-center px-2 py-2 text-center">
+			<!-- Icon -->
+			<div
+				class="mb-5 inline-flex items-center justify-center rounded-full p-3"
+				style="background: radial-gradient(circle at center, var(--color-brand) 0%, var(--color-brand) 40%, transparent 70%);"
+			>
+				<ModrinthIcon class="size-9 text-white" />
 			</div>
 
-			<div class="text-sm text-primary leading-relaxed space-y-2">
-				<p class="m-0">
-					This application is a community-customized redistribution of the Modrinth App.
-					It includes additional features and modifications that are not part of the
-					official Modrinth release.
-				</p>
-				<p class="m-0">By continuing to use this software, you acknowledge that:</p>
-				<ul class="m-0 pl-5 list-disc space-y-1">
+			<!-- Title -->
+			<h2 class="mb-1.5 text-2xl font-bold text-contrast tracking-tight">
+				Modrinth App
+			</h2>
+			<p class="m-0 mb-4 text-sm font-semibold tracking-wide text-brand uppercase">
+				Community Custom Edition
+			</p>
+
+			<!-- Intro -->
+			<p class="m-0 mb-6 max-w-md text-sm leading-relaxed text-secondary">
+				A community-customized redistribution with additional features not
+				included in the official Modrinth release.
+			</p>
+
+			<!-- Disclaimer -->
+			<div
+				class="mb-6 w-full rounded-xl border border-surface-5 bg-surface-1/50 px-5 py-4 text-left"
+			>
+				<ul class="m-0 space-y-2 pl-4 text-xs leading-relaxed text-tertiary list-disc">
 					<li>
-						This is an unofficial third-party build and is not affiliated with or endorsed
-						by Modrinth / Rinth, Inc.
+						Unofficial third-party build — not affiliated with or endorsed by
+						Modrinth / Rinth, Inc.
 					</li>
 					<li>
-						All original Modrinth trademarks, assets, and code remain the property of their
-						respective owners.
+						Original trademarks, assets, and code remain the property of
+						their respective owners.
 					</li>
 					<li>
-						Modifications are provided "as is" without warranty of any kind. Use at your
-						own risk.
-					</li>
-					<li>
-						This build may connect to Modrinth and other third-party services under their
-						own terms of service and privacy policies.
+						Provided &ldquo;as is&rdquo; without warranty of any kind. Use
+						at your own risk.
 					</li>
 				</ul>
-				<p class="m-0">
-					Customized by
-					<button
-						class="text-brand hover:underline bg-transparent border-0 p-0 cursor-pointer"
-						@click="openGitHub"
-					>
-						github.com/luolita13
-					</button>
-					.
-				</p>
-				<p class="m-0">
-					Source repository:
-					<button
-						class="text-brand hover:underline bg-transparent border-0 p-0 cursor-pointer"
-						@click="openRepo"
-					>
-						github.com/luolita13/code
-					</button>
-				</p>
 			</div>
 
-			<div class="flex items-center justify-between pt-2">
-				<button
-					class="flex items-center gap-2 text-sm text-secondary hover:text-contrast transition-colors"
-					@click="doNotShowAgain = !doNotShowAgain"
-				>
-					<span
-						class="size-4 rounded border border-secondary flex items-center justify-center"
-						:class="{ 'bg-brand border-brand': doNotShowAgain }"
+			<!-- Action -->
+			<ButtonStyled type="brand">
+				<button class="flex items-center gap-2 px-6" @click="dismiss">
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
 					>
-						<CheckIcon v-if="doNotShowAgain" class="size-3 text-white" />
-					</span>
-					Don't show again
+						<path d="M20 6 9 17l-5-5" />
+					</svg>
+					I understand and agree
 				</button>
+			</ButtonStyled>
 
-				<ButtonStyled type="brand">
-					<button class="flex items-center gap-2" @click="dismiss">
-						<svg
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<path d="M20 6 9 17l-5-5" />
-						</svg>
-						I understand and agree
-					</button>
-				</ButtonStyled>
+			<!-- Don't show again -->
+			<button
+				class="mt-4 flex items-center gap-2 text-xs text-tertiary hover:text-secondary transition-colors bg-transparent border-0 cursor-pointer"
+				@click="doNotShowAgain = !doNotShowAgain"
+			>
+				<span
+					class="inline-flex size-3.5 items-center justify-center rounded border transition-colors"
+					:class="doNotShowAgain ? 'bg-brand border-brand' : 'border-tertiary'"
+				>
+					<CheckIcon v-if="doNotShowAgain" class="size-2.5 text-white" />
+				</span>
+				Don't show again
+			</button>
+
+			<!-- Credit -->
+			<div class="mt-6 flex items-center gap-2 text-xs text-tertiary">
+				<span>Customized by</span>
+				<button
+					class="text-secondary hover:text-brand hover:underline transition-colors bg-transparent border-0 p-0 cursor-pointer"
+					@click="openGitHub"
+				>
+					github.com/luolita13
+				</button>
 			</div>
 		</div>
 	</NewModal>

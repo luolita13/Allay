@@ -25,6 +25,7 @@ import useJavaTest from '@/composables/useJavaTest'
 import useMemorySlider from '@/composables/useMemorySlider'
 import { edit, get_optimal_jre_key } from '@/helpers/instance'
 import { get } from '@/helpers/settings.ts'
+import { check_java_for_version, get_minimum_java_version } from '@/helpers/jre.js'
 import { injectInstanceSettings } from '@/providers/instance-settings'
 
 import type { AppSettings } from '../../../helpers/types'
@@ -71,6 +72,69 @@ watch(
 	},
 	{ immediate: true },
 )
+
+// --- Java version compatibility check (constraint system) ---
+// Checks whether the active Java runtime is suitable for the instance's
+// Minecraft version, showing a compatibility badge below the path input.
+const javaCompatibility = ref(null)
+const checkingCompatibility = ref(false)
+
+const instanceGameVersion = computed(() => instance.value?.game_version ?? '')
+const instanceLoader = computed(() => {
+	const loader = instance.value?.loader
+	if (!loader) return null
+	// Loader is stored as an object with 'type' field (e.g. { type: 'forge' })
+	const t = typeof loader === 'object' ? loader?.type : loader
+	return t ? String(t).toLowerCase() : null
+})
+
+async function refreshCompatibility() {
+	const path = activePath.value
+	const gameVersion = instanceGameVersion.value
+	if (!path || !gameVersion) {
+		javaCompatibility.value = null
+		return
+	}
+	checkingCompatibility.value = true
+	try {
+		const result = await check_java_for_version(
+			gameVersion,
+			path,
+			instanceLoader.value,
+		)
+		javaCompatibility.value = result
+	} catch (e) {
+		// Silently fail - the constraint check is advisory, not blocking
+		javaCompatibility.value = null
+	} finally {
+		checkingCompatibility.value = false
+	}
+}
+
+// Minimum Java version for this instance's game version (for display)
+const minimumJavaInfo = ref(null)
+async function refreshMinimumJava() {
+	const gameVersion = instanceGameVersion.value
+	if (!gameVersion) {
+		minimumJavaInfo.value = null
+		return
+	}
+	try {
+		minimumJavaInfo.value = await get_minimum_java_version(gameVersion)
+	} catch {
+		minimumJavaInfo.value = null
+	}
+}
+
+watch(
+	[activePath, instanceGameVersion, instanceLoader],
+	() => {
+		refreshCompatibility()
+	},
+	{ immediate: true },
+)
+
+watch(instanceGameVersion, () => refreshMinimumJava(), { immediate: true })
 
 const javaDetectionModal = ref<{ show: (version: number, current: object) => void } | null>(null)
 
@@ -280,6 +344,36 @@ const messages = defineMessages({
 							</button>
 						</ButtonStyled>
 					</div>
+					<!-- Java version compatibility badge (constraint system) -->
+					<div
+						v-if="javaCompatibility && !checkingCompatibility"
+						class="compat-badge"
+						:class="{
+							'compat-ok':
+								javaCompatibility.satisfies_mandatory &&
+								javaCompatibility.satisfies_suggested,
+							'compat-warn':
+								javaCompatibility.satisfies_mandatory &&
+								!javaCompatibility.satisfies_suggested,
+							'compat-error': !javaCompatibility.satisfies_mandatory,
+						}"
+					>
+						<CheckCircleIcon
+							v-if="javaCompatibility.satisfies_mandatory && javaCompatibility.satisfies_suggested"
+							class="h-4 w-4 shrink-0"
+						/>
+						<XCircleIcon
+							v-else-if="!javaCompatibility.satisfies_mandatory"
+							class="h-4 w-4 shrink-0"
+						/>
+						<span class="compat-text">{{ javaCompatibility.summary }}</span>
+					</div>
+					<div
+						v-if="minimumJavaInfo && minimumJavaInfo.major_version"
+						class="min-java-hint"
+					>
+						Minimum required: Java {{ minimumJavaInfo.major_version }}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -345,3 +439,47 @@ const messages = defineMessages({
 		/>
 	</div>
 </template>
+
+<style scoped lang="scss">
+.compat-badge {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.375rem;
+	padding: 0.375rem 0.625rem;
+	border-radius: 0.5rem;
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	margin-top: 0.25rem;
+}
+
+.compat-badge.compat-ok {
+	background: var(--color-green-bg, rgba(34, 197, 94, 0.1));
+	border: 1px solid var(--color-green);
+	color: var(--color-green);
+}
+
+.compat-badge.compat-warn {
+	background: var(--color-orange-bg, rgba(249, 115, 22, 0.1));
+	border: 1px solid var(--color-orange);
+	color: var(--color-orange);
+}
+
+.compat-badge.compat-error {
+	background: var(--color-red-bg, rgba(239, 68, 68, 0.1));
+	border: 1px solid var(--color-red);
+	color: var(--color-red);
+}
+
+.compat-text {
+	flex: 1;
+	min-width: 0;
+	word-break: break-word;
+}
+
+.min-java-hint {
+	font-size: 0.75rem;
+	color: var(--color-text-secondary);
+	margin-top: 0.125rem;
+	opacity: 0.8;
+}
+</style>

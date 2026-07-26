@@ -1,8 +1,8 @@
 //! Downloader for Minecraft data
 
 use crate::install::{
-    InstallPhaseDetails, InstallPhaseId, InstallProgress,
-    InstallProgressReporter,
+    InstallJobEventKind, InstallPhaseDetails, InstallPhaseId,
+    InstallProgress, InstallProgressReporter,
 };
 use crate::instance::QuickPlayType;
 use crate::launcher::parse_rules;
@@ -124,12 +124,76 @@ impl MinecraftDownloadProgress {
             .update(
                 InstallPhaseId::DownloadingMinecraft,
                 Some(InstallProgress {
-                    current: current.min(total),
+                    current,
                     total,
                     secondary: None,
                 }),
                 self.details.clone(),
             )
+            .await
+    }
+
+    /// Record the start of a Minecraft file download (client jar, library, etc.).
+    /// Emits a ContentFileDownloadAttempt event so the frontend can show
+    /// per-file progress in the download details.
+    async fn record_file_started(
+        &self,
+        name: &str,
+        bytes_total: Option<u64>,
+    ) -> crate::Result<()> {
+        self.reporter
+            .record_event(InstallJobEventKind::ContentFileDownloadAttempt {
+                path: name.to_string(),
+                bytes_total,
+                attempt: 1,
+                max_attempts: 1,
+            })
+            .await
+    }
+
+    /// Record the completion of a Minecraft file download.
+    /// Emits a ContentFileCompleted event with the actual downloaded byte count.
+    async fn record_file_completed(
+        &self,
+        name: &str,
+        bytes: u64,
+    ) -> crate::Result<()> {
+        self.reporter
+            .record_event(InstallJobEventKind::ContentFileCompleted {
+                path: name.to_string(),
+                bytes,
+            })
+            .await
+    }
+
+    /// Record that a Minecraft file was skipped (already exists on disk).
+    async fn record_file_skipped(
+        &self,
+        name: &str,
+        reason: &str,
+    ) -> crate::Result<()> {
+        self.reporter
+            .record_event(InstallJobEventKind::ContentFileSkipped {
+                path: name.to_string(),
+                reason: reason.to_string(),
+                project_id: None,
+                version_id: None,
+                manual_url: None,
+            })
+            .await
+    }
+
+    /// Record the overall download start with total file count and byte count.
+    async fn record_download_started(
+        &self,
+        files: u64,
+        bytes: Option<u64>,
+    ) -> crate::Result<()> {
+        self.reporter
+            .record_event(InstallJobEventKind::ContentDownloadStarted {
+                files,
+                bytes,
+            })
             .await
     }
 }
@@ -140,11 +204,17 @@ async fn fetch_minecraft_file(
     sha1: Option<&str>,
     expected_size: Option<u64>,
     progress: Option<MinecraftDownloadProgress>,
+    name: Option<&str>,
 ) -> crate::Result<bytes::Bytes> {
     let Some(progress) = progress else {
         return fetch(url, sha1, None, None, &st.fetch_semaphore, &st.pool)
             .await;
     };
+
+    // Emit per-file download attempt event (for download details UI)
+    if let Some(name) = name {
+        let _ = progress.record_file_started(name, expected_size).await;
+    }
 
     let last_downloaded = Arc::new(AtomicU64::new(0));
     let progress_fn = {
@@ -178,6 +248,15 @@ async fn fetch_minecraft_file(
         progress
             .add_bytes(expected_size.saturating_sub(downloaded))
             .await?;
+    }
+
+    // Emit per-file completion event (for download details UI)
+    if let Some(name) = name {
+        let downloaded_bytes = expected_size
+            .unwrap_or_else(|| last_downloaded.load(Ordering::Relaxed));
+        let _ = progress
+            .record_file_completed(name, downloaded_bytes)
+            .await;
     }
 
     Ok(bytes)
@@ -368,24 +447,34 @@ pub async fn download_minecraft(
     phase_details: InstallPhaseDetails,
 ) -> crate::Result<()> {
     tracing::info!("Downloading Minecraft version {}", version.id);
+    let total_bytes = missing_initial_minecraft_bytes(
+        st,
+        version,
+        java_arch,
+        force,
+        minecraft_updated,
+    )?;
     let progress = if let Some(reporter) = reporter {
         Some(
             MinecraftDownloadProgress::new(
                 reporter,
                 phase_details,
-                missing_initial_minecraft_bytes(
-                    st,
-                    version,
-                    java_arch,
-                    force,
-                    minecraft_updated,
-                )?,
+                total_bytes,
             )
             .await?,
         )
     } else {
         None
     };
+
+    // Emit ContentDownloadStarted so frontend knows total file count and bytes
+    if let Some(progress) = &progress {
+        // Estimate file count: 1 client + 1 log config + 1 assets index + libraries
+        let estimated_files = 3 + version.libraries.len() as u64;
+        let _ = progress
+            .record_download_started(estimated_files, Some(total_bytes))
+            .await;
+    }
 
     // 5
     let assets_index = download_assets_index(
@@ -524,6 +613,7 @@ pub async fn download_client(
             Some(&client_download.sha1),
             Some(client_download.size as u64),
             progress,
+            Some(&format!("client-{version}.jar")),
         )
         .await?;
         write(&path, &bytes, &st.io_semaphore).await?;
@@ -564,6 +654,7 @@ pub async fn download_assets_index(
             None,
             Some(version.asset_index.size as u64),
             progress,
+            Some("assets-index.json"),
         )
         .await?;
         let index = serde_json::from_slice(&index)?;
@@ -595,6 +686,10 @@ pub async fn download_assets(
     let assets = stream::iter(index.objects.iter())
         .map(Ok::<(&String, &Asset), crate::Error>);
 
+    // Track aggregate asset download stats for a single summary event
+    let assets_downloaded = Arc::new(AtomicU64::new(0));
+    let assets_bytes = Arc::new(AtomicU64::new(0));
+
     loading_try_for_each_concurrent(assets,
             None,
             loading_bar,
@@ -603,6 +698,8 @@ pub async fn download_assets(
             None,
             |(name, asset)| {
                 let progress = progress.clone();
+                let assets_downloaded = assets_downloaded.clone();
+                let assets_bytes = assets_bytes.clone();
                 async move {
                 let hash = &asset.hash;
                 let resource_path = st.directories.object_dir(hash);
@@ -633,9 +730,12 @@ pub async fn download_assets(
                                     Some(hash),
                                     Some(asset.size as u64),
                                     fetch_progress.clone(),
+                                    None,
                                 ))
                                 .await?;
                             write(&resource_path, resource, &st.io_semaphore).await?;
+                            assets_downloaded.fetch_add(1, Ordering::Relaxed);
+                            assets_bytes.fetch_add(asset.size as u64, Ordering::Relaxed);
                             tracing::trace!("Fetched asset with hash {hash}");
                         }
                         Ok::<_, crate::Error>(())
@@ -649,6 +749,7 @@ pub async fn download_assets(
                                     Some(hash),
                                     Some(asset.size as u64),
                                     fetch_progress.clone(),
+                                    None,
                                 ))
                                 .await?;
                             write(&legacy_resource_path, resource, &st.io_semaphore).await?;
@@ -662,6 +763,22 @@ pub async fn download_assets(
                 Ok(())
                 }
             }).await?;
+
+    // Emit a single aggregate event for all downloaded assets (to avoid
+    // flooding the events log with thousands of per-asset entries)
+    if let Some(progress) = &progress {
+        let count = assets_downloaded.load(Ordering::Relaxed);
+        let bytes = assets_bytes.load(Ordering::Relaxed);
+        if count > 0 {
+            let _ = progress
+                .record_file_completed(
+                    &format!("Minecraft assets ({count} files)"),
+                    bytes,
+                )
+                .await;
+        }
+    }
+
     tracing::debug!("Done loading assets!");
     Ok(())
 }
@@ -730,6 +847,7 @@ pub async fn download_libraries(
                         Some(&native.sha1),
                         Some(native.size as u64),
                         progress.clone(),
+                        Some(&format!("native: {}", &library.name)),
                     )
                     .await?;
 
@@ -775,6 +893,7 @@ pub async fn download_libraries(
                         Some(&artifact.sha1),
                         Some(artifact.size as u64),
                         progress.clone(),
+                        Some(&library.name),
                     )
                     .await?;
                     write(&path, &bytes, &st.io_semaphore).await?;
@@ -881,6 +1000,7 @@ pub async fn download_log_config(
             Some(&log_download.sha1),
             Some(log_download.size as u64),
             progress,
+            Some(&format!("log-config-{}", &log_download.id)),
         )
         .await?;
         write(&path, &bytes, &st.io_semaphore).await?;

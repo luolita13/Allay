@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { listInstalled as getInstalledThemePacks, installFromPath, uninstall as uninstallThemePack } from '@/helpers/theme_pack'
+import type { InstalledThemePack } from '@/helpers/theme_pack'
 
 let systemThemeMq: MediaQueryList | null = null
 
@@ -6,6 +8,9 @@ const LS_KEY_BG_PATH = 'modrinth-app-background-image-path'
 const LS_KEY_BG_BLUR = 'modrinth-app-background-blur'
 const LS_KEY_BG_OPACITY = 'modrinth-app-background-opacity'
 const LS_KEY_ACCENT_COLOR = 'modrinth-app-accent-color'
+const LS_KEY_ACTIVE_THEME_PACK = 'modrinth-app-active-theme-pack'
+const LS_KEY_APP_IMAGE_VIEWER = 'modrinth-app-image-viewer'
+const LS_KEY_SETTINGS_AS_PAGE = 'modrinth-app-settings-as-page'
 
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
@@ -55,6 +60,16 @@ export type ThemeStore = {
 	backgroundImagePath: string | null
 	backgroundBlur: number
 	backgroundOpacity: number
+
+	// Theme pack system
+	installedThemePacks: InstalledThemePack[]
+	activeThemePackId: string | null
+
+	// Image viewer: use in-app lightbox instead of system default
+	useAppImageViewer: boolean
+
+	// Settings: render as full page instead of modal
+	settingsAsPage: boolean
 }
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
@@ -70,6 +85,12 @@ export const DEFAULT_THEME_STORE: ThemeStore = {
 	backgroundImagePath: null,
 	backgroundBlur: 20,
 	backgroundOpacity: 65,
+
+	installedThemePacks: [],
+	activeThemePackId: null,
+
+	useAppImageViewer: false,
+	settingsAsPage: false,
 }
 
 export const useTheming = defineStore('themeStore', {
@@ -93,6 +114,18 @@ export const useTheming = defineStore('themeStore', {
 		const savedAccentColor = localStorage.getItem(LS_KEY_ACCENT_COLOR) as AccentColor | null
 		if (savedAccentColor && ACCENT_COLOR_OPTIONS.includes(savedAccentColor)) {
 			stored.selectedAccentColor = savedAccentColor
+		}
+		const savedActiveThemePack = localStorage.getItem(LS_KEY_ACTIVE_THEME_PACK)
+		if (savedActiveThemePack) {
+			stored.activeThemePackId = savedActiveThemePack
+		}
+		const savedImageViewer = localStorage.getItem(LS_KEY_APP_IMAGE_VIEWER)
+		if (savedImageViewer !== null) {
+			stored.useAppImageViewer = savedImageViewer === 'true'
+		}
+		const savedSettingsAsPage = localStorage.getItem(LS_KEY_SETTINGS_AS_PAGE)
+		if (savedSettingsAsPage !== null) {
+			stored.settingsAsPage = savedSettingsAsPage === 'true'
 		}
 		return stored
 	},
@@ -159,6 +192,115 @@ export const useTheming = defineStore('themeStore', {
 		setBackgroundOpacity(opacity: number) {
 			this.backgroundOpacity = opacity
 			localStorage.setItem(LS_KEY_BG_OPACITY, String(opacity))
+		},
+		setUseAppImageViewer(value: boolean) {
+			this.useAppImageViewer = value
+			localStorage.setItem(LS_KEY_APP_IMAGE_VIEWER, String(value))
+		},
+		setSettingsAsPage(value: boolean) {
+			this.settingsAsPage = value
+			localStorage.setItem(LS_KEY_SETTINGS_AS_PAGE, String(value))
+		},
+
+		// ---- Theme pack system ----
+		// Refreshes the list of installed theme packs from the backend.
+		async refreshInstalledThemePacks() {
+			try {
+				this.installedThemePacks = await getInstalledThemePacks()
+				// If the active theme pack is no longer installed, fall back to no pack.
+				if (
+					this.activeThemePackId &&
+					!this.installedThemePacks.some((p) => p.id === this.activeThemePackId)
+				) {
+					this.setActiveThemePack(null)
+				}
+			} catch (e) {
+				console.error('Failed to load installed theme packs:', e)
+			}
+		},
+
+		// Installs a theme pack from a zip file path and refreshes the list.
+		async installThemePackFromPath(zipPath: string) {
+			await installFromPath(zipPath)
+			await this.refreshInstalledThemePacks()
+		},
+
+		// Uninstalls a theme pack by id. If the active pack is uninstalled,
+		// falls back to the no-pack state.
+		async uninstallThemePackById(themeId: string) {
+			await uninstallThemePack(themeId)
+			if (this.activeThemePackId === themeId) {
+				this.setActiveThemePack(null)
+			}
+			await this.refreshInstalledThemePacks()
+		},
+
+		// Activates a theme pack by id (or null to clear). Applies its
+		// background image, accent color, blur, opacity and CSS variables.
+		async setActiveThemePack(themeId: string | null) {
+			this.activeThemePackId = themeId
+			if (themeId) {
+				localStorage.setItem(LS_KEY_ACTIVE_THEME_PACK, themeId)
+			} else {
+				localStorage.removeItem(LS_KEY_ACTIVE_THEME_PACK)
+			}
+			await this.applyActiveThemePack()
+		},
+
+		// Re-applies the currently active theme pack's overrides. Called
+		// during app init and after install/uninstall/switch.
+		async applyActiveThemePack() {
+			const html = document.documentElement
+			// Clear any previously-applied theme pack CSS variables
+			html.removeAttribute('data-theme-pack')
+			const inlineStyle = document.getElementById('theme-pack-inline-style')
+			if (inlineStyle) {
+				inlineStyle.remove()
+			}
+
+			if (!this.activeThemePackId) {
+				return
+			}
+			const pack = this.installedThemePacks.find(
+				(p) => p.id === this.activeThemePackId,
+			)
+			if (!pack) {
+				return
+			}
+
+			html.setAttribute('data-theme-pack', pack.id)
+
+			// Background image (overrides user-set path while pack is active)
+			if (pack.background_image_path) {
+				this.backgroundImagePath = pack.background_image_path
+			}
+			if (pack.background_blur != null) {
+				this.setBackgroundBlur(pack.background_blur)
+			}
+			if (pack.background_opacity != null) {
+				this.setBackgroundOpacity(pack.background_opacity)
+			}
+
+			// Apply CSS variables via a <style> tag with elevated specificity.
+			const cssVars = pack.css_variables ?? {}
+			if (pack.accent_color) {
+				cssVars['--color-brand'] = pack.accent_color
+			}
+			if (pack.secondary_color) {
+				cssVars['--color-brand-highlight'] = pack.secondary_color
+			}
+			if (pack.font_family) {
+				cssVars['--default-font'] = pack.font_family
+			}
+			const cssEntries = Object.entries(cssVars)
+			if (cssEntries.length > 0) {
+				const style = document.createElement('style')
+				style.id = 'theme-pack-inline-style'
+				style.textContent = `:root[data-theme-pack="${pack.id}"] {\n${cssEntries
+					.map(([k, v]) => `  ${k}: ${v};`)
+					.join('\n')}\n}`
+				document.head.appendChild(style)
+			}
 		},
 	},
 })

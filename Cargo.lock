@@ -12454,6 +12454,7 @@ dependencies = [
  "modrinth-content-management",
  "notify",
  "notify-debouncer-mini",
+ "open",
  "p256",
  "parking_lot",
  "paste",

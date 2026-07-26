@@ -18,7 +18,7 @@ pub struct InstallJobRecord {
     pub dismissed: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, sqlx::FromRow)]
 struct InstallJobRow {
     pub id: String,
     pub instance_id: Option<String>,
@@ -199,6 +199,34 @@ pub async fn list_interrupted_candidates(
 		ORDER BY created ASC
 		",
     )
+    .fetch_all(&app_state.pool)
+    .await?;
+
+    rows.into_iter().map(row_to_record).collect()
+}
+
+pub async fn list_active_by_instance_id(
+    instance_id: &str,
+    app_state: &State,
+) -> crate::Result<Vec<InstallJobRecord>> {
+    let rows: Vec<InstallJobRow> = sqlx::query_as(
+        "
+		SELECT
+			id,
+			instance_id,
+			kind,
+			status,
+			state,
+			created,
+			modified,
+			finished,
+			dismissed
+		FROM install_jobs
+		WHERE instance_id = ? AND status IN ('queued', 'running')
+		ORDER BY created ASC
+		",
+    )
+    .bind(instance_id)
     .fetch_all(&app_state.pool)
     .await?;
 

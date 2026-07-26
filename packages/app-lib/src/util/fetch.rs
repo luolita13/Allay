@@ -20,7 +20,7 @@ use std::pin::Pin;
 use std::sync::{Arc, LazyLock};
 use std::time::{self};
 use tokio::sync::Semaphore;
-use tokio::{fs::File, io::AsyncReadExt, io::AsyncWriteExt};
+use tokio::{fs::File, io::AsyncReadExt};
 
 pub const DOWNLOAD_META_HEADER: &str = "modrinth-download-meta";
 
@@ -189,8 +189,22 @@ static GLOBAL_FETCH_FENCE: LazyLock<FetchFence> =
         inner: Mutex::new(HashMap::new()),
     });
 
+/// Connection timeout: how long we are willing to wait for the remote server
+/// to accept the TCP/TLS handshake. A short value is important in China and
+/// other regions where official Mojang/Modrinth CDNs may be unreachable; it
+/// lets Auto-mode fall back to BMCLAPI/MCIMirror quickly instead of hanging
+/// forever at 0 B/s.
+const CONNECT_TIMEOUT: time::Duration = time::Duration::from_secs(10);
+
+/// Overall request timeout. This needs to be long enough for large files
+/// (e.g. the 20+ MiB client jar) on slower connections, while still preventing
+/// a stalled transfer from blocking the install job indefinitely.
+const REQUEST_TIMEOUT: time::Duration = time::Duration::from_secs(300);
+
 fn reqwest_client_builder() -> reqwest::ClientBuilder {
     reqwest::Client::builder()
+        .connect_timeout(CONNECT_TIMEOUT)
+        .timeout(REQUEST_TIMEOUT)
         .tcp_keepalive(Some(time::Duration::from_secs(10)))
         .user_agent(crate::launcher_user_agent())
 }
@@ -211,12 +225,12 @@ pub static REQWEST_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 
 const FETCH_ATTEMPTS: usize = 2;
 
-pub type FetchProgressFn<'a> = dyn FnMut(
+pub type FetchProgressFn = dyn Fn(
         u64,
         u64,
-    ) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'a>>
+    ) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'static>>
     + Send
-    + 'a;
+    + Sync;
 
 #[tracing::instrument(skip(semaphore))]
 pub async fn fetch(
@@ -335,7 +349,7 @@ pub async fn fetch_advanced_with_progress(
     uri_path: Option<&'static str>,
     semaphore: &FetchSemaphore,
     exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
-    progress: Option<&mut FetchProgressFn<'_>>,
+    progress: Option<Arc<FetchProgressFn>>,
 ) -> crate::Result<Bytes> {
     fetch_advanced_with_client_and_progress(
         method,
@@ -401,7 +415,7 @@ async fn fetch_advanced_with_client_and_progress(
     semaphore: &FetchSemaphore,
     exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
     client: &reqwest::Client,
-    mut progress: Option<&mut FetchProgressFn<'_>>,
+    progress: Option<Arc<FetchProgressFn>>,
 ) -> crate::Result<Bytes> {
     let _permit = semaphore.0.acquire().await?;
 
@@ -438,20 +452,20 @@ async fn fetch_advanced_with_client_and_progress(
 
     // Phase 1: Try primary URL (official or mirror depending on strategy)
     match fetch_with_url(
-        method.clone(),
-        primary_url,
-        url,
-        sha1,
-        json_body.clone(),
-        header,
-        &creds,
-        &download_meta_header,
-        loading_bar,
-        progress,
-        fence_key,
-        client,
-    )
-    .await
+            method.clone(),
+            primary_url,
+            url,
+            sha1,
+            json_body.clone(),
+            header,
+            &creds,
+            &download_meta_header,
+            loading_bar,
+            progress.as_deref(),
+            fence_key,
+            client,
+        )
+        .await
     {
         Ok(bytes) => return Ok(bytes),
         Err(primary_err) => {
@@ -459,7 +473,9 @@ async fn fetch_advanced_with_client_and_progress(
                 tracing::info!(
                     "Primary URL failed for {url}, trying fallback: {fallback}"
                 );
-                // Phase 2: Try fallback URL (no progress callback for fallback attempt)
+                // Phase 2: Try fallback URL. Keep the progress callback so the
+                // UI does not freeze at 0 B/s when the primary URL is slow and
+                // the mirror fallback is the one actually delivering bytes.
                 match fetch_with_url(
                     method,
                     fallback,
@@ -470,7 +486,7 @@ async fn fetch_advanced_with_client_and_progress(
                     &creds,
                     &download_meta_header,
                     loading_bar,
-                    None,
+                    progress.as_deref(),
                     fence_key,
                     client,
                 )
@@ -504,7 +520,7 @@ async fn fetch_with_url(
     creds: &Option<crate::state::ModrinthCredentials>,
     download_meta_header: &Option<(String, String)>,
     loading_bar: Option<(&LoadingBarId, f64)>,
-    mut progress: Option<&mut FetchProgressFn<'_>>,
+    progress: Option<&FetchProgressFn>,
     fence_key: Option<&'static str>,
     client: &reqwest::Client,
 ) -> crate::Result<Bytes> {
@@ -592,7 +608,7 @@ async fn fetch_with_url(
                                     )?;
                                 }
 
-                                if let Some(progress) = progress.as_mut() {
+                                if let Some(progress) = progress {
                                     progress(downloaded, total_size).await?;
                                 }
                             }
@@ -647,7 +663,15 @@ async fn fetch_with_url(
         }
     }
 
-    unreachable!()
+    // All paths above either return Ok, return Err, or `continue` to the
+    // next iteration. The loop always terminates because FETCH_ATTEMPTS is
+    // finite and the last attempt will either return Ok or Err (never
+    // `continue`). This fallback protects against future refactoring bugs
+    // that could otherwise panic the entire process mid-install.
+    Err(ErrorKind::OtherError(format!(
+        "Unexpected: fetch_with_url loop exhausted for {auth_url}"
+    ))
+    .into())
 }
 
 /// Downloads a file from specified mirrors
@@ -683,7 +707,12 @@ pub async fn fetch_mirrors(
         }
     }
 
-    unreachable!()
+    // mirrors is guaranteed non-empty by the check above, and the for loop
+    // always returns on the last iteration. This is a safety net.
+    Err(ErrorKind::OtherError(
+        "Unexpected: fetch_mirrors loop exhausted".to_string(),
+    )
+    .into())
 }
 
 /// Posts a JSON to a URL
@@ -735,12 +764,17 @@ pub async fn write(
         io::create_dir_all(parent).await?;
     }
 
-    let mut file = File::create(path)
-        .await
-        .map_err(|e| IOError::with_path(e, path))?;
-    file.write_all(bytes)
-        .await
-        .map_err(|e| IOError::with_path(e, path))?;
+    // Use atomic write-to-temp-then-rename to prevent leaving a truncated or
+    // corrupt file on disk when the system crashes or the disk fills up mid-
+    // write. A corrupt-but-present file would pass `path.exists()` checks and
+    // cause the launcher to skip re-downloading the file forever.
+    io::write(path, bytes).await.map_err(|e| {
+        crate::ErrorKind::OtherError(format!(
+            "Failed to write file {}: {e}",
+            path.display()
+        ))
+        .as_error()
+    })?;
     tracing::trace!("Done writing file {}", path.display());
     Ok(())
 }
@@ -836,7 +870,6 @@ pub async fn fetch_chunked(
         url,
         sha1,
         max_chunks,
-        &semaphore.0,
         chunked_progress.clone(),
     )
     .await
@@ -854,7 +887,6 @@ pub async fn fetch_chunked(
                     url,
                     sha1,
                     max_chunks,
-                    &semaphore.0,
                     chunked_progress,
                 )
                 .await

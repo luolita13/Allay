@@ -201,6 +201,7 @@ const accountsCard = inject('accountsCard') as Ref<typeof AccountsCard>
 const loginModal = ref<InstanceType<typeof MinecraftLoginModal>>()
 const currentUser = ref(undefined)
 const currentUserId = ref<string | undefined>(undefined)
+const isInitializing = ref(true)
 
 const username = computed(() => currentUser.value?.profile?.name ?? undefined)
 const selectedSkin = ref<Skin | null>(null)
@@ -1001,6 +1002,7 @@ async function checkUserChanges() {
 onMounted(async () => {
 	await Promise.all([loadCapes(), loadCurrentUser()])
 	await loadSkins()
+	isInitializing.value = false
 })
 </script>
 
@@ -1026,7 +1028,11 @@ onMounted(async () => {
 		@proceed="deleteSkin"
 	/>
 
-	<div v-if="currentUser" class="skin-layout box-border min-h-full p-4">
+	<div v-if="isInitializing" class="flex min-h-full items-center justify-center">
+		<SpinnerIcon class="h-8 w-8 animate-spin text-secondary" />
+	</div>
+
+	<div v-else-if="currentUser" class="skin-layout box-border min-h-full p-4">
 		<div class="sticky top-6 self-start p-2 pt-0">
 			<h1 class="m-0 text-2xl font-bold flex items-center gap-2">
 				{{ formatMessage(messages.skinSelectorTitle) }}

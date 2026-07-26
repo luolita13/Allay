@@ -1,19 +1,9 @@
 <script setup lang="ts">
 import {
-	CoffeeIcon,
-	GameIcon,
-	GaugeIcon,
-	HomeIcon,
-	LanguagesIcon,
 	ModrinthIcon,
-	PaintbrushIcon,
 	SettingsIcon,
-	ShieldIcon,
-	ToggleRightIcon,
-	WrenchIcon,
 } from '@modrinth/assets'
 import {
-	commonMessages,
 	defineMessage,
 	defineMessages,
 	ProgressBar,
@@ -24,15 +14,7 @@ import { getVersion } from '@tauri-apps/api/app'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref, watch } from 'vue'
 
-import AppearanceSettings from '@/components/ui/settings/AppearanceSettings.vue'
-import DefaultInstanceSettings from '@/components/ui/settings/DefaultInstanceSettings.vue'
-import FeatureFlagSettings from '@/components/ui/settings/FeatureFlagSettings.vue'
-import HomeSettings from '@/components/ui/settings/HomeSettings.vue'
-import JavaSettings from '@/components/ui/settings/JavaSettings.vue'
-import LanguageSettings from '@/components/ui/settings/LanguageSettings.vue'
-import PrivacySettings from '@/components/ui/settings/PrivacySettings.vue'
-import ResourceManagementSettings from '@/components/ui/settings/ResourceManagementSettings.vue'
-import AdvancedInstanceSettings from '@/components/ui/settings/AdvancedInstanceSettings.vue'
+import { settingsTabs } from '@/helpers/settings-tabs'
 import { get, set } from '@/helpers/settings.ts'
 import { injectAppUpdateDownloadProgress } from '@/providers/download-progress.ts'
 import { useTheming } from '@/store/state'
@@ -53,81 +35,7 @@ const settingsTitle = defineMessage({
 	defaultMessage: 'Settings',
 })
 
-const tabs = [
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.appearance',
-			defaultMessage: 'Appearance',
-		}),
-		icon: PaintbrushIcon,
-		content: AppearanceSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.home',
-			defaultMessage: 'Home page',
-		}),
-		icon: HomeIcon,
-		content: HomeSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.language',
-			defaultMessage: 'Language',
-		}),
-		icon: LanguagesIcon,
-		content: LanguageSettings,
-		badge: commonMessages.beta,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.privacy',
-			defaultMessage: 'Privacy',
-		}),
-		icon: ShieldIcon,
-		content: PrivacySettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.java-installations',
-			defaultMessage: 'Java installations',
-		}),
-		icon: CoffeeIcon,
-		content: JavaSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.default-instance-options',
-			defaultMessage: 'Default instance options',
-		}),
-		icon: GameIcon,
-		content: DefaultInstanceSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.advanced-instance-options',
-			defaultMessage: 'Advanced instance options',
-		}),
-		icon: WrenchIcon,
-		content: AdvancedInstanceSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.resource-management',
-			defaultMessage: 'Resource management',
-		}),
-		icon: GaugeIcon,
-		content: ResourceManagementSettings,
-	},
-	{
-		name: defineMessage({
-			id: 'app.settings.tabs.experimental-features',
-			defaultMessage: '实验性功能',
-		}),
-		icon: ToggleRightIcon,
-		content: FeatureFlagSettings,
-	},
-]
+const tabs = settingsTabs
 
 const modal = ref<InstanceType<typeof TabbedModal> | null>(null)
 
@@ -206,13 +114,6 @@ const messages = defineMessages({
 						<span v-else class="capitalize">{{ osPlatform }}</span>
 						{{ osVersion }}
 					</p>
-					<a
-						href="https://github.com/luolita13"
-						target="_blank"
-						class="text-brand hover:underline text-xs"
-					>
-						github.com/luolita13
-					</a>
 				</div>
 				</div>
 			</div>

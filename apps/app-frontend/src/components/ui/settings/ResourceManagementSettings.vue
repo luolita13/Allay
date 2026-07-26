@@ -264,6 +264,7 @@ async function findLauncherDir() {
 
 <template>
 	<div class="flex flex-col gap-6">
+		<!-- ===== Storage ===== -->
 		<div class="flex flex-col gap-2.5">
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.appDirectoryTitle) }}</h2>
 			<StyledInput
@@ -297,18 +298,21 @@ async function findLauncherDir() {
 				@proceed="purgeCache"
 			/>
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.appCacheTitle) }}</h2>
+			<p class="m-0 leading-tight text-secondary">
+				{{ formatMessage(messages.appCacheDescription) }}
+			</p>
 			<button id="purge-cache" class="btn min-w-max" @click="handlePurgeCacheClick">
 				<TrashIcon />
 				{{ formatMessage(messages.purgeCacheButton) }}
 			</button>
-			<p class="m-0 leading-tight text-secondary">
-				{{ formatMessage(messages.appCacheDescription) }}
-			</p>
 		</div>
 
+		<hr class="bg-button-border border-none h-[1px]" />
+
+		<!-- ===== Downloads ===== -->
 		<div class="flex flex-col gap-3">
 			<div>
-				<h2 class="m-0 text-lg font-semibold text-contrast mt-4">
+				<h2 class="m-0 text-lg font-semibold text-contrast">
 					{{ formatMessage(messages.downloadSourcesTitle) }}
 				</h2>
 				<p class="m-0 leading-tight text-secondary">
@@ -373,8 +377,10 @@ async function findLauncherDir() {
 			</div>
 		</div>
 
+		<hr class="bg-button-border border-none h-[1px]" />
+
 		<div class="flex flex-col gap-2.5">
-			<h2 class="m-0 text-lg font-semibold text-contrast mt-4">{{ formatMessage(messages.maxConcurrentDownloadsTitle) }}</h2>
+			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.maxConcurrentDownloadsTitle) }}</h2>
 			<Slider
 				id="max-downloads"
 				v-model="settings.max_concurrent_downloads"
@@ -402,7 +408,7 @@ async function findLauncherDir() {
 		</div>
 
 		<div class="flex flex-col gap-2.5">
-			<h2 class="mt-0 m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.maxConcurrentWritesTitle) }}</h2>
+			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.maxConcurrentWritesTitle) }}</h2>
 			<Slider
 				id="max-writes"
 				v-model="settings.max_concurrent_writes"
@@ -415,8 +421,11 @@ async function findLauncherDir() {
 			</p>
 		</div>
 
+		<hr class="bg-button-border border-none h-[1px]" />
+
+		<!-- ===== Maintenance ===== -->
 		<div class="flex flex-col gap-2.5">
-			<h2 class="mt-0 m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.dbBackupsTitle) }}</h2>
+			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.dbBackupsTitle) }}</h2>
 			<button id="open-db-backups-folder" class="btn min-w-max" @click="openDbBackupsFolder">
 				<FolderOpenIcon />
 				{{ formatMessage(messages.dbBackupsButton) }}

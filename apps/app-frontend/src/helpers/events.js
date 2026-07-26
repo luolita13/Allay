@@ -116,6 +116,30 @@ export async function notification_listener(callback) {
 	return await listen('notification', (event) => callback(event.payload))
 }
 
+/// Payload for the 'crash_diagnosed' event
+/*
+    CrashDiagnosisPayload {
+        instance_id: string,
+        // flattened CrashDiagnosisResult:
+        matched: Array<{
+            rule_id: string,
+            severity: "fatal" | "warning" | "info",
+            title: string,
+            description: string,
+            fix: string,
+            auto_fix: AutoFixKind, // { none } | { install_java: number } | ...
+            fragment: string | null,
+        }>,
+        scanned_bytes: number,
+        has_crash_report_header: boolean,
+        excerpt: string,
+        generated_at: number,
+    }
+*/
+export async function crash_diagnosed_listener(callback) {
+	return await listen('crash_diagnosed', (event) => callback(event.payload))
+}
+
 /// Payload for the 'log' event
 /*
     LogPayload {

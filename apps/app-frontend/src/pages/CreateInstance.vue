@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import {
-	ArrowLeftIcon,
-	BoxesIcon,
-	BoxImportIcon,
-	CheckIcon,
-	ChevronDownIcon,
-	ImageIcon,
-	PackageIcon,
-	SearchIcon,
-	UploadIcon,
-	XIcon,
-} from '@modrinth/assets'
-import {
-	Avatar,
-	Card,
-	commonMessages,
-	defineMessages,
-	injectNotificationManager,
-	StyledInput,
-	Toggle,
-	useVIntl,
-} from '@modrinth/ui'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+		ArrowLeftIcon,
+		BoxesIcon,
+		BoxImportIcon,
+		CheckIcon,
+		ChevronDownIcon,
+		ChevronRightIcon,
+		FolderSearchIcon,
+		ImageIcon,
+		PackageIcon,
+		SearchIcon,
+		UploadIcon,
+		XIcon,
+	} from '@modrinth/assets'
+	import {
+		Avatar,
+		Card,
+		commonMessages,
+		defineMessages,
+		injectNotificationManager,
+		StyledInput,
+		Toggle,
+		useVIntl,
+	} from '@modrinth/ui'
+	import { computed, onMounted, ref, watch } from 'vue'
+	import { useRouter } from 'vue-router'
 
 import anvilIcon from '@/assets/minecraft-icons/Anvil.png'
 import cleanroomIcon from '@/assets/minecraft-icons/Cleanroom.png'
@@ -38,9 +40,14 @@ import optifabricIcon from '@/assets/minecraft-icons/OptiFabric.png'
 import quiltIcon from '@/assets/minecraft-icons/Quilt.png'
 import redstoneLampIcon from '@/assets/minecraft-icons/RedstoneLampOn.png'
 import { install_create_instance } from '@/helpers/install'
-import { list } from '@/helpers/instance'
-import { get_game_versions, get_loader_versions } from '@/helpers/metadata'
-import type { InstanceLoader } from '@/helpers/types'
+	import {
+		get_default_launcher_path,
+		get_importable_instances,
+		import_instance,
+	} from '@/helpers/import'
+	import { list } from '@/helpers/instance'
+	import { get_game_versions, get_loader_versions } from '@/helpers/metadata'
+	import type { InstanceLoader } from '@/helpers/types'
 
 const versionIconMap: Record<string, string> = {
 	latest: goldBlockIcon,
@@ -220,32 +227,278 @@ const messages = defineMessages({
 	versions: { id: 'app.create-instance.versions', defaultMessage: 'versions' },
 	stable: { id: 'app.create-instance.stable', defaultMessage: 'Stable' },
 	gameVersion: { id: 'app.create-instance.game-version', defaultMessage: 'Game version' },
-	loader: { id: 'app.create-instance.loader', defaultMessage: 'Loader' },
-	loaderVersion: { id: 'app.create-instance.loader-version', defaultMessage: 'Loader version' },
-})
+		loader: { id: 'app.create-instance.loader', defaultMessage: 'Loader' },
+		loaderVersion: { id: 'app.create-instance.loader-version', defaultMessage: 'Loader version' },
+		// Import step messages
+		stepImport: { id: 'app.create-instance.step.import', defaultMessage: 'Import instances' },
+		detectingLaunchers: {
+			id: 'app.create-instance.import.detecting',
+			defaultMessage: 'Detecting launcher instances...',
+		},
+		noLaunchersFound: {
+			id: 'app.create-instance.import.no-launchers',
+			defaultMessage: 'No launchers detected. Add a custom path below.',
+		},
+		launcherInstancesTitle: {
+			id: 'app.create-instance.import.launcher-instances',
+			defaultMessage: 'Detected launchers',
+		},
+		searchInstances: {
+			id: 'app.create-instance.import.search',
+			defaultMessage: 'Search instances...',
+		},
+		addLauncherPath: {
+			id: 'app.create-instance.import.add-path',
+			defaultMessage: 'Add launcher path',
+		},
+		launcherPathPlaceholder: {
+			id: 'app.create-instance.import.path-placeholder',
+			defaultMessage: 'Path to launcher...',
+		},
+		addPath: { id: 'app.create-instance.import.add', defaultMessage: 'Add' },
+		browsePath: { id: 'app.create-instance.import.browse', defaultMessage: 'Browse' },
+		clearSelection: {
+			id: 'app.create-instance.import.clear-selection',
+			defaultMessage: 'Clear',
+		},
+		importButton: {
+			id: 'app.create-instance.import.button',
+			defaultMessage: 'Import {count} instance',
+		},
+		importButtonPlural: {
+			id: 'app.create-instance.import.button.plural',
+			defaultMessage: 'Import {count} instances',
+		},
+		importingButton: {
+			id: 'app.create-instance.import.importing',
+			defaultMessage: 'Importing...',
+		},
+		importSuccess: {
+			id: 'app.create-instance.import.success',
+			defaultMessage: 'Instance(s) imported successfully',
+		},
+		customLauncherName: {
+			id: 'app.create-instance.import.custom-launcher',
+			defaultMessage: 'Custom ({pathName})',
+		},
+		noInstancesAtPath: {
+			id: 'app.create-instance.import.no-instances-at-path',
+			defaultMessage: 'No importable instances found at the specified path.',
+		},
+		instancesAvailable: {
+			id: 'app.create-instance.import.instances-available',
+			defaultMessage: '{count} instances',
+		},
+	})
 
 // Steps
-const STEP_SETUP_TYPE = 0
-const STEP_VERSION = 1
-const STEP_LOADER = 2
-const STEP_CONFIG = 3
-const step = ref(STEP_SETUP_TYPE)
+	const STEP_SETUP_TYPE = 0
+	const STEP_VERSION = 1
+	const STEP_LOADER = 2
+	const STEP_CONFIG = 3
+	const STEP_IMPORT = 4
+	const step = ref(STEP_SETUP_TYPE)
 
-type SetupType = 'custom' | 'modpack' | 'import'
-const setupType = ref<SetupType | null>(null)
+	type SetupType = 'custom' | 'modpack' | 'import'
+	const setupType = ref<SetupType | null>(null)
 
-function selectSetupType(type: SetupType) {
-	setupType.value = type
-	if (type === 'modpack') {
-		router.push('/browse/modpack')
-		return
+	function selectSetupType(type: SetupType) {
+		setupType.value = type
+		if (type === 'modpack') {
+			router.push('/browse/modpack')
+			return
+		}
+		if (type === 'import') {
+			step.value = STEP_IMPORT
+			detectLaunchers()
+			return
+		}
+		step.value = STEP_VERSION
 	}
-	if (type === 'import') {
-		router.push('/library')
-		return
+
+	// ---- Import Instance Logic ----
+	interface ImportableLauncher {
+		name: string
+		path: string
+		instances: string[]
 	}
-	step.value = STEP_VERSION
-}
+
+	const LAUNCHER_NAMES = ['PrismLauncher', 'MultiMC', 'ATLauncher', 'Curseforge', 'GDLauncher']
+
+	const importLaunchers = ref<ImportableLauncher[]>([])
+	const importLoading = ref(false)
+	const importSearchQuery = ref('')
+	const importSelectedInstances = ref<Record<string, Set<string>>>({})
+	const importExpandedLaunchers = ref<Set<string>>(new Set())
+	const showAddLauncherPath = ref(false)
+	const newLauncherPath = ref('')
+	const importing = ref(false)
+
+	async function detectLaunchers() {
+		if (importLaunchers.value.length > 0 && !importLoading.value) return
+		importLoading.value = true
+		const launchers: ImportableLauncher[] = []
+		for (const name of LAUNCHER_NAMES) {
+			try {
+				const path = await get_default_launcher_path(name)
+				if (!path) continue
+				const instances = await get_importable_instances(name, path)
+				if (instances?.length > 0) {
+					launchers.push({ name, path, instances })
+					importExpandedLaunchers.value.add(name)
+				}
+			} catch {
+				// Skip launchers that fail detection
+			}
+		}
+		importLaunchers.value = launchers
+		importLoading.value = false
+	}
+
+	function filteredImportInstances(launcher: ImportableLauncher): string[] {
+		const q = importSearchQuery.value.toLowerCase().trim()
+		if (!q) return launcher.instances
+		return launcher.instances.filter((name) => name.toLowerCase().includes(q))
+	}
+
+	const visibleImportLaunchers = computed(() => {
+		const q = importSearchQuery.value.toLowerCase().trim()
+		if (!q) return importLaunchers.value
+		return importLaunchers.value.filter((l) => filteredImportInstances(l).length > 0)
+	})
+
+	function isImportInstanceSelected(launcherName: string, instance: string): boolean {
+		return importSelectedInstances.value[launcherName]?.has(instance) ?? false
+	}
+
+	function toggleImportInstance(launcherName: string, instance: string, selected: boolean) {
+		if (!importSelectedInstances.value[launcherName]) {
+			importSelectedInstances.value[launcherName] = new Set()
+		}
+		if (selected) {
+			importSelectedInstances.value[launcherName].add(instance)
+		} else {
+			importSelectedInstances.value[launcherName].delete(instance)
+		}
+		importSelectedInstances.value = { ...importSelectedInstances.value }
+	}
+
+	function toggleLauncherAll(launcher: ImportableLauncher, selected: boolean) {
+		if (!importSelectedInstances.value[launcher.name]) {
+			importSelectedInstances.value[launcher.name] = new Set()
+		}
+		for (const inst of filteredImportInstances(launcher)) {
+			if (selected) {
+				importSelectedInstances.value[launcher.name].add(inst)
+			} else {
+				importSelectedInstances.value[launcher.name].delete(inst)
+			}
+		}
+		importSelectedInstances.value = { ...importSelectedInstances.value }
+	}
+
+	function getLauncherCheckState(launcher: ImportableLauncher): boolean {
+		const set = importSelectedInstances.value[launcher.name]
+		if (!set || set.size === 0) return false
+		const visible = filteredImportInstances(launcher)
+		return visible.length > 0 && visible.every((i) => set.has(i))
+	}
+
+	function getLauncherIndeterminate(launcher: ImportableLauncher): boolean {
+		const set = importSelectedInstances.value[launcher.name]
+		if (!set || set.size === 0) return false
+		const visible = filteredImportInstances(launcher)
+		const selectedVisible = visible.filter((i) => set.has(i))
+		return selectedVisible.length > 0 && selectedVisible.length < visible.length
+	}
+
+	function toggleLauncherExpanded(name: string) {
+		if (importExpandedLaunchers.value.has(name)) {
+			importExpandedLaunchers.value.delete(name)
+		} else {
+			importExpandedLaunchers.value.add(name)
+		}
+		importExpandedLaunchers.value = new Set(importExpandedLaunchers.value)
+	}
+
+	const totalImportSelectedCount = computed(() => {
+		let count = 0
+		for (const set of Object.values(importSelectedInstances.value)) {
+			count += set.size
+		}
+		return count
+	})
+
+	function clearImportSelection() {
+		importSelectedInstances.value = {}
+	}
+
+	async function browseForLauncherPath() {
+		try {
+			const { open } = await import('@tauri-apps/plugin-dialog')
+			const result = await open({ multiple: false, directory: true })
+			if (result && typeof result === 'string') {
+				newLauncherPath.value = result
+			}
+		} catch (err) {
+			handleError(err as Error)
+		}
+	}
+
+	async function addLauncherPathAction() {
+		const path = newLauncherPath.value.trim()
+		if (!path) return
+		try {
+			const instances = await get_importable_instances('Custom', path)
+			if (!instances || instances.length === 0) {
+				addNotification({ type: 'error', title: formatMessage(messages.noInstancesAtPath) })
+				return
+			}
+			const launcher: ImportableLauncher = {
+				name: formatMessage(messages.customLauncherName, {
+					pathName: path.split(/[\\/]/).pop() || path,
+				}),
+				path,
+				instances,
+			}
+			importLaunchers.value = [...importLaunchers.value, launcher]
+			importExpandedLaunchers.value.add(launcher.name)
+			importExpandedLaunchers.value = new Set(importExpandedLaunchers.value)
+		} catch {
+			addNotification({ type: 'error', title: formatMessage(messages.noInstancesAtPath) })
+			return
+		}
+		newLauncherPath.value = ''
+		showAddLauncherPath.value = false
+	}
+
+	async function doImport() {
+		if (totalImportSelectedCount.value === 0) return
+		importing.value = true
+		let successCount = 0
+		for (const [launcherName, instanceSet] of Object.entries(importSelectedInstances.value)) {
+			const launcher = importLaunchers.value.find((l) => l.name === launcherName)
+			if (!launcher) continue
+			for (const instanceName of instanceSet) {
+				try {
+					await import_instance(
+						launcherName.startsWith('Custom') ? 'Custom' : launcherName,
+						launcher.path,
+						instanceName,
+					)
+					successCount++
+				} catch (err) {
+					handleError(err as Error)
+				}
+			}
+		}
+		importing.value = false
+		if (successCount > 0) {
+			addNotification({ type: 'success', title: formatMessage(messages.importSuccess) })
+			router.push('/library')
+		}
+	}
+	// ---- End Import Logic ----
 
 // Data
 interface GameVersion {
@@ -628,39 +881,51 @@ function versionGroupClass(id: string): string {
 		</div>
 
 		<!-- Stepper -->
-		<div class="flex items-center gap-2 mb-4">
-			<div
-				class="step-item"
-				:class="{ 'step-item-active': step >= STEP_SETUP_TYPE, 'step-item-current': step === STEP_SETUP_TYPE }"
-			>
-				<span class="step-number">1</span>
-				<span>{{ formatMessage(messages.stepSetupType) }}</span>
+			<div class="flex items-center gap-2 mb-4">
+				<div
+					class="step-item"
+					:class="{ 'step-item-active': step >= STEP_SETUP_TYPE, 'step-item-current': step === STEP_SETUP_TYPE }"
+				>
+					<span class="step-number">1</span>
+					<span>{{ formatMessage(messages.stepSetupType) }}</span>
+				</div>
+				<template v-if="setupType === 'import'">
+					<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_IMPORT }" />
+					<div
+						class="step-item"
+						:class="{ 'step-item-active': step >= STEP_IMPORT, 'step-item-current': step === STEP_IMPORT }"
+					>
+						<span class="step-number">2</span>
+						<span>{{ formatMessage(messages.stepImport) }}</span>
+					</div>
+				</template>
+				<template v-else>
+					<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_VERSION }" />
+					<div
+						class="step-item"
+						:class="{ 'step-item-active': step >= STEP_VERSION, 'step-item-current': step === STEP_VERSION }"
+					>
+						<span class="step-number">2</span>
+						<span>{{ formatMessage(messages.stepVersion) }}</span>
+					</div>
+					<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_LOADER }" />
+					<div
+						class="step-item"
+						:class="{ 'step-item-active': step >= STEP_LOADER, 'step-item-current': step === STEP_LOADER }"
+					>
+						<span class="step-number">3</span>
+						<span>{{ formatMessage(messages.stepLoader) }}</span>
+					</div>
+					<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_CONFIG }" />
+					<div
+						class="step-item"
+						:class="{ 'step-item-active': step >= STEP_CONFIG, 'step-item-current': step === STEP_CONFIG }"
+					>
+						<span class="step-number">4</span>
+						<span>{{ formatMessage(messages.stepConfig) }}</span>
+					</div>
+				</template>
 			</div>
-			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_VERSION }" />
-			<div
-				class="step-item"
-				:class="{ 'step-item-active': step >= STEP_VERSION, 'step-item-current': step === STEP_VERSION }"
-			>
-				<span class="step-number">2</span>
-				<span>{{ formatMessage(messages.stepVersion) }}</span>
-			</div>
-			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_LOADER }" />
-			<div
-				class="step-item"
-				:class="{ 'step-item-active': step >= STEP_LOADER, 'step-item-current': step === STEP_LOADER }"
-			>
-				<span class="step-number">3</span>
-				<span>{{ formatMessage(messages.stepLoader) }}</span>
-			</div>
-			<div class="step-divider" :class="{ 'step-divider-active': step >= STEP_CONFIG }" />
-			<div
-				class="step-item"
-				:class="{ 'step-item-active': step >= STEP_CONFIG, 'step-item-current': step === STEP_CONFIG }"
-			>
-				<span class="step-number">4</span>
-				<span>{{ formatMessage(messages.stepConfig) }}</span>
-			</div>
-		</div>
 
 		<!-- Step 0: Setup type selection -->
 		<template v-if="step === STEP_SETUP_TYPE">
@@ -699,7 +964,149 @@ function versionGroupClass(id: string): string {
 			</Card>
 		</template>
 
-		<!-- Step 1: Game version selection -->
+		<!-- Step 4: Import instances -->
+			<template v-if="step === STEP_IMPORT">
+				<!-- Loading state -->
+				<Card v-if="importLoading" class="p-8 text-center">
+					<div class="text-secondary">{{ formatMessage(messages.detectingLaunchers) }}</div>
+				</Card>
+
+				<template v-else>
+					<!-- Search & clear -->
+					<Card v-if="importLaunchers.length > 0" class="p-4">
+						<div class="flex items-center gap-3">
+							<StyledInput
+								v-model="importSearchQuery"
+								:placeholder="formatMessage(messages.searchInstances)"
+								type="text"
+								class="flex-1"
+							>
+								<template #icon>
+									<SearchIcon />
+								</template>
+							</StyledInput>
+							<ButtonStyled
+								v-if="totalImportSelectedCount > 0"
+								type="transparent"
+								size="small"
+								@click="clearImportSelection"
+							>
+								<button>{{ formatMessage(messages.clearSelection) }}</button>
+							</ButtonStyled>
+						</div>
+					</Card>
+
+					<!-- No launchers found -->
+					<Card v-if="importLaunchers.length === 0" class="p-6 text-center">
+						<p class="text-secondary m-0">{{ formatMessage(messages.noLaunchersFound) }}</p>
+					</Card>
+
+					<!-- Launcher sections -->
+					<div v-if="visibleImportLaunchers.length > 0" class="flex flex-col gap-3">
+						<Card
+							v-for="launcher in visibleImportLaunchers"
+							:key="launcher.name"
+							class="import-launcher-card"
+						>
+							<!-- Launcher header -->
+							<div class="import-launcher-header" @click="toggleLauncherExpanded(launcher.name)">
+								<div class="flex items-center gap-3 flex-1 min-w-0">
+									<ChevronRightIcon
+										class="size-5 shrink-0 text-secondary transition-transform"
+										:class="{ 'rotate-90': importExpandedLaunchers.has(launcher.name) }"
+									/>
+									<input
+										type="checkbox"
+										class="import-checkbox"
+										:checked="getLauncherCheckState(launcher)"
+										:indeterminate="getLauncherIndeterminate(launcher)"
+										@click.stop
+										@change="toggleLauncherAll(launcher, ($event.target as HTMLInputElement).checked)"
+									/>
+									<div class="flex flex-col min-w-0">
+										<span class="font-semibold text-contrast truncate">{{ launcher.name }}</span>
+										<span class="text-xs text-secondary">
+											{{ formatMessage(messages.instancesAvailable, { count: launcher.instances.length }) }}
+										</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Instance list -->
+							<div v-if="importExpandedLaunchers.has(launcher.name)" class="import-launcher-content">
+								<div
+									v-for="(inst, i) in filteredImportInstances(launcher)"
+									:key="inst"
+									class="import-instance-row"
+									:class="{ 'import-instance-alt': i % 2 !== 0 }"
+								>
+									<input
+										type="checkbox"
+										class="import-checkbox"
+										:checked="isImportInstanceSelected(launcher.name, inst)"
+										@change="toggleImportInstance(launcher.name, inst, ($event.target as HTMLInputElement).checked)"
+									/>
+									<span class="text-sm text-contrast">{{ inst }}</span>
+								</div>
+							</div>
+						</Card>
+					</div>
+
+					<!-- Add launcher path -->
+					<Card class="p-4">
+						<template v-if="!showAddLauncherPath">
+							<ButtonStyled type="outlined" class="w-full">
+								<button @click="showAddLauncherPath = true">
+									<FolderSearchIcon class="size-4" />
+									{{ formatMessage(messages.addLauncherPath) }}
+								</button>
+							</ButtonStyled>
+						</template>
+						<div v-else class="flex items-center gap-2">
+							<ButtonStyled circular type="outlined">
+								<button @click="browseForLauncherPath">
+									<FolderSearchIcon class="size-4" />
+								</button>
+							</ButtonStyled>
+							<StyledInput
+								v-model="newLauncherPath"
+								:placeholder="formatMessage(messages.launcherPathPlaceholder)"
+								type="text"
+								class="flex-1"
+							/>
+							<ButtonStyled color="brand">
+								<button :disabled="!newLauncherPath.trim()" @click="addLauncherPathAction">
+									{{ formatMessage(messages.addPath) }}
+								</button>
+							</ButtonStyled>
+						</div>
+					</Card>
+
+					<!-- Import action bar -->
+					<div class="flex justify-between mt-4">
+						<ButtonStyled type="outlined" @click="step = STEP_SETUP_TYPE; setupType = null">
+							<button>{{ formatMessage(commonMessages.backButton) }}</button>
+						</ButtonStyled>
+						<ButtonStyled
+							color="brand"
+							size="large"
+							:disabled="totalImportSelectedCount === 0 || importing"
+							@click="doImport"
+						>
+							<button>
+								{{ importing
+									? formatMessage(messages.importingButton)
+									: totalImportSelectedCount === 1
+										? formatMessage(messages.importButton, { count: 1 })
+										: formatMessage(messages.importButtonPlural, { count: totalImportSelectedCount })
+								}}
+							</button>
+						</ButtonStyled>
+					</div>
+				</template>
+			</template>
+
+			<!-- Step 1: Game version selection -->
 		<template v-if="step === STEP_VERSION">
 			<Card class="p-4">
 				<div class="flex flex-col gap-4">
@@ -1169,11 +1576,56 @@ function versionGroupClass(id: string): string {
 }
 
 .setup-type-desc {
-	margin: 0;
-	font-size: 0.875rem;
-	color: var(--color-secondary);
-	line-height: 1.4;
-}
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--color-secondary);
+		line-height: 1.4;
+	}
+
+	// Import instance styles
+	.import-launcher-card {
+		overflow: hidden;
+	}
+
+	.import-launcher-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		cursor: pointer;
+		background: var(--color-surface-3);
+		transition: background-color 0.15s ease;
+	}
+
+	.import-launcher-header:hover {
+		background: var(--color-surface-4);
+	}
+
+	.import-launcher-content {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.import-instance-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 1rem 0.5rem 2.75rem;
+		background: var(--color-surface-2);
+		border-top: 1px solid var(--color-surface-5);
+	}
+
+	.import-instance-alt {
+		background: var(--color-raised-bg);
+	}
+
+	.import-checkbox {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-brand);
+		flex-shrink: 0;
+		cursor: pointer;
+	}
 
 @media (max-width: 768px) {
 	.setup-type-grid {

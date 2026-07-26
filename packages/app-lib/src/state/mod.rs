@@ -116,6 +116,10 @@ impl State {
             )
             .await;
 
+            // Load the Java runtime fingerprint cache so the first JRE scan
+            // can skip spawning java -version for known installations.
+            crate::util::jre::load_cache().await;
+
             let res = tokio::try_join!(
                 state.discord_rpc.clear_to_default(true),
                 instances::refresh_all_instances(),

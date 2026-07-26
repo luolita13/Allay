@@ -47,8 +47,6 @@ export function createDownloadManager(handleError: (error: unknown) => void): Do
 	let disposed = false
 	let unlistenJobs: (() => void) | null = null
 	let unlistenLoading: (() => void) | null = null
-	let pollInterval: ReturnType<typeof setInterval> | null = null
-	let installJobListFailedLogged = false
 
 	function setJob(job: InstallJobSnapshot) {
 		const current = jobs.value.find((candidate) => candidate.job_id === job.job_id)
@@ -59,45 +57,28 @@ export function createDownloadManager(handleError: (error: unknown) => void): Do
 	}
 
 	async function refresh() {
-		let jobsList: InstallJobSnapshot[] = []
-
 		// Try the new paginated API first; fall back to the legacy list if it
 		// isn't available (e.g. backend binary hasn't been rebuilt yet).
-		const page = await download_job_list({ limit: 250 }).catch((error) => {
-			console.warn('[download-manager] download_job_list failed:', error)
-			return null
+		const page = await download_job_list({ limit: 250 }).catch(async () => {
+			// Fallback to install_job_list for backwards compatibility
+			const fallbackJobs = await install_job_list(true).catch((error) => {
+				handleError(error)
+				return [] as InstallJobSnapshot[]
+			})
+			return { jobs: fallbackJobs, nextCursor: null } as const
 		})
 
-		if (page) {
-			console.log('[download-manager] download_job_list returned', page.jobs.length, 'jobs')
-			jobsList = page.jobs
-		} else {
-			console.warn('[download-manager] falling back to install_job_list')
-			const fallbackJobs = await install_job_list(true).catch((error) => {
-				console.error('[download-manager] install_job_list failed:', error)
-				if (!installJobListFailedLogged) {
-					installJobListFailedLogged = true
-					handleError(error)
-				}
-				return []
-			})
-			console.log('[download-manager] install_job_list returned', fallbackJobs.length, 'jobs')
-			jobsList = fallbackJobs
-		}
-
 		if (!disposed) {
-			jobs.value = jobsList
+			jobs.value = page.jobs
 		}
 	}
 
 	async function refreshLegacyDownloads() {
 		const bars = await progress_bars_list().catch((error) => {
-			console.warn('[download-manager] progress_bars_list failed:', error)
+			handleError(error)
 			return {}
 		})
-		const values = Object.values(bars)
-		console.log('[download-manager] progress bars:', values.length, values.map((b) => b.bar_type?.type))
-		legacyDownloads.value = values
+		legacyDownloads.value = Object.values(bars)
 			.filter((bar) => downloadBarTypes.has(bar.bar_type?.type ?? ''))
 			.map((bar) => ({
 				...bar,
@@ -108,21 +89,9 @@ export function createDownloadManager(handleError: (error: unknown) => void): Do
 	async function start() {
 		if (started || disposed) return
 		started = true
-		console.log('[download-manager] starting')
-		await refresh()
-		await refreshLegacyDownloads()
-		unlistenJobs = await install_job_listener((job: InstallJobSnapshot) => {
-			console.log('[download-manager] install_job event:', job.job_id, job.status, job.phase)
-			setJob(job)
-		})
+		await Promise.all([refresh(), refreshLegacyDownloads()])
+		unlistenJobs = await install_job_listener((job: InstallJobSnapshot) => setJob(job))
 		unlistenLoading = await loading_listener(() => void refreshLegacyDownloads())
-		pollInterval = setInterval(() => {
-			if (!disposed) {
-				void refresh()
-				void refreshLegacyDownloads()
-			}
-		}, 3000)
-		console.log('[download-manager] listeners attached, polling every 3s')
 	}
 
 	async function cancel(jobId: string) {
@@ -163,10 +132,6 @@ export function createDownloadManager(handleError: (error: unknown) => void): Do
 			disposed = true
 			unlistenJobs?.()
 			unlistenLoading?.()
-			if (pollInterval) {
-				clearInterval(pollInterval)
-				pollInterval = null
-			}
 		},
 	}
 }

@@ -39,6 +39,44 @@ mod args;
 pub mod download;
 pub mod quick_play_version;
 
+/// Sync the per-executable GPU preference in the Windows registry.
+///
+/// Windows reads `HKCU\Software\Microsoft\DirectX\UserGpuPreferences` to decide
+/// which GPU a process runs on — this is the exact key the Settings >
+/// Graphics page writes. Each value is named by the executable path and holds
+/// a string such as `GpuPreference=2;` (2 = high performance).
+///
+/// When `enabled` is true the value is written (force high-performance GPU);
+/// when false the value is deleted so Windows falls back to the system default.
+/// Errors are non-fatal — the caller logs them and continues launching.
+#[cfg(target_os = "windows")]
+fn apply_high_performance_gpu_preference(
+    java_executable: &str,
+    enabled: bool,
+) -> std::io::Result<()> {
+    use winreg::RegKey;
+    use winreg::enums::{HKEY_CURRENT_USER, KEY_SET_VALUE};
+
+    const SUBKEY: &str = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
+    const GPU_DATA: &str = "GpuPreference=2;";
+
+    let key = RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey_with_flags(SUBKEY, KEY_SET_VALUE)
+        .or_else(|_| {
+            RegKey::predef(HKEY_CURRENT_USER)
+                .create_subkey(SUBKEY)
+                .map(|(key, _)| key)
+        })?;
+
+    if enabled {
+        key.set_value(java_executable, &GPU_DATA)?;
+    } else {
+        // Deleting a non-existent value is not an error here.
+        let _ = key.delete_value(java_executable);
+    }
+    Ok(())
+}
+
 // All nones -> disallowed
 // 1+ true -> allowed
 // 1+ false -> disallowed
@@ -865,10 +903,20 @@ pub async fn launch_minecraft(
         }
     }
 
-    // Apply GPU preference hint (Windows)
+    // Apply GPU preference (Windows). Windows selects the GPU for a process
+    // based on the `UserGpuPreferences` registry key under HKCU, keyed by the
+    // executable path — the same mechanism the Windows Settings UI writes. An
+    // environment variable on the child process has no effect, so we sync the
+    // registry entry here instead. `GpuPreference=2` forces the high-performance
+    // GPU; removing the value restores the system default.
     #[cfg(target_os = "windows")]
-    if settings.set_gpu_preference {
-        command.env("PCL_GPU_PREFERENCE", "2");
+    {
+        if let Err(e) = apply_high_performance_gpu_preference(
+            &java_path,
+            settings.set_gpu_preference,
+        ) {
+            tracing::warn!("Failed to apply GPU preference: {e}");
+        }
     }
 
     // Apply process priority (Windows)
@@ -1032,12 +1080,13 @@ pub async fn launch_minecraft(
         ));
     }
 
-    // Pass custom info as JVM property (theseus.jar can use it if supported)
+    // Pass custom info via the native `minecraft.launcher.brand` /
+    // `minecraft.launcher.version` properties. Minecraft reads these directly
+    // and renders them on the F3 debug screen ("Launcher: <brand> <version>"),
+    // so no bytecode patching is required for custom_info to take effect.
     if !settings.custom_info.is_empty() {
-        command.arg(format!(
-            "-Dmodrinth.custom.info={}",
-            settings.custom_info
-        ));
+        command.arg(format!("-Dminecraft.launcher.brand={}", settings.custom_info));
+        command.arg(format!("-Dminecraft.launcher.version={}", settings.custom_info));
     }
 
     // If the account uses a third-party (authlib-injector / Yggdrasil) auth

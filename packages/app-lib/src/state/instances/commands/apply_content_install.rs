@@ -234,15 +234,25 @@ pub(crate) async fn install_resolved_content_plan_with_reporter(
     reporter: &crate::install::events::InstallProgressReporter,
 ) -> crate::Result<()> {
     use crate::install::model::{
-        InstallPhaseDetails, InstallPhaseId, InstallProgress,
+        InstallJobEventKind, InstallPhaseDetails, InstallPhaseId,
+        InstallProgress,
     };
 
     let total_files = 1 + plan.dependencies.len() as u64;
     let mut current_file: u64 = 0;
 
+    // Emit ContentDownloadStarted so the frontend knows the total file count
+    let _ = reporter
+        .record_event(InstallJobEventKind::ContentDownloadStarted {
+            files: total_files,
+            bytes: None,
+        })
+        .await;
+
     // Primary content
     {
         current_file += 1;
+        let file_name = plan.primary.project_id.clone();
         reporter
             .update(
                 InstallPhaseId::DownloadingContent,
@@ -258,6 +268,14 @@ pub(crate) async fn install_resolved_content_plan_with_reporter(
                 },
             )
             .await?;
+        let _ = reporter
+            .record_event(InstallJobEventKind::ContentFileDownloadAttempt {
+                path: file_name.clone(),
+                bytes_total: None,
+                attempt: 1,
+                max_attempts: 1,
+            })
+            .await;
         add_resolved_content(
             instance_id,
             &plan.primary,
@@ -265,11 +283,18 @@ pub(crate) async fn install_resolved_content_plan_with_reporter(
             state,
         )
         .await?;
+        let _ = reporter
+            .record_event(InstallJobEventKind::ContentFileCompleted {
+                path: file_name,
+                bytes: 0,
+            })
+            .await;
     }
 
     // Dependencies
     for dependency in &plan.dependencies {
         current_file += 1;
+        let file_name = dependency.project_id.clone();
         reporter
             .update(
                 InstallPhaseId::DownloadingContent,
@@ -285,6 +310,14 @@ pub(crate) async fn install_resolved_content_plan_with_reporter(
                 },
             )
             .await?;
+        let _ = reporter
+            .record_event(InstallJobEventKind::ContentFileDownloadAttempt {
+                path: file_name.clone(),
+                bytes_total: None,
+                attempt: 1,
+                max_attempts: 1,
+            })
+            .await;
         add_resolved_content(
             instance_id,
             dependency,
@@ -292,6 +325,12 @@ pub(crate) async fn install_resolved_content_plan_with_reporter(
             state,
         )
         .await?;
+        let _ = reporter
+            .record_event(InstallJobEventKind::ContentFileCompleted {
+                path: file_name,
+                bytes: 0,
+            })
+            .await;
     }
 
     Ok(())

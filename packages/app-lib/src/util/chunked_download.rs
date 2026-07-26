@@ -9,11 +9,16 @@ use bytes::Bytes;
 use eyre::eyre;
 use futures::stream::{self, StreamExt};
 use reqwest::Method;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use tokio::sync::Semaphore;
 
-type ChunkedProgressFn = Arc<dyn Fn(u64, u64) -> futures::future::BoxFuture<'static, crate::Result<()>> + Send + Sync>;
+type ChunkedProgressFn = Arc<
+    dyn Fn(u64, u64) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'static>>
+        + Send
+        + Sync,
+>;
 
 /// Minimum file size (in bytes) to trigger chunked download.
 /// Files smaller than this are downloaded as a single request.
@@ -40,24 +45,34 @@ pub async fn download_chunked(
     auth_url: &str,
     sha1: Option<&str>,
     max_chunks: usize,
-    semaphore: &Semaphore,
     progress: Option<ChunkedProgressFn>,
 ) -> crate::Result<Bytes> {
-    // Phase 1: HEAD request to check Range support and content length
-    let head_resp = client
-        .request(Method::HEAD, url)
-        .send()
-        .await
-        .map_err(|e| eyre::eyre!("HEAD request failed for {auth_url}: {e}"))?;
+    // Phase 1: HEAD request to check Range support and content length.
+    // Some servers or mirrors reject HEAD requests; in that case we
+    // gracefully degrade to a single-request GET download instead of
+    // hard-failing the entire download.
+    let head_result = client.request(Method::HEAD, url).send().await;
 
-    let content_length = head_resp.content_length();
-    let accept_ranges = head_resp
-        .headers()
-        .get(reqwest::header::ACCEPT_RANGES)
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("");
-
-    let supports_range = accept_ranges.contains("bytes");
+    let (content_length, supports_range) = match head_result {
+        Ok(resp) => {
+            let cl = resp.content_length();
+            let ar = resp
+                .headers()
+                .get(reqwest::header::ACCEPT_RANGES)
+                .and_then(|v| v.to_str().ok())
+                .unwrap_or("");
+            (cl, ar.contains("bytes"))
+        }
+        Err(e) => {
+            tracing::debug!(
+                "HEAD request failed for {auth_url}: {e}; \
+                 falling back to single-request download"
+            );
+            // HEAD failed (timeout, method not allowed, etc.) → fall back
+            return download_single(client, url, auth_url, sha1, progress)
+                .await;
+        }
+    };
 
     // Decide whether to use chunked download
     let use_chunked = supports_range
@@ -66,7 +81,7 @@ pub async fn download_chunked(
 
     if !use_chunked {
         // Fall back to single-request download
-        return download_single(client, url, auth_url, sha1, semaphore, progress)
+        return download_single(client, url, auth_url, sha1, progress)
             .await;
     }
 
@@ -93,20 +108,24 @@ pub async fn download_chunked(
 
     let total_downloaded = Arc::new(AtomicU64::new(0));
 
-    let results: Vec<crate::Result<Bytes>> =
+    // The outer fetch_chunked call already holds one fetch_semaphore permit
+    // for this file. Chunks should NOT acquire additional permits from the
+    // same semaphore: doing so would make one chunked download consume
+    // (1 + actual_chunks) permits and starve other files. We limit chunk
+    // concurrency purely through buffer_unordered(actual_chunks).
+    // Each result carries its original chunk index so we can re-order
+    // after the concurrent download. `buffer_unordered` returns results
+    // in completion order, NOT in range order, so we must sort before
+    // assembling to avoid producing a corrupt file.
+    let results: Vec<crate::Result<(usize, Bytes)>> =
         stream::iter(ranges.into_iter().enumerate())
             .map(|(idx, (start, end))| {
                 let client = client.clone();
                 let url = url.to_string();
                 let auth_url = auth_url.to_string();
-                let semaphore = semaphore.clone();
                 let total_downloaded = total_downloaded.clone();
                 let progress = progress.clone();
                 async move {
-                    let _permit = semaphore.acquire().await.map_err(|_| {
-                        eyre::eyre!("Semaphore closed for chunk {idx}")
-                    })?;
-
                     let range_header = format!("bytes={start}-{end}");
                     tracing::trace!("Chunk {idx}: requesting {range_header}");
 
@@ -150,19 +169,27 @@ pub async fn download_chunked(
                         bytes.len()
                     );
 
-                    Ok::<Bytes, crate::Error>(bytes)
+                    Ok::<(usize, Bytes), crate::Error>((idx, bytes))
                 }
             })
             .buffer_unordered(actual_chunks)
             .collect()
             .await;
 
-    // Phase 3: Assemble results in order
-    let mut assembled = Vec::with_capacity(total_size as usize);
-    for (idx, result) in results.into_iter().enumerate() {
-        let chunk = result.map_err(|e| {
-            eyre::eyre!("Chunk {idx} failed during chunked download of {auth_url}: {e}")
+    // Phase 3: Place each chunk at its original index, then assemble in order.
+    // Use a fixed-size Vec<Option<Bytes>> to avoid holding two separate copies
+    // of all chunk data (results + sorted), keeping peak memory at ~2x file
+    // size instead of ~3x.
+    let mut chunks: Vec<Option<Bytes>> = (0..actual_chunks).map(|_| None).collect();
+    for result in results {
+        let (idx, bytes) = result.map_err(|e| {
+            eyre::eyre!("A chunk failed during chunked download of {auth_url}: {e}")
         })?;
+        chunks[idx] = Some(bytes);
+    }
+
+    let mut assembled = Vec::with_capacity(total_size as usize);
+    for chunk in chunks.into_iter().flatten() {
         assembled.extend_from_slice(&chunk);
     }
 
@@ -185,18 +212,16 @@ pub async fn download_chunked(
 }
 
 /// Single-request download (non-chunked) with progress callback.
+///
+/// The caller already holds the fetch_semaphore permit for this download,
+/// so no additional semaphore acquisition is needed here.
 async fn download_single(
     client: &reqwest::Client,
     url: &str,
     auth_url: &str,
     sha1: Option<&str>,
-    semaphore: &Semaphore,
     progress: Option<ChunkedProgressFn>,
 ) -> crate::Result<Bytes> {
-    let _permit = semaphore.acquire().await.map_err(|_| {
-        eyre::eyre!("Semaphore closed for single download of {auth_url}")
-    })?;
-
     let resp = client
         .request(Method::GET, url)
         .send()

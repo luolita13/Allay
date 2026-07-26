@@ -525,6 +525,12 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
 
     match result {
         Ok(instance_id) => {
+            // Reload the latest job_state from the database so we preserve
+            // any events (ContentFileCompleted, etc.) that the
+            // InstallProgressReporter persisted during the install.
+            if let Ok(latest) = store::get_required(job_id, &state).await {
+                job_state = latest.state.clone();
+            }
             if let Some(instance_id) = instance_id {
                 set_instance_id(&mut job_state, instance_id);
             }
@@ -552,6 +558,17 @@ async fn run_job(job_id: Uuid) -> crate::Result<()> {
                     error.raw.as_ref(),
                     crate::ErrorKind::InputError(msg) if msg == "Install was canceled"
                 );
+            // Reload the latest job_state from the database. The
+            // InstallProgressReporter holds its own clone of job_state and
+            // persists events (ContentFileDownloadAttempt, ContentFileCompleted,
+            // etc.) directly to the database via store::update_state. The local
+            // job_state variable in run_job does NOT see those events. If we
+            // were to write our local job_state back to the database without
+            // reloading, we would overwrite and lose all the file download
+            // events that were recorded during the install.
+            if let Ok(latest) = store::get_required(job_id, &state).await {
+                job_state = latest.state.clone();
+            }
             if is_canceled {
                 job_state.progress.phase = InstallPhaseId::RollingBack;
                 job_state.progress.progress = None;
@@ -987,14 +1004,20 @@ async fn run_request(
                 download_url
             );
 
-            // Download the file bytes
-            let bytes = crate::util::fetch::fetch(
+            // Download the file bytes using fetch_chunked for mirror support
+            // and parallel chunked download on large files. CurseForge does
+            // not expose SHA1 hashes in its API, so we pass None for sha1.
+            let settings = crate::state::Settings::get(&state.pool).await?;
+            let max_chunks = settings.max_chunks_per_file;
+            let bytes = crate::util::fetch::fetch_chunked(
                 &download_url,
                 None,
                 None,
                 None,
                 &state.fetch_semaphore,
                 &state.pool,
+                max_chunks,
+                None,
             )
             .await?;
 

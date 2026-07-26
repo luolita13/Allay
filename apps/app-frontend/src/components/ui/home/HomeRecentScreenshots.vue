@@ -8,6 +8,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { get_full_path, list } from '@/helpers/instance'
 import { openPath } from '@/helpers/utils.js'
+import { useTheming } from '@/store/theme'
+import ImageViewer from '@/components/ui/ImageViewer.vue'
 
 dayjs.extend(relativeTime)
 
@@ -30,6 +32,9 @@ interface Screenshot {
 
 const screenshots = ref<Screenshot[]>([])
 const loading = ref(true)
+const imageViewer = ref<InstanceType<typeof ImageViewer> | null>(null)
+
+const themeStore = useTheming()
 
 const MAX_SCREENSHOTS = 12
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'bmp', 'webp', 'tiff']
@@ -143,6 +148,11 @@ function formatRelative(timestamp: number): string {
 }
 
 function openScreenshot(shot: Screenshot) {
+	if (themeStore.useAppImageViewer) {
+		const idx = screenshots.value.findIndex((s) => s.path === shot.path)
+		imageViewer.value?.open(idx >= 0 ? idx : 0)
+		return
+	}
 	openPath(shot.path).catch(handleError)
 }
 
@@ -180,6 +190,7 @@ onMounted(fetchScreenshots)
 			</div>
 		</div>
 	</div>
+	<ImageViewer ref="imageViewer" :images="screenshots.map(s => ({ path: s.path, name: s.name, url: s.url }))" />
 </template>
 
 <style scoped lang="scss">

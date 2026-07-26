@@ -170,6 +170,14 @@ fn main() {
                         "install_job_pause",
                         "install_job_resume",
                         "install_job_dismiss",
+                        "install_job_support_details",
+                        "download_job_list",
+                        "download_job_get",
+                        "download_job_retry",
+                        "download_job_cancel",
+                        "download_job_delete",
+                        "download_history_clear",
+                        "download_job_support_details",
                     ])
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,
@@ -382,6 +390,53 @@ fn main() {
                         "cf_get_file_download_url",
                         "cf_get_categories",
                         "cf_install_file",
+                    ])
+                    .default_permission(
+                        DefaultPermissionRule::AllowAllCommands,
+                    ),
+            )
+            .plugin(
+                "crash-diagnosis",
+                InlinedPlugin::new()
+                    .commands(&[
+                        "crash_diagnosis_diagnose_latest",
+                        "crash_diagnosis_diagnose_raw_log",
+                        "crash_diagnosis_list_rules",
+                        "crash_diagnosis_list_severities",
+                        "crash_diagnosis_list_auto_fix_kinds",
+                        "crash_diagnosis_export_report",
+                        "crash_diagnosis_apply_auto_fix",
+                        "crash_diagnosis_cleanup_logs",
+                    ])
+                    .default_permission(
+                        DefaultPermissionRule::AllowAllCommands,
+                    ),
+            )
+            .plugin(
+                "theme-pack",
+                InlinedPlugin::new()
+                    .commands(&[
+                        "theme_pack_install_from_path",
+                        "theme_pack_uninstall",
+                        "theme_pack_list_installed",
+                        "theme_pack_get",
+                        "theme_pack_export_to_zip",
+                        "theme_pack_get_themes_dir_path",
+                    ])
+                    .default_permission(
+                        DefaultPermissionRule::AllowAllCommands,
+                    ),
+            )
+            .plugin(
+                "translation",
+                InlinedPlugin::new()
+                    .commands(&[
+                        "translation_get_settings",
+                        "translation_update_settings",
+                        "translation_set_secret",
+                        "translation_test_provider",
+                        "translation_translate",
+                        "translation_clear_cache",
                     ])
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,

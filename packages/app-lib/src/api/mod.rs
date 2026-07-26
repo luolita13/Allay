@@ -1,5 +1,6 @@
 //! API for interacting with Theseus
 pub mod cache;
+pub mod crash_diagnosis;
 pub mod curseforge;
 pub mod friends;
 pub mod handler;
@@ -15,6 +16,8 @@ pub mod process;
 pub mod server_address;
 pub mod settings;
 pub mod tags;
+pub mod theme_pack;
+pub mod translation;
 pub mod worlds;
 
 pub mod data {
@@ -47,7 +50,9 @@ pub mod prelude {
         state::{ReleaseChannel, db_backup::app_db_backup_dir},
         util::{
             io::{IOError, canonicalize},
+            java_version,
             network::{is_network_metered, tcp_listen_any_loopback},
         },
     };
+    pub use crate::{api::crash_diagnosis, api::theme_pack, api::translation};
 }

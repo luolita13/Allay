@@ -17,9 +17,10 @@ use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::future::Future;
-
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 #[derive(Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -311,19 +312,21 @@ pub(crate) async fn generate_pack_from_version_id_with_reporter(
         version_id: Some(version_id.clone()),
         title: Some(title.clone()),
     };
-    let mut last_reported_bytes = 0_u64;
-    let mut progress =
-        |current: u64,
-         total: u64|
-         -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send>> {
+    let last_reported_bytes = AtomicU64::new(0);
+    let progress =
+        move |current: u64,
+              total: u64|
+              -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send>> {
             let min_delta = (total / 200).max(256 * 1024);
+            let previous =
+                last_reported_bytes.swap(current, Ordering::Relaxed);
             if current < total
-                && current.saturating_sub(last_reported_bytes) < min_delta
+                && current.saturating_sub(previous) < min_delta
             {
+                last_reported_bytes.store(previous, Ordering::Relaxed);
                 return Box::pin(async { Ok(()) });
             }
 
-            last_reported_bytes = current;
             let reporter = reporter.clone();
             let details = details.clone();
             Box::pin(async move {
@@ -341,7 +344,7 @@ pub(crate) async fn generate_pack_from_version_id_with_reporter(
                 Ok(())
             })
         };
-    let progress = Some(&mut progress as &mut FetchProgressFn<'_>);
+    let progress = Some(Arc::new(progress) as Arc<FetchProgressFn>);
 
     let file = fetch_advanced_with_progress(
         Method::GET,

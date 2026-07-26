@@ -24,10 +24,13 @@ mod ads_occlusion_macos;
 #[cfg(windows)]
 mod ads_occlusion_windows;
 pub mod cache;
+pub mod crash_diagnosis;
 pub mod curseforge;
 pub mod files;
 pub mod friends;
 pub mod link;
+pub mod theme_pack;
+pub mod translation;
 pub mod worlds;
 
 mod oauth_utils;

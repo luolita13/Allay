@@ -2,6 +2,7 @@ use crate::event::emit::{emit_instance, emit_process};
 use crate::event::{InstancePayloadType, ProcessPayloadType};
 #[cfg(feature = "tauri")]
 use crate::event::{LogEvent, LogPayload};
+use crate::api::crash_diagnosis::{CrashDiagnosisResult, diagnose_latest_crash};
 use crate::util::io::IOError;
 use crate::util::rpc::RpcServer;
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
@@ -17,6 +18,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::ExitStatus;
 use std::sync::LazyLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 #[cfg(feature = "tauri")]
 use tauri::Emitter;
@@ -137,6 +139,7 @@ impl ProcessManager {
             child: mc_proc,
             rpc_server,
             _main_class_keep_alive: main_class_keep_alive,
+            was_killed: AtomicBool::new(false),
         };
 
         if let Err(e) =
@@ -250,6 +253,15 @@ impl ProcessManager {
             .collect()
     }
 
+    /// Returns true if a process for the given instance is currently tracked as
+    /// running. A process stays in the map from spawn until its post-exit
+    /// sequence completes, so this also covers the pre-window "launching" phase.
+    pub fn is_instance_running(&self, instance_id: &str) -> bool {
+        self.processes
+            .iter()
+            .any(|x| x.value().metadata.instance_id == instance_id)
+    }
+
     pub fn try_wait(
         &self,
         id: Uuid,
@@ -270,6 +282,7 @@ impl ProcessManager {
 
     pub async fn kill(&self, id: Uuid) -> crate::Result<()> {
         if let Some(mut process) = self.processes.get_mut(&id) {
+            process.was_killed.store(true, Ordering::SeqCst);
             process.child.kill().await?;
         }
 
@@ -296,6 +309,8 @@ struct Process {
     child: Child,
     _main_class_keep_alive: TempDir,
     rpc_server: RpcServer,
+    /// Whether the user explicitly killed this process (vs. it crashing on its own).
+    was_killed: AtomicBool,
 }
 
 #[derive(Debug, Default, Serialize, Clone)]
@@ -817,6 +832,10 @@ impl Process {
                 .await;
         }
 
+        // Read was_killed before removing the process from the map
+        let was_killed = state.process_manager.processes.get(&uuid)
+            .map(|p| p.was_killed.load(Ordering::Relaxed))
+            .unwrap_or(false);
         state.process_manager.remove(uuid);
         emit_process(
             &instance_id,
@@ -825,6 +844,47 @@ impl Process {
             "Exited process",
         )
         .await?;
+
+        // Only diagnose if the process exited abnormally AND wasn't
+        // killed by the user (stopping the instance is not a crash).
+        if !mc_exit_status.success() && !was_killed {
+            let instance_id_for_diag = instance_id.clone();
+            tokio::spawn(async move {
+                // Restrict to crash reports newer than 5 minutes ago, to
+                // avoid surfacing stale diagnoses on relaunch.
+                let max_age = Some(300);
+                match diagnose_latest_crash(&instance_id_for_diag, max_age).await {
+                    Ok(result) if !result.matched.is_empty() => {
+                        emit_crash_diagnosis(&instance_id_for_diag, result).await;
+                    }
+                    Ok(_) => {
+                        // No matches - frontend may still want to know
+                        // that a crash happened. We emit anyway with an
+                        // empty result so the UI can offer a "view logs"
+                        // affordance if it wants.
+                        let empty = CrashDiagnosisResult {
+                            matched: vec![],
+                            scanned_bytes: 0,
+                            has_crash_report_header: false,
+                            excerpt: String::new(),
+                            generated_at: std::time::SystemTime::now()
+                                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_secs(),
+                            sources: vec![],
+                        };
+                        emit_crash_diagnosis(&instance_id_for_diag, empty).await;
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            "Failed to diagnose crash for instance {}: {}",
+                            instance_id_for_diag,
+                            e
+                        );
+                    }
+                }
+            });
+        }
 
         // Now fully complete- update playtime one last time
         update_playtime(&mut last_updated_playtime, &instance_id, true).await;
@@ -915,5 +975,31 @@ impl Process {
         }
 
         Ok(())
+    }
+}
+
+/// Emit a `crash_diagnosed` event to the frontend carrying the diagnosis
+/// result. Best-effort: errors are logged but not propagated.
+async fn emit_crash_diagnosis(instance_id: &str, result: CrashDiagnosisResult) {
+    #[cfg(feature = "tauri")]
+    {
+        use serde::Serialize;
+        #[derive(Serialize, Clone)]
+        struct CrashDiagnosisPayload<'a> {
+            instance_id: &'a str,
+            #[serde(flatten)]
+            result: &'a CrashDiagnosisResult,
+        }
+        if let Ok(event_state) = crate::EventState::get() {
+            let payload = CrashDiagnosisPayload {
+                instance_id,
+                result: &result,
+            };
+            let _ = event_state.app.emit("crash_diagnosed", payload);
+        }
+    }
+    #[cfg(not(feature = "tauri"))]
+    {
+        let _ = (instance_id, result);
     }
 }

@@ -15,6 +15,10 @@ pub fn init<R: tauri::Runtime>() -> TauriPlugin<R> {
             jre_test_jre,
             jre_auto_install_java,
             jre_get_max_memory,
+            jre_get_minimum_java_version,
+            jre_get_recommended_java_major,
+            jre_check_java_for_version,
+            jre_find_suitable_java,
         ])
         .build()
 }
@@ -61,4 +65,61 @@ pub async fn jre_auto_install_java(java_version: u32) -> Result<PathBuf> {
 #[tauri::command]
 pub async fn jre_get_max_memory() -> Result<u64> {
     Ok(jre::get_max_memory().await?)
+}
+
+// --- Java version constraint system ---
+
+/// Returns the minimum Java major version required by a vanilla Minecraft
+/// version, or None if no specific minimum applies (e.g. MC < 1.13).
+#[tauri::command]
+pub fn jre_get_minimum_java_version(
+    game_version: String,
+) -> Result<Option<theseus::java_version::GameJavaVersion>> {
+    Ok(theseus::java_version::get_minimum_java_version(&game_version))
+}
+
+/// Returns the recommended Java major version for a Minecraft version and
+/// optional loader (e.g. "forge", "fabric"). Falls back to the minimum
+/// if no suggested rule applies.
+#[tauri::command]
+pub fn jre_get_recommended_java_major(
+    game_version: String,
+    loader: Option<String>,
+) -> Result<Option<u32>> {
+    Ok(theseus::java_version::get_recommended_java_major(
+        &game_version,
+        loader.as_deref(),
+    ))
+}
+
+/// Check whether a given Java runtime is suitable for a Minecraft version.
+/// Returns a detailed result with satisfied/violated rules.
+#[tauri::command]
+pub async fn jre_check_java_for_version(
+    game_version: String,
+    java_path: PathBuf,
+    loader: Option<String>,
+) -> Result<theseus::java_version::ConstraintCheckResult> {
+    let java = jre::check_jre(java_path).await?;
+    Ok(theseus::java_version::check_java_for_version(
+        &game_version,
+        &java,
+        loader.as_deref(),
+    ))
+}
+
+/// Find the best Java runtime for a game version from all detected JREs.
+/// Returns the selected JavaVersion, or None if no suitable Java is found.
+#[tauri::command]
+pub async fn jre_find_suitable_java(
+    game_version: String,
+    loader: Option<String>,
+) -> Result<Option<JavaVersion>> {
+    let all = jre::find_filtered_jres(None).await?;
+    Ok(theseus::java_version::find_suitable_java(
+        &game_version,
+        &all,
+        loader.as_deref(),
+    )
+    .cloned())
 }

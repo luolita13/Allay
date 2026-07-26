@@ -49,6 +49,7 @@ import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_loader_versions as getLoaderManifest } from '@/helpers/metadata'
 import { get_categories, get_game_versions, get_loaders } from '@/helpers/tags'
 import { get_instance_worlds } from '@/helpers/worlds'
+import { cfGetFileDownloadUrl, cfGetModFiles, cfInstallFile, cfSearch } from '@/helpers/curseforge'
 import { injectContentInstall } from '@/providers/content-install'
 import { injectServerInstall } from '@/providers/server-install'
 import {
@@ -456,6 +457,18 @@ const messages = defineMessages({
 		id: 'app.browse.worlds-modrinth-empty',
 		defaultMessage: 'Modrinth does not host worlds.',
 	},
+	browseSourceModrinth: {
+		id: 'app.browse.source.modrinth',
+		defaultMessage: 'Modrinth',
+	},
+	browseSourceCurseforge: {
+		id: 'app.browse.source.curseforge',
+		defaultMessage: 'CurseForge',
+	},
+	curseforgeWip: {
+		id: 'app.browse.source.curseforge-wip',
+		defaultMessage: 'CurseForge support is a work in progress',
+	},
 })
 
 const breadcrumbs = useBreadcrumbs()
@@ -482,6 +495,7 @@ onBeforeRouteLeave(() => {
 })
 
 const projectType = ref<ProjectType>(route.params.projectType as ProjectType)
+const browseSource = ref<'modrinth' | 'curseforge'>('modrinth')
 
 function resetInstanceContext() {
 	if (!instance.value) return
@@ -705,6 +719,17 @@ async function chooseInstanceInstallVersion(
 	return { versionId: selectedVersion.id }
 }
 
+function mapLoaderToCurseForge(loader: string): string | null {
+	const MAP: Record<string, string> = {
+		fabric: 'Fabric',
+		forge: 'Forge',
+		quilt: 'Quilt',
+		neoforge: 'NeoForge',
+		liteloader: 'LiteLoader',
+	}
+	return MAP[loader?.toLowerCase()] ?? null
+}
+
 function getCardActions(
 	result: Labrinth.Search.v2.ResultSearchProject | Labrinth.Search.v3.ResultSearchProject,
 	currentProjectType: string,
@@ -807,6 +832,76 @@ function getCardActions(
 		]
 	}
 
+	// CurseForge install — direct install via cf_install_file, bypassing
+	// the complex Modrinth dependency resolution pipeline.
+	const cfModId = (projectResult as unknown as Record<string, unknown>)._cf_mod_id
+	if (cfModId != null) {
+		return [
+			{
+				key: 'install',
+				label: formatMessage(
+					isInstalling
+						? messages.installingToServer
+						: isInstalled
+							? commonMessages.installedLabel
+							: commonMessages.installButton,
+				),
+				icon: isInstalling ? SpinnerIcon : isInstalled ? CheckIcon : PlusIcon,
+				iconClass: isInstalling ? 'animate-spin' : undefined,
+				disabled: isInstalled || isInstalling || !instance.value,
+				color: 'brand',
+				type: 'outlined',
+				onClick: async () => {
+					if (!instance.value) return
+					setProjectInstalling(projectResult.project_id!, true)
+					try {
+						const gameVersion = instance.value.game_version
+						const loader = instance.value.loader
+
+						// Map Modrinth loader name to CurseForge loader name
+						const cfLoader = mapLoaderToCurseForge(loader)
+
+						const files = await cfGetModFiles(Number(cfModId), gameVersion, cfLoader)
+
+						// Prefer release files (type 1), fall back to any
+						let bestFile = files.find(
+							(f: { release_type: number }) => f.release_type === 1,
+						)
+						if (!bestFile) bestFile = files[0]
+						if (!bestFile) {
+							throw new Error('No compatible files available for this mod')
+						}
+
+						const downloadUrl = await cfGetFileDownloadUrl(
+							Number(cfModId),
+							bestFile.id,
+						)
+						await cfInstallFile(
+							instance.value.id,
+							Number(cfModId),
+							bestFile.id,
+							bestFile.file_name,
+							downloadUrl,
+							currentProjectType,
+							(projectResult.title ||
+								projectResult.name ||
+								'') as string,
+							(projectResult.icon_url as string) || null,
+						)
+
+						onSearchResultInstalled(
+							projectResult.project_id || String(cfModId),
+						)
+					} catch (err) {
+						handleError(err)
+					} finally {
+						setProjectInstalling(projectResult.project_id!, false)
+					}
+				},
+			},
+		]
+	}
+
 	const isModpack = projectResult.project_types?.includes('modpack')
 	const shouldUseInstallIcon = !!instance.value || isModpack
 
@@ -888,13 +983,75 @@ function onSearchResultsInstalled(ids: string[]) {
 }
 
 async function search(requestParams: string) {
-	debugLog('searching', { requestParams })
+	debugLog('searching', { requestParams, source: browseSource.value })
 	const isServer = projectType.value === 'server'
 
-	// Modrinth does not host world saves. Return an empty result set so the
-	// UI shows the worldsModrinthEmpty notice (rendered above the layout).
-	if (projectType.value === 'world') {
+	// Modrinth does not host world saves; CurseForge does.
+	if (projectType.value === 'world' && browseSource.value !== 'curseforge') {
 		return { projectHits: [], serverHits: [], total_hits: 0, per_page: 20 }
+	}
+
+	// CurseForge search
+	if (browseSource.value === 'curseforge') {
+		let offset = 0
+		let limit = 20
+		try {
+			const searchStr = requestParams.startsWith('?')
+				? requestParams.slice(1)
+				: requestParams
+			const urlParams = new URLSearchParams(searchStr)
+			offset = parseInt(urlParams.get('offset') || '0', 10)
+			limit = parseInt(urlParams.get('limit') || '20', 10)
+		} catch {
+			// Fallback to defaults
+		}
+		const page = Math.floor(offset / limit)
+
+		const gameVersionFilter = searchState.currentFilters.value.find(
+			(f: { type: string }) => f.type === 'game_version',
+		)
+		const loaderFilter = searchState.currentFilters.value.find(
+			(f: { type: string }) => f.type === 'mod_loader',
+		)
+
+		try {
+			const result = await cfSearch({
+				projectType: projectType.value,
+				searchFilter: searchState.query.value || null,
+				gameVersion: gameVersionFilter?.option ?? null,
+				loader: loaderFilter?.option ?? null,
+				page,
+				pageSize: limit,
+			})
+
+			const hits = (result.result.hits || []).map((hit: Record<string, unknown>) => {
+				const mapped = {
+					...hit,
+					title: hit.name,
+					description: hit.summary,
+				} as unknown as Labrinth.Search.v2.ResultSearchProject & { installed?: boolean }
+
+				if (instance.value || isServerContext.value) {
+					const installedIds = instance.value
+						? new Set([...newlyInstalled.value, ...(installedProjectIds.value ?? [])])
+						: serverContentProjectIds.value
+					mapped.installed = installedIds.has(String(hit.project_id ?? ''))
+				}
+
+				return mapped
+			})
+
+			return {
+				projectHits: hits,
+				serverHits: [],
+				total_hits: result.result.total_hits,
+				per_page: result.result.limit,
+			}
+		} catch (e) {
+			debugLog('curseforge search failed', e)
+			handleError(e as Error)
+			return { projectHits: [], serverHits: [], total_hits: 0, per_page: 20 }
+		}
 	}
 
 	debugLog('searching v3', requestParams)
@@ -989,7 +1146,10 @@ const searchState = useBrowseSearch({
 })
 
 // Modrinth has no world saves; show a notice instead of empty results.
-const showWorldsModrinthEmpty = computed(() => projectType.value === 'world')
+// CurseForge hosts worlds, so the notice only applies when browsing Modrinth.
+const showWorldsModrinthEmpty = computed(
+	() => projectType.value === 'world' && browseSource.value !== 'curseforge',
+)
 
 watch(
 	[
@@ -1025,6 +1185,11 @@ if (instance.value?.game_version) {
 }
 
 void searchState.refreshSearch()
+
+// Re-search when the source (Modrinth/CurseForge) changes
+watch(browseSource, () => {
+	void searchState.refreshSearch()
+})
 
 type UnlistenFn = () => void
 
@@ -1140,6 +1305,33 @@ provideBrowseManager({
 
 <template>
 	<div class="flex flex-col gap-3 p-6">
+		<!-- Source switcher: Modrinth / CurseForge -->
+		<div
+			v-if="projectType !== 'server' && !isServerContext && !isFromWorlds"
+			class="flex items-center gap-3"
+		>
+			<span class="text-sm font-medium text-secondary">{{ 'Source:' }}</span>
+			<div class="flex rounded-lg bg-surface-2 p-0.5">
+				<button
+					class="rounded-md px-4 py-1.5 text-sm font-medium leading-5 transition-all duration-150"
+					:class="
+						browseSource === 'modrinth'
+							? 'bg-color-brand text-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]'
+							: 'text-secondary hover:text-contrast hover:bg-surface-4'
+					"
+					@click="browseSource = 'modrinth'"
+				>
+					{{ formatMessage(messages.browseSourceModrinth) }}
+				</button>
+				<button
+					class="cursor-not-allowed rounded-md px-4 py-1.5 text-sm font-medium leading-5 text-tertiary opacity-50"
+					disabled
+					v-tooltip="formatMessage(messages.curseforgeWip)"
+				>
+					{{ formatMessage(messages.browseSourceCurseforge) }}
+				</button>
+			</div>
+		</div>
 		<BrowsePageLayout>
 			<template #after>
 				<ContextMenu ref="contextMenuRef" @option-clicked="handleOptionsClick">

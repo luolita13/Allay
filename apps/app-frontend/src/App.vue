@@ -73,6 +73,7 @@ import ModrinthAppLogo from '@/assets/modrinth_app.svg?component'
 import AccountsCard from '@/components/ui/AccountsCard.vue'
 import AppActionBar from '@/components/ui/AppActionBar.vue'
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
+import CrashDiagnosisModal from '@/components/ui/modal/CrashDiagnosisModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import FriendsList from '@/components/ui/friends/FriendsList.vue'
 import AddServerToInstanceModal from '@/components/ui/install_flow/AddServerToInstanceModal.vue'
@@ -261,6 +262,7 @@ provideModalBehavior({
 
 const downloadManager = createDownloadManager(handleError)
 provideDownloadManager(downloadManager)
+provide('showCrashDiagnosis', (instanceId) => crashDiagnosisModal.value?.show(instanceId))
 
 const {
 	installationModal,
@@ -714,6 +716,7 @@ watch(stateInitialized, (ready) => {
 const error = useError()
 const errorModal = ref()
 const minecraftAuthErrorModal = ref()
+const crashDiagnosisModal = ref()
 
 const contentInstall = createContentInstall({ router, handleError })
 provideContentInstall(contentInstall)
@@ -839,6 +842,13 @@ const hasPlus = computed(
 		!!credentials.value?.user &&
 		(hasMidasBadge(credentials.value.user) ||
 			hasActivePride26Midas(authenticatedModrinthUser.value?.campaigns?.pride_26)),
+)
+
+// When nothing renders below the AccountsCard (FriendsList disabled,
+// Pride event ended, News/Ads disabled), hide the divider border and
+// the gradient overlay to avoid an empty split sidebar.
+const hasContentBelowAccounts = computed(
+	() => !MODRINTH_LOGIN_DISABLED || prideFundraiserEnabled.value,
 )
 
 const showAd = computed(
@@ -1507,33 +1517,29 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 </script>
 
 <template>
-	<div
-		class="app-root"
-		:class="{ 'has-background-image': !!themeStore.backgroundImagePath }"
-	>
 		<div
-			v-if="backgroundUrl"
-			class="app-global-background"
+			class="app-root"
+			:class="{ 'has-background-image': !!themeStore.backgroundImagePath }"
 		>
-			<img
-				:src="backgroundUrl"
-				class="app-global-background-image"
-			/>
 			<div
-				class="app-global-background-overlay"
+				v-if="stateInitialized && backgroundUrl"
+				class="launcher-background"
 				:style="{
-					backdropFilter: `blur(${themeStore.backgroundBlur}px)`,
+					backgroundImage: `url(&quot;${backgroundUrl}&quot;)`,
+					filter: `blur(${themeStore.backgroundBlur}px)`,
 					opacity: themeStore.backgroundOpacity / 100,
 				}"
 			/>
-		</div>
-		<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
-		<div id="teleports"></div>
-		<div
-			v-if="stateInitialized"
-			class="app-grid-layout relative"
-			:class="{ 'disable-advanced-rendering': !themeStore.advancedRendering }"
-		>
+			<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
+			<div id="teleports"></div>
+			<div
+				v-if="stateInitialized"
+				class="app-grid-layout relative"
+				:class="{
+					'disable-advanced-rendering': !themeStore.advancedRendering,
+					'has-custom-background': !!themeStore.backgroundImagePath,
+				}"
+			>
 		<Transition name="fade">
 			<div
 				v-if="restarting"
@@ -1550,7 +1556,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			</div>
 		</Transition>
 		<Suspense>
-			<AppSettingsModal ref="settingsModal" />
+			<AppSettingsModal ref="settingsModalRef" />
 		</Suspense>
 		<Suspense>
 			<AuthGrantFlowWaitModal ref="modrinthLoginFlowWaitModal" @flow-cancel="cancelLogin" />
@@ -1634,7 +1640,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			<div class="flex flex-grow"></div>
 			<NavButton
 				v-tooltip.right="formatMessage(commonMessages.settingsLabel)"
-				:to="() => $refs.settingsModal.show()"
+				@click="themeStore.settingsAsPage ? router.push('/settings') : $refs.settingsModalRef.show()"
 			>
 				<SettingsIcon />
 			</NavButton>
@@ -1716,13 +1722,14 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		</div>
 	</div>
 	<div
-		v-if="stateInitialized"
-		class="app-contents"
-		:class="{
-			'sidebar-enabled': sidebarVisible,
-			'disable-advanced-rendering': !themeStore.advancedRendering,
-		}"
-	>
+			v-if="stateInitialized"
+			class="app-contents"
+			:class="{
+				'sidebar-enabled': sidebarVisible,
+				'disable-advanced-rendering': !themeStore.advancedRendering,
+				'has-custom-background': !!themeStore.backgroundImagePath,
+			}"
+		>
 		<div class="app-viewport flex-grow router-view">
 			<transition name="popup-survey">
 				<div
@@ -1789,22 +1796,27 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				{{ formatMessage(messages.authUnreachableBody) }}
 			</Admonition>
 			<RouterView v-slot="{ Component }">
-				<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
-					<component :is="Component" />
-					<template #fallback>
-						<div class="flex items-center justify-center h-full w-full">
-							<div class="flex flex-col items-center gap-3">
-								<div class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"></div>
-								<span class="text-sm text-[--color-text-secondary]">Loading...</span>
-							</div>
-						</div>
-					</template>
-				</Suspense>
-			</RouterView>
+					<Transition name="page-fade" mode="out-in">
+						<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
+							<component :is="Component" />
+							<template #fallback>
+								<div class="flex items-center justify-center h-full w-full">
+									<div class="flex flex-col items-center gap-3">
+										<div class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"></div>
+										<span class="text-sm text-[--color-text-secondary]">Loading...</span>
+									</div>
+								</div>
+							</template>
+						</Suspense>
+					</Transition>
+				</RouterView>
 		</div>
 		<div
 			class="app-sidebar mt-px shrink-0 flex flex-col border-0 border-l-[1px] border-[--brand-gradient-border] border-solid"
-			:class="{ 'has-plus': hasPlus }"
+			:class="{
+				'has-plus': hasPlus,
+				'sidebar-empty-below': !hasContentBelowAccounts,
+			}"
 		>
 			<div
 				v-overlay-scrollbars="sidebarOverlayScrollbarsOptions"
@@ -1814,7 +1826,10 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			>
 				<div id="sidebar-teleport-target" class="sidebar-teleport-content"></div>
 				<div class="sidebar-default-content" :class="{ 'sidebar-enabled': sidebarVisible }">
-					<div class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid">
+					<div
+						class="p-4"
+						:class="{ 'border-0 border-b-[1px] border-[--brand-gradient-border] border-solid': hasContentBelowAccounts }"
+					>
 						<h3 class="text-base text-primary font-medium m-0">{{ formatMessage(messages.sidebarPlayingAs) }}</h3>
 						<suspense>
 							<AccountsCard ref="accounts" />
@@ -1862,7 +1877,8 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	<NotificationPanel :has-sidebar="sidebarVisible" />
 	<PopupNotificationPanel :has-sidebar="sidebarVisible" />
 	<ErrorModal ref="errorModal" />
-	<MinecraftAuthErrorModal ref="minecraftAuthErrorModal" />
+		<CrashDiagnosisModal ref="crashDiagnosisModal" />
+		<MinecraftAuthErrorModal ref="minecraftAuthErrorModal" />
 	<ContentInstallModal
 		ref="modInstallModal"
 		:instances="contentInstallInstances"
@@ -1926,53 +1942,39 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	--right-bar-width: 300px;
 }
 
-.app-global-background {
-	position: fixed;
-	inset: 0;
-	z-index: -1;
-	pointer-events: none;
-	user-select: none;
-}
+.launcher-background {
+		position: fixed;
+		inset: -3rem;
+		z-index: 0;
+		pointer-events: none;
+		background-position: center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		transition:
+			filter 180ms ease,
+			opacity 180ms ease;
+	}
 
-.app-global-background-image {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.app-global-background-overlay {
-	position: absolute;
-	inset: 0;
-	background-color: rgba(0, 0, 0, 0.5);
-}
-
-.app-grid-layout {
-	display: grid;
-	grid-template: 'status status' 'nav dummy';
-	grid-template-columns: auto 1fr;
-	grid-template-rows: auto 1fr;
-	position: relative;
-	//z-index: 0;
-	background-color: var(--color-raised-bg);
-	height: 100vh;
-}
-
-.app-root.has-background-image {
 	.app-grid-layout {
-		background-color: color-mix(in srgb, var(--color-raised-bg), transparent 50%);
+		display: grid;
+		grid-template: 'status status' 'nav dummy';
+		grid-template-columns: auto 1fr;
+		grid-template-rows: auto 1fr;
+		position: relative;
+		//z-index: 0;
+		background-color: var(--color-raised-bg);
+		height: 100vh;
 	}
 
-	.app-grid-navbar,
-	.app-grid-statusbar {
-		background-color: color-mix(in srgb, var(--color-bg-raised), transparent 50%);
-	}
+	.app-grid-layout.has-custom-background {
+		background-color: transparent;
 
-	.app-contents {
-		background-color: color-mix(in srgb, var(--color-bg), transparent 50%);
+		.app-grid-navbar,
+		.app-grid-statusbar {
+			background-color: color-mix(in srgb, var(--color-raised-bg) 82%, transparent) !important;
+			backdrop-filter: blur(18px) saturate(120%);
+		}
 	}
-}
 
 .app-grid-navbar {
 	grid-area: nav;
@@ -1992,29 +1994,44 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 }
 
 .app-contents {
-	position: absolute;
-	z-index: 1;
-	left: var(--left-bar-width);
-	top: var(--top-bar-height);
-	right: 0;
-	bottom: 0;
-	height: calc(100vh - var(--top-bar-height));
-	background-color: var(--color-bg);
-	border-top-left-radius: var(--radius-xl);
+		position: absolute;
+		z-index: 1;
+		left: var(--left-bar-width);
+		top: var(--top-bar-height);
+		right: 0;
+		bottom: 0;
+		height: calc(100vh - var(--top-bar-height));
+		background-color: var(--color-bg);
+		border-top-left-radius: var(--radius-xl);
+		overflow: hidden;
 
-	display: grid;
-	grid-template-columns: 1fr 0px;
-	// transition: grid-template-columns 0.4s ease-in-out;
+		display: grid;
+		grid-template-columns: 1fr 0px;
+		// transition: grid-template-columns 0.4s ease-in-out;
 
-	&.sidebar-enabled {
-		grid-template-columns: 1fr 300px;
+		&.sidebar-enabled {
+			grid-template-columns: 1fr 300px;
+		}
+
+		&.has-custom-background {
+			background-color: color-mix(in srgb, var(--color-bg) 76%, transparent);
+			border-top-left-radius: 0;
+
+			&::before {
+				border: none;
+				box-shadow: none;
+			}
+		}
 	}
-}
 
 .loading-indicator-container {
-	border-top-left-radius: var(--radius-xl);
-	overflow: hidden;
-}
+		border-top-left-radius: var(--radius-xl);
+		overflow: hidden;
+
+		.has-custom-background & {
+			border-top-left-radius: 0;
+		}
+	}
 
 .app-sidebar {
 	overflow: visible;
@@ -2040,7 +2057,8 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 	pointer-events: none;
 }
 
-.app-sidebar.has-plus::after {
+.app-sidebar.has-plus::after,
+.app-sidebar.sidebar-empty-below::after {
 	display: none;
 }
 
@@ -2179,6 +2197,19 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 
 	.fade-enter-from {
 		opacity: 0;
+	}
+
+	.page-fade-enter-active,
+	.page-fade-leave-active {
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.page-fade-enter-from,
+	.page-fade-leave-to {
+		opacity: 0;
+		transform: translateY(0.5rem);
 	}
 }
 </style>

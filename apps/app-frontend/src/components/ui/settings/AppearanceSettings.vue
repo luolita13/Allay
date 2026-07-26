@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckIcon, ImageIcon, TrashIcon, UploadIcon } from '@modrinth/assets'
-import { ButtonStyled, Combobox, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
+import { ButtonStyled, defineMessages, Slider, ThemeSelector, Toggle, useVIntl } from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
 import { computed, ref, watch } from 'vue'
 
@@ -10,6 +10,7 @@ import { getOS } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
 import type { AccentColor, ColorTheme } from '@/store/theme.ts'
 import { ACCENT_COLOR_OPTIONS } from '@/store/theme.ts'
+import ThemePackManager from '@/components/ui/settings/ThemePackManager.vue'
 
 const themeStore = useTheming()
 const { formatMessage } = useVIntl()
@@ -161,33 +162,23 @@ const messages = defineMessages({
 		id: 'app.appearance-settings.native-decorations.description',
 		defaultMessage: 'Use system window frame (app restart required).',
 	},
-	minimizeLauncherTitle: {
-		id: 'app.appearance-settings.minimize-launcher.title',
-		defaultMessage: 'Launcher visibility',
+	imageViewerTitle: {
+		id: 'app.appearance-settings.image-viewer.title',
+		defaultMessage: 'In-app image viewer',
 	},
-	minimizeLauncherDescription: {
-		id: 'app.appearance-settings.minimize-launcher.description',
-		defaultMessage: 'Behavior of the launcher window when a Minecraft process starts.',
+	imageViewerDescription: {
+		id: 'app.appearance-settings.image-viewer.description',
+		defaultMessage:
+			'Open screenshots and images inside the launcher instead of the system default image viewer.',
 	},
-	defaultLandingPageTitle: {
-		id: 'app.appearance-settings.default-landing-page.title',
-		defaultMessage: 'Default landing page',
+	settingsAsPageTitle: {
+		id: 'app.appearance-settings.settings-as-page.title',
+		defaultMessage: 'Settings as page',
 	},
-	defaultLandingPageDescription: {
-		id: 'app.appearance-settings.default-landing-page.description',
-		defaultMessage: 'Change the page to which the launcher opens on.',
-	},
-	defaultLandingPageHome: {
-		id: 'app.appearance-settings.default-landing-page.home',
-		defaultMessage: 'Home',
-	},
-	defaultLandingPageLibrary: {
-		id: 'app.appearance-settings.default-landing-page.library',
-		defaultMessage: 'Library',
-	},
-	selectOption: {
-		id: 'app.appearance-settings.select-option',
-		defaultMessage: 'Select an option',
+	settingsAsPageDescription: {
+		id: 'app.appearance-settings.settings-as-page.description',
+		defaultMessage:
+			'Display the settings panel as a full page instead of a modal dialog.',
 	},
 	toggleSidebarTitle: {
 		id: 'app.appearance-settings.toggle-sidebar.title',
@@ -359,6 +350,9 @@ watch(
 		</div>
 	</div>
 
+	<!-- Theme pack manager: install / activate / export / delete reusable theme packs -->
+	<ThemePackManager />
+
 	<div class="mt-6 flex items-center justify-between">
 		<div>
 			<h2 class="m-0 text-lg font-semibold text-contrast">
@@ -391,29 +385,6 @@ watch(
 		<Toggle id="native-decorations" v-model="settings.native_decorations" />
 	</div>
 
-	<div class="mt-6 flex items-center justify-between gap-4">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.minimizeLauncherTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.minimizeLauncherDescription) }}</p>
-		</div>
-		<Combobox
-			id="launcher-visibility"
-			:model-value="String(settings.launcher_visibility)"
-			name="Launcher visibility dropdown"
-			class="max-w-56"
-			:options="[
-				{ value: '5', label: 'Keep open' },
-				{ value: '4', label: 'Minimize' },
-				{ value: '3', label: 'Hide, reopen on exit' },
-				{ value: '2', label: 'Hide, exit on game exit' },
-				{ value: '0', label: 'Exit immediately' },
-			]"
-			@update:model-value="(v: string) => settings.launcher_visibility = Number(v)"
-		/>
-	</div>
-
 	<div class="mt-6 flex items-center justify-between">
 		<div>
 			<h2 class="m-0 text-lg font-semibold text-contrast">
@@ -436,32 +407,6 @@ watch(
 	<div class="mt-6 flex items-center justify-between">
 		<div>
 			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.defaultLandingPageTitle) }}
-			</h2>
-			<p class="m-0 mt-1">{{ formatMessage(messages.defaultLandingPageDescription) }}</p>
-		</div>
-		<Combobox
-			id="opening-page"
-			v-model="settings.default_page"
-			name="Opening page dropdown"
-			class="max-w-40"
-			:options="[
-				{
-					value: 'Home',
-					label: formatMessage(messages.defaultLandingPageHome),
-				},
-				{
-					value: 'Library',
-					label: formatMessage(messages.defaultLandingPageLibrary),
-				},
-			]"
-			:display-value="settings.default_page ?? 'Select an option'"
-		/>
-	</div>
-
-	<div class="mt-6 flex items-center justify-between">
-		<div>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
 				{{ formatMessage(messages.toggleSidebarTitle) }}
 			</h2>
 			<p class="m-0 mt-1">{{ formatMessage(messages.toggleSidebarDescription) }}</p>
@@ -475,6 +420,34 @@ watch(
 					themeStore.toggleSidebar = settings.toggle_sidebar
 				}
 			"
+		/>
+	</div>
+
+	<div class="mt-6 flex items-center justify-between gap-4">
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.imageViewerTitle) }}
+			</h2>
+			<p class="m-0 mt-1">{{ formatMessage(messages.imageViewerDescription) }}</p>
+		</div>
+		<Toggle
+			id="app-image-viewer"
+			:model-value="themeStore.useAppImageViewer"
+			@update:model-value="(e: boolean) => themeStore.setUseAppImageViewer(!!e)"
+		/>
+	</div>
+
+	<div class="mt-6 flex items-center justify-between gap-4">
+		<div>
+			<h2 class="m-0 text-lg font-semibold text-contrast">
+				{{ formatMessage(messages.settingsAsPageTitle) }}
+			</h2>
+			<p class="m-0 mt-1">{{ formatMessage(messages.settingsAsPageDescription) }}</p>
+		</div>
+		<Toggle
+			id="settings-as-page"
+			:model-value="themeStore.settingsAsPage"
+			@update:model-value="(e: boolean) => themeStore.setSettingsAsPage(!!e)"
 		/>
 	</div>
 </template>

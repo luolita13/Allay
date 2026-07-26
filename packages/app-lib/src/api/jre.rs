@@ -14,6 +14,8 @@ use serde::Deserialize;
 use std::future::Future;
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use sysinfo::{MemoryRefreshKind, RefreshKind};
 
 use crate::util::io;
@@ -173,22 +175,26 @@ async fn auto_install_java_inner(
         )
         .await?;
         let file = if reporter.is_some() {
-            let mut last_reported_bytes = 0_u64;
+            let last_reported_bytes = AtomicU64::new(0);
             let download_reporter = reporter.clone();
-            let mut progress = move |current: u64,
-                                     total: u64|
+            let progress = move |current: u64,
+                                 total: u64|
                   -> Pin<
                 Box<dyn Future<Output = crate::Result<()>> + Send>,
             > {
                 let min_delta =
                     (total / 200).max(JAVA_DOWNLOAD_PROGRESS_MIN_BYTES);
+                let previous =
+                    last_reported_bytes.swap(current, Ordering::Relaxed);
                 if current < total
-                    && current.saturating_sub(last_reported_bytes) < min_delta
+                    && current.saturating_sub(previous) < min_delta
                 {
+                    // Put the old value back so we don't permanently advance
+                    // the threshold on throttled updates.
+                    last_reported_bytes.store(previous, Ordering::Relaxed);
                     return Box::pin(async { Ok(()) });
                 }
 
-                last_reported_bytes = current;
                 let reporter = download_reporter.clone();
                 Box::pin(async move {
                     update_java_install_progress(
@@ -205,7 +211,18 @@ async fn auto_install_java_inner(
                 })
             };
 
-            fetch_advanced_with_progress(
+            // Emit Java file download events for the download details UI
+            if let Some(reporter) = reporter.as_ref() {
+                let _ = reporter
+                    .record_event(crate::install::InstallJobEventKind::ContentFileDownloadAttempt {
+                        path: format!("Java {java_version} runtime"),
+                        bytes_total: None,
+                        attempt: 1,
+                        max_attempts: 1,
+                    })
+                    .await;
+            }
+            let result = fetch_advanced_with_progress(
                 Method::GET,
                 &download.download_url,
                 None,
@@ -216,9 +233,20 @@ async fn auto_install_java_inner(
                 None,
                 &state.fetch_semaphore,
                 &state.pool,
-                Some(&mut progress as &mut FetchProgressFn<'_>),
+                Some(Arc::new(progress) as Arc<FetchProgressFn>),
             )
-            .await?
+            .await?;
+
+            // Emit Java download completion event
+            if let Some(reporter) = reporter.as_ref() {
+                let _ = reporter
+                    .record_event(crate::install::InstallJobEventKind::ContentFileCompleted {
+                        path: format!("Java {java_version} runtime"),
+                        bytes: result.len() as u64,
+                    })
+                    .await;
+            }
+            result
         } else {
             fetch_advanced(
                 Method::GET,

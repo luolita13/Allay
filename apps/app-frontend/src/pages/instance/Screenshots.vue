@@ -75,6 +75,7 @@
 			:description="formatMessage(messages.confirmDelete, { name: selected?.name ?? '' })"
 			@proceed="doDeleteScreenshot"
 		/>
+		<ImageViewer ref="imageViewer" :images="filteredScreenshots.map(s => ({ path: s.path, name: s.name, url: s.url }))" />
 	</div>
 </template>
 
@@ -105,9 +106,11 @@ import { computed, onMounted, ref, useTemplateRef } from 'vue'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
 import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
+import ImageViewer from '@/components/ui/ImageViewer.vue'
 import { get_full_path } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'
 import { openPath } from '@/helpers/utils.js'
+import { useTheming } from '@/store/theme'
 
 dayjs.extend(relativeTime)
 
@@ -159,6 +162,8 @@ const instance = computed(() => props.instance)
 const searchQuery = ref('')
 const loading = ref(true)
 const screenshots = ref<Screenshot[]>([])
+const imageViewer = ref<InstanceType<typeof ImageViewer> | null>(null)
+const themeStore = useTheming()
 const contextMenu = ref<InstanceType<typeof ContextMenu>>()
 const selected = ref<Screenshot | null>(null)
 const deleteConfirmModal = useTemplateRef('deleteConfirmModal')
@@ -233,6 +238,11 @@ async function openFolder() {
 }
 
 async function openScreenshot(shot: Screenshot) {
+	if (themeStore.useAppImageViewer) {
+		const idx = screenshots.value.findIndex((s) => s.path === shot.path)
+		imageViewer.value?.open(idx >= 0 ? idx : 0)
+		return
+	}
 	await openPath(shot.path).catch(handleError)
 }
 

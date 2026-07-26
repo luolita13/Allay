@@ -115,6 +115,20 @@
 		"friends:default",
 		"worlds:default",
 		"curseforge:default",
+		"theme-pack:allow-theme-pack-install-from-path",
+		"theme-pack:allow-theme-pack-uninstall",
+		"theme-pack:allow-theme-pack-list-installed",
+		"theme-pack:allow-theme-pack-get",
+		"theme-pack:allow-theme-pack-export-to-zip",
+		"theme-pack:allow-theme-pack-get-themes-dir-path",
+		"crash-diagnosis:allow-crash-diagnosis-diagnose-latest",
+		"crash-diagnosis:allow-crash-diagnosis-diagnose-raw-log",
+		"crash-diagnosis:allow-crash-diagnosis-list-rules",
+		"crash-diagnosis:allow-crash-diagnosis-list-severities",
+		"crash-diagnosis:allow-crash-diagnosis-list-auto-fix-kinds",
+		"crash-diagnosis:allow-crash-diagnosis-export-report",
+		"crash-diagnosis:allow-crash-diagnosis-apply-auto-fix",
+		"crash-diagnosis:allow-crash-diagnosis-cleanup-logs",
 		"link:allow-link-get-active-username",
 		"link:allow-link-create-lobby",
 		"link:allow-link-join-lobby",
@@ -128,6 +142,7 @@
 		"link:allow-link-check-mod-compat",
 		"link:allow-link-get-host-mods",
 		"link:allow-link-is-minecraft-running",
-		"link:allow-link-update-mc-port"
+		"link:allow-link-update-mc-port",
+		"translation:default"
 	]
 }

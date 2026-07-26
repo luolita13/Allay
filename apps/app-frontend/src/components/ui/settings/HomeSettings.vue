@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineMessages, Toggle, useVIntl } from '@modrinth/ui'
+import { Combobox, defineMessages, Toggle, useVIntl } from '@modrinth/ui'
 import { ref, watch } from 'vue'
 
 import { get as getSettings, set as setSettings } from '@/helpers/settings.ts'
@@ -76,6 +76,22 @@ const messages = defineMessages({
 		id: 'app.home-settings.random-mods.description',
 		defaultMessage: 'Shows a random mod recommendation each time you open Home.',
 	},
+	defaultLandingPageTitle: {
+		id: 'app.home-settings.default-landing-page.title',
+		defaultMessage: 'Default landing page',
+	},
+	defaultLandingPageDescription: {
+		id: 'app.home-settings.default-landing-page.description',
+		defaultMessage: 'Change the page to which the launcher opens on.',
+	},
+	defaultLandingPageHome: {
+		id: 'app.home-settings.default-landing-page.home',
+		defaultMessage: 'Home',
+	},
+	defaultLandingPageLibrary: {
+		id: 'app.home-settings.default-landing-page.library',
+		defaultMessage: 'Library',
+	},
 })
 
 const sections: { flag: FeatureFlag; title: string; description: string }[] = [
@@ -151,6 +167,34 @@ watch(
 			<Toggle
 				:model-value="themeStore.getFeatureFlag(section.flag)"
 				@update:model-value="() => setFeatureFlag(section.flag, !themeStore.getFeatureFlag(section.flag))"
+			/>
+		</div>
+
+		<hr class="my-6 bg-button-border border-none h-[1px]" />
+
+		<div class="mt-6 flex items-center justify-between">
+			<div>
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.defaultLandingPageTitle) }}
+				</h2>
+				<p class="m-0 mt-1">{{ formatMessage(messages.defaultLandingPageDescription) }}</p>
+			</div>
+			<Combobox
+				id="opening-page"
+				v-model="settings.default_page"
+				name="Opening page dropdown"
+				class="max-w-40"
+				:options="[
+					{
+						value: 'Home',
+						label: formatMessage(messages.defaultLandingPageHome),
+					},
+					{
+						value: 'Library',
+						label: formatMessage(messages.defaultLandingPageLibrary),
+					},
+				]"
+				:display-value="settings.default_page ?? 'Select an option'"
 			/>
 		</div>
 	</div>

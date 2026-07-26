@@ -2,6 +2,7 @@ package com.modrinth.theseus.agent;
 
 import com.modrinth.theseus.agent.transformers.ClassTransformer;
 import com.modrinth.theseus.agent.transformers.MinecraftTransformer;
+import com.modrinth.theseus.agent.transformers.WindowTitleTransformer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.instrument.Instrumentation;
@@ -49,6 +50,7 @@ public final class TheseusAgent {
 
         final Map<String, ClassTransformer> transformers = new HashMap<>();
         transformers.put("net/minecraft/client/Minecraft", new MinecraftTransformer());
+        transformers.put("com/mojang/blaze3d/platform/Window", new WindowTitleTransformer());
 
         instrumentation.addTransformer((loader, className, classBeingRedefined, protectionDomain, classData) -> {
             final ClassTransformer transformer = transformers.get(className);

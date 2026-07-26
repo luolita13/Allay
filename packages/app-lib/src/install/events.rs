@@ -1,7 +1,7 @@
 use super::control::JobGuard;
 use super::model::{
     InstallJobEventKind, InstallJobSnapshot, InstallJobState,
-    InstallPhaseDetails, InstallPhaseId, InstallProgress,
+    InstallJobStatus, InstallPhaseDetails, InstallPhaseId, InstallProgress,
 };
 use super::store;
 use std::sync::Arc;
@@ -60,27 +60,84 @@ impl InstallProgressReporter {
         self.check_cancel().await?;
 
         let app_state = crate::State::get().await?;
-        let mut state = self.state.lock().await;
-        // Use set_progress which automatically records PhaseStarted events
-        state.set_progress(phase, progress, details);
 
-        let record =
+        // Build snapshot from in-memory state while holding the lock briefly,
+        // then emit it to the frontend immediately (before the DB write) so
+        // progress / speed updates are visible in real-time.
+        let snapshot = {
+            let mut state = self.state.lock().await;
+            state.set_progress(phase, progress, details);
+            self.build_snapshot(&state).await
+        };
+        // Ignore emit errors — the Tauri event is best-effort for UI,
+        // but the DB persist is what matters for correctness.
+        let _ = emit_install_job(&snapshot).await;
+
+        // Persist to DB after the emit — the DB write is critical for
+        // durability but should not delay the frontend update.
+        let state = self.state.lock().await;
+        let _record =
             store::update_state(self.job_id, &state, &app_state).await?;
-        emit_install_job(&record.snapshot()).await
+        Ok(())
     }
 
     /// Record an event into the job state and persist + emit.
+    /// Emits the snapshot to the frontend BEFORE writing to the DB so
+    /// per-file status updates appear in real-time during downloads.
     pub async fn record_event(
         &self,
         kind: InstallJobEventKind,
     ) -> crate::Result<()> {
         let app_state = crate::State::get().await?;
-        let mut state = self.state.lock().await;
-        state.record_event(kind);
 
-        let record =
+        // Build snapshot from in-memory state, emit immediately
+        let snapshot = {
+            let mut state = self.state.lock().await;
+            state.record_event(kind);
+            self.build_snapshot(&state).await
+        };
+        let _ = emit_install_job(&snapshot).await;
+
+        // Persist to DB after emit
+        let state = self.state.lock().await;
+        let _record =
             store::update_state(self.job_id, &state, &app_state).await?;
-        emit_install_job(&record.snapshot()).await
+        Ok(())
+    }
+
+    /// Build an InstallJobSnapshot from in-memory state without a DB read.
+    /// This allows emitting progress events before the DB write completes.
+    /// Timestamps and instance_id are approximate — the DB-backed record
+    /// provides authoritative values for history/persistence.
+    async fn build_snapshot(
+        &self,
+        state: &InstallJobState,
+    ) -> InstallJobSnapshot {
+        let now = chrono::Utc::now();
+
+        InstallJobSnapshot {
+            job_id: self.job_id,
+            // Instance ID is not stored in state; the frontend will
+            // use the value from the initial DB-backed snapshot.
+            instance_id: None,
+            instance_deleted: state.instance_deleted(),
+            kind: state.request.kind(),
+            // During progress updates the job is always running.
+            status: InstallJobStatus::Running,
+            provider: state.provider(),
+            target: state.target.clone(),
+            phase: state.progress.phase,
+            progress: state.progress.progress.clone(),
+            details: state.progress.details.clone(),
+            display: state.display.clone(),
+            error: state.error.clone(),
+            rollback_error: state.rollback_error.clone(),
+            created: now,
+            modified: now,
+            finished: None,
+            summary: state.download_summary(),
+            items: state.download_items(),
+        }
     }
 }
 

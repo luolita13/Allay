@@ -156,6 +156,14 @@ const messages = defineMessages({
 		id: 'app.default-instance.custom-info.hint',
 		defaultMessage: "Displayed in the game's bottom-left corner and F3 debug screen.",
 	},
+	minimizeLauncherTitle: {
+		id: 'app.default-instance.minimize-launcher.title',
+		defaultMessage: 'Launcher visibility',
+	},
+	minimizeLauncherDescription: {
+		id: 'app.default-instance.minimize-launcher.description',
+		defaultMessage: 'Behavior of the launcher window when a Minecraft process starts.',
+	},
 })
 
 const fetchSettings = await get()
@@ -330,6 +338,27 @@ watch(
 						{ value: '2', label: formatMessage(messages.ipPreferV6) },
 					]"
 					@update:model-value="(v: string) => settings.preferred_ip_stack = Number(v)"
+				/>
+			</div>
+
+			<div class="flex items-center justify-between gap-4">
+				<div class="flex flex-col gap-1">
+					<h4 class="m-0 text-sm font-semibold text-contrast">{{ formatMessage(messages.minimizeLauncherTitle) }}</h4>
+					<p class="m-0 leading-tight">{{ formatMessage(messages.minimizeLauncherDescription) }}</p>
+				</div>
+				<Combobox
+					id="launcher-visibility"
+					:model-value="String(settings.launcher_visibility)"
+					name="Launcher visibility dropdown"
+					class="max-w-56"
+					:options="[
+						{ value: '5', label: 'Keep open' },
+						{ value: '4', label: 'Minimize' },
+						{ value: '3', label: 'Hide, reopen on exit' },
+						{ value: '2', label: 'Hide, exit on game exit' },
+						{ value: '0', label: 'Exit immediately' },
+					]"
+					@update:model-value="(v: string) => settings.launcher_visibility = Number(v)"
 				/>
 			</div>
 
