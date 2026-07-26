@@ -62,10 +62,6 @@ const messages = defineMessages({
 		id: 'app.about.easter-egg.hall-of-fame-description',
 		defaultMessage: 'The architects behind this customized edition:',
 	},
-	konamiActivated: {
-		id: 'app.about.easter-egg.konami-activated',
-		defaultMessage: 'Neon matrix engaged. Welcome to the grid.',
-	},
 })
 
 const version = await getVersion()
@@ -78,16 +74,21 @@ const platformLabel =
 const clickCount = ref(0)
 const showOverrideMessage = ref(false)
 const showHallOfFame = ref(false)
+
+// Konami state
 const konamiActive = ref(false)
+const shakeClass = ref('')
+let shakeTimer: ReturnType<typeof setTimeout> | null = null
 
 const konamiSequence = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a']
 const konamiBuffer = ref<string[]>([])
 
-const hallOfFame = [
-	{ handle: 'luolita13', role: 'Lead Customizer' },
-	{ handle: 'Modrinth Team', role: 'Original Authors' },
-	{ handle: 'Tauri + Vue + Rust', role: 'The Stack' },
-	{ handle: 'You', role: 'The Player' },
+// Arcade-style high score table — replaces the AI-ish card grid
+const highScores = [
+	{ rank: '1ST', name: 'LUOLITA13', score: '999999', note: 'Lead Customizer' },
+	{ rank: '2ND', name: 'MODRINTH TEAM', score: '750000', note: 'Original Authors' },
+	{ rank: '3RD', name: 'THE STACK', score: '500000', note: 'Tauri + Vue + Rust' },
+	{ rank: '4TH', name: 'YOU', score: '000000', note: 'The Player' },
 ]
 
 function onLogoClick() {
@@ -114,6 +115,14 @@ function triggerEasterEgg() {
 	}
 }
 
+function triggerShake(direction: 'x' | 'y') {
+	if (shakeTimer) clearTimeout(shakeTimer)
+	shakeClass.value = direction === 'x' ? 'shake-x' : 'shake-y'
+	shakeTimer = setTimeout(() => {
+		shakeClass.value = ''
+	}, 400)
+}
+
 function onKeyDown(e: KeyboardEvent) {
 	const key = e.key.toLowerCase()
 	konamiBuffer.value.push(key)
@@ -121,13 +130,23 @@ function onKeyDown(e: KeyboardEvent) {
 
 	console.log('[About Konami] buffer:', konamiBuffer.value.join(','))
 
+	// Shake the UI on each arrow press during Konami input
+	if (key === 'arrowleft' || key === 'arrowright') {
+		triggerShake('x')
+	} else if (key === 'arrowup' || key === 'arrowdown') {
+		triggerShake('y')
+	}
+
 	if (konamiBuffer.value.join(',') === konamiSequence.join(',')) {
 		console.log('[About Konami] activated')
 		konamiActive.value = true
-		setTimeout(() => {
-			konamiActive.value = false
-		}, 4000)
+		konamiBuffer.value = []
+		// Stay activated until user dismisses
 	}
+}
+
+function dismissKonami() {
+	konamiActive.value = false
 }
 
 onMounted(() => {
@@ -136,11 +155,17 @@ onMounted(() => {
 
 onUnmounted(() => {
 	window.removeEventListener('keydown', onKeyDown)
+	if (shakeTimer) clearTimeout(shakeTimer)
 })
 </script>
 
 <template>
-	<div class="about-root" :class="{ 'konami-active': konamiActive }">
+	<div
+		class="about-root"
+		:class="{
+			[shakeClass]: shakeClass,
+		}"
+	>
 		<!-- Hero -->
 		<div class="hero">
 			<div
@@ -148,7 +173,8 @@ onUnmounted(() => {
 				:class="{
 					'egg-spin': clickCount >= 5 && clickCount < 15,
 					'egg-pulse': clickCount >= 5,
-				}">
+				}"
+			>
 				<ModrinthIcon class="logo-icon" title="Psst... try clicking me" @click="onLogoClick" />
 			</div>
 			<h1 class="app-name">{{ formatMessage(messages.appName) }}</h1>
@@ -181,24 +207,32 @@ onUnmounted(() => {
 			</div>
 		</dl>
 
-		<!-- Hall of Fame -->
+		<!-- High Scores — arcade-style Hall of Fame -->
 		<Transition name="fade-pop">
-			<div v-if="showHallOfFame" class="hall-of-fame">
-				<h3 class="hall-title">{{ formatMessage(messages.hallOfFameTitle) }}</h3>
-				<p class="hall-description">{{ formatMessage(messages.hallOfFameDescription) }}</p>
-				<ul class="hall-list">
-					<li v-for="(entry, i) in hallOfFame" :key="i">
-						<span class="hall-handle">{{ entry.handle }}</span>
-						<span class="hall-role">{{ entry.role }}</span>
-					</li>
-				</ul>
-			</div>
-		</Transition>
-
-		<!-- Konami message -->
-		<Transition name="fade-pop">
-			<div v-if="konamiActive" class="konami-message">
-				{{ formatMessage(messages.konamiActivated) }}
+			<div v-if="showHallOfFame" class="arcade-cabinet">
+				<div class="cabinet-screen">
+					<div class="cabinet-header">
+						<span class="blink">★</span>
+						<span class="cabinet-title">HIGH SCORES</span>
+						<span class="blink">★</span>
+					</div>
+					<table class="score-table">
+						<tbody>
+							<tr v-for="(entry, i) in highScores" :key="i">
+								<td class="col-rank">{{ entry.rank }}</td>
+								<td class="col-name">{{ entry.name }}</td>
+								<td class="col-score">{{ entry.score }}</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="cabinet-footer">
+						<span v-for="(entry, i) in highScores" :key="i" class="credit-line">
+							<span class="credit-name">{{ entry.name }}</span>
+							<span class="credit-note">{{ entry.note }}</span>
+						</span>
+					</div>
+					<div class="insert-coin blink">INSERT COIN TO CONTINUE</div>
+				</div>
 			</div>
 		</Transition>
 
@@ -218,15 +252,39 @@ onUnmounted(() => {
 		<div class="footer">
 			<p class="crafted">
 				{{ formatMessage(messages.craftedBy) }}
-				<button
-					class="github-handle"
-					@click="openUrl('https://github.com/luolita13')"
-				>
+				<button class="github-handle" @click="openUrl('https://github.com/luolita13')">
 					github.com/luolita13
 				</button>
 			</p>
 			<p class="legal">{{ formatMessage(messages.legalNotice) }}</p>
 		</div>
+
+		<!-- Konami overlay — arcade "PLAYER ONE READY" -->
+		<Transition name="konami-in">
+			<div v-if="konamiActive" class="konami-overlay" @click="dismissKonami">
+				<div class="konami-arcade">
+					<!-- Pixel spaceship (SVG) -->
+					<svg class="pixel-ship" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true">
+						<g fill="currentColor">
+							<rect x="14" y="4" width="4" height="2" />
+							<rect x="12" y="6" width="8" height="2" />
+							<rect x="10" y="8" width="12" height="2" />
+							<rect x="8" y="10" width="16" height="4" />
+							<rect x="4" y="14" width="24" height="4" />
+							<rect x="2" y="18" width="28" height="2" />
+							<rect x="6" y="20" width="4" height="2" />
+							<rect x="22" y="20" width="4" height="2" />
+							<rect x="14" y="20" width="4" height="4" />
+						</g>
+					</svg>
+
+					<div class="arcade-line blink">PLAYER ONE</div>
+					<div class="arcade-line blink" style="animation-delay: 0.3s">READY</div>
+					<div class="arcade-cheat">30 LIVES — CHEAT ACTIVATED</div>
+					<div class="arcade-hint">CLICK ANYWHERE TO EXIT</div>
+				</div>
+			</div>
+		</Transition>
 	</div>
 </template>
 
@@ -243,32 +301,34 @@ onUnmounted(() => {
 	position: relative;
 }
 
-.about-root.konami-active::before {
-	content: '';
-	position: fixed;
-	inset: 0;
-	pointer-events: none;
-	z-index: 100;
-	background:
-		linear-gradient(
-			to bottom,
-			transparent 50%,
-			color-mix(in srgb, var(--color-brand) 8%, transparent) 50%
-		);
-	background-size: 100% 4px;
-	animation: scanline 0.8s linear infinite;
-	mix-blend-mode: screen;
+/* === Shake animations on Konami arrow keys === */
+@keyframes shake-x {
+	0%, 100% { transform: translateX(0); }
+	15% { transform: translateX(-10px); }
+	30% { transform: translateX(8px); }
+	45% { transform: translateX(-6px); }
+	60% { transform: translateX(4px); }
+	75% { transform: translateX(-2px); }
 }
 
-@keyframes scanline {
-	from {
-		transform: translateY(-4px);
-	}
-	to {
-		transform: translateY(0);
-	}
+@keyframes shake-y {
+	0%, 100% { transform: translateY(0); }
+	15% { transform: translateY(-8px); }
+	30% { transform: translateY(6px); }
+	45% { transform: translateY(-4px); }
+	60% { transform: translateY(3px); }
+	75% { transform: translateY(-1px); }
 }
 
+.about-root.shake-x {
+	animation: shake-x 0.4s ease-in-out;
+}
+
+.about-root.shake-y {
+	animation: shake-y 0.4s ease-in-out;
+}
+
+/* === Hero === */
 .hero {
 	display: flex;
 	flex-direction: column;
@@ -309,23 +369,13 @@ onUnmounted(() => {
 }
 
 @keyframes spin-pulse {
-	0%, 100% {
-		transform: rotate(0deg) scale(1);
-	}
-	50% {
-		transform: rotate(180deg) scale(1.08);
-	}
+	0%, 100% { transform: rotate(0deg) scale(1); }
+	50% { transform: rotate(180deg) scale(1.08); }
 }
 
 @keyframes neon-pulse {
-	0%, 100% {
-		opacity: 0.2;
-		transform: scale(0.95);
-	}
-	50% {
-		opacity: 0.45;
-		transform: scale(1.05);
-	}
+	0%, 100% { opacity: 0.2; transform: scale(0.95); }
+	50% { opacity: 0.45; transform: scale(1.05); }
 }
 
 .logo-glow::before {
@@ -368,6 +418,7 @@ onUnmounted(() => {
 	border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
+/* === Metadata === */
 .metadata {
 	width: 100%;
 	margin: 0;
@@ -422,8 +473,7 @@ onUnmounted(() => {
 	font-weight: 400;
 }
 
-.override-message,
-.konami-message {
+.override-message {
 	padding: 0.6rem 1.2rem;
 	border-radius: 0.75rem;
 	font-size: 0.85rem;
@@ -436,63 +486,137 @@ onUnmounted(() => {
 	box-shadow: 0 0 18px color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
-.hall-of-fame {
+/* === Arcade cabinet (Hall of Fame) === */
+.arcade-cabinet {
 	width: 100%;
-	padding: 1.25rem;
-	border-radius: 1rem;
-	border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
-	background: color-mix(in srgb, var(--color-brand) 6%, transparent);
+	padding: 1rem;
+	border-radius: 0.75rem;
+	background: #0a0e0a;
+	border: 2px solid var(--color-brand);
+	box-shadow:
+		0 0 0 4px #0a0e0a,
+		0 0 0 6px color-mix(in srgb, var(--color-brand) 50%, transparent),
+		0 0 24px color-mix(in srgb, var(--color-brand) 30%, transparent);
+	position: relative;
+	overflow: hidden;
+}
+
+/* CRT scanlines inside cabinet only */
+.arcade-cabinet::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		to bottom,
+		transparent 0px,
+		transparent 2px,
+		rgba(0, 0, 0, 0.35) 3px,
+		rgba(0, 0, 0, 0.35) 4px
+	);
+	pointer-events: none;
+	z-index: 2;
+}
+
+.cabinet-screen {
+	position: relative;
+	z-index: 1;
+	padding: 0.75rem 0.5rem;
+	font-family: 'Courier New', 'Consolas', monospace;
+	color: #4ade80;
+	text-shadow:
+		0 0 4px #4ade80,
+		0 0 8px rgba(74, 222, 128, 0.5);
+}
+
+.cabinet-header {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px dashed rgba(74, 222, 128, 0.4);
+}
+
+.cabinet-title {
+	color: #facc15;
+	text-shadow:
+		0 0 4px #facc15,
+		0 0 8px rgba(250, 204, 21, 0.5);
+}
+
+.score-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.8rem;
+}
+
+.score-table td {
+	padding: 0.35rem 0.4rem;
 	text-align: left;
 }
 
-.hall-title {
-	margin: 0 0 0.25rem;
-	font-size: 0.9rem;
-	font-weight: 800;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--color-brand);
+.col-rank {
+	width: 3rem;
+	color: #facc15;
+	font-weight: 700;
 }
 
-.hall-description {
-	margin: 0 0 0.75rem;
-	font-size: 0.8rem;
-	color: var(--color-secondary);
+.col-name {
+	color: #4ade80;
+	letter-spacing: 0.05em;
+	font-weight: 700;
 }
 
-.hall-list {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+.col-score {
+	text-align: right;
+	color: #f87171;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+}
+
+.cabinet-footer {
+	margin-top: 0.75rem;
+	padding-top: 0.5rem;
+	border-top: 1px dashed rgba(74, 222, 128, 0.4);
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: 0.25rem;
 }
 
-.hall-list li {
+.credit-line {
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
-	padding: 0.4rem 0;
-	border-bottom: 1px solid var(--color-button-border);
+	font-size: 0.65rem;
+	color: rgba(74, 222, 128, 0.6);
+	letter-spacing: 0.05em;
 }
 
-.hall-list li:last-child {
-	border-bottom: none;
+.credit-name {
+	text-transform: uppercase;
 }
 
-.hall-handle {
-	font-size: 0.85rem;
-	font-weight: 700;
-	color: var(--color-contrast);
+.insert-coin {
+	margin-top: 0.75rem;
+	text-align: center;
+	font-size: 0.7rem;
+	letter-spacing: 0.2em;
+	color: #facc15;
+	text-shadow: 0 0 4px #facc15;
 }
 
-.hall-role {
-	font-size: 0.75rem;
-	font-weight: 500;
-	color: var(--color-tertiary);
+.blink {
+	animation: blink 1s steps(2) infinite;
 }
 
+@keyframes blink {
+	50% { opacity: 0.2; }
+}
+
+/* === Actions & Footer === */
 .actions {
 	display: flex;
 	gap: 0.75rem;
@@ -559,6 +683,81 @@ onUnmounted(() => {
 	max-width: 22rem;
 }
 
+/* === Konami overlay === */
+.konami-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: radial-gradient(circle at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.98) 100%);
+	cursor: pointer;
+	backdrop-filter: blur(2px);
+}
+
+.konami-arcade {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	padding: 2rem;
+	font-family: 'Courier New', 'Consolas', monospace;
+	color: #4ade80;
+	text-shadow:
+		0 0 6px #4ade80,
+		0 0 12px rgba(74, 222, 128, 0.6);
+	animation: arcade-flicker 3s infinite;
+}
+
+@keyframes arcade-flicker {
+	0%, 100% { opacity: 1; }
+	48% { opacity: 1; }
+	50% { opacity: 0.85; }
+	52% { opacity: 1; }
+}
+
+.pixel-ship {
+	width: 4rem;
+	height: 4rem;
+	color: #facc15;
+	filter:
+		drop-shadow(0 0 6px #facc15)
+		drop-shadow(0 0 12px rgba(250, 204, 21, 0.5));
+	animation: ship-bob 1.2s ease-in-out infinite;
+}
+
+@keyframes ship-bob {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-6px); }
+}
+
+.arcade-line {
+	font-size: 1.5rem;
+	font-weight: 700;
+	letter-spacing: 0.3em;
+}
+
+.arcade-cheat {
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	color: #f87171;
+	text-shadow:
+		0 0 6px #f87171,
+		0 0 12px rgba(248, 113, 113, 0.6);
+	margin-top: 0.5rem;
+}
+
+.arcade-hint {
+	margin-top: 1.5rem;
+	font-size: 0.7rem;
+	letter-spacing: 0.2em;
+	color: rgba(74, 222, 128, 0.6);
+	text-shadow: none;
+}
+
+/* === Transitions === */
 .fade-pop-enter-active,
 .fade-pop-leave-active {
 	transition:
@@ -570,5 +769,18 @@ onUnmounted(() => {
 .fade-pop-leave-to {
 	opacity: 0;
 	transform: scale(0.92) translateY(0.5rem);
+}
+
+.konami-in-enter-active {
+	transition: opacity 0.2s ease;
+}
+
+.konami-in-leave-active {
+	transition: opacity 0.3s ease;
+}
+
+.konami-in-enter-from,
+.konami-in-leave-to {
+	opacity: 0;
 }
 </style>
