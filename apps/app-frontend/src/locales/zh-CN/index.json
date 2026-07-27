@@ -2824,5 +2824,539 @@
   },
   "minecraft-login-modal.yggdrasil-help": {
     "message": "支持任何 authlib-injector 兼容服务器。首次启动时将自动下载 authlib-injector。"
+  },
+  "app.about.app-name": {
+    "message": "Modrinth App"
+  },
+  "app.about.edition": {
+    "message": "社区版"
+  },
+  "app.about.crafted-by": {
+    "message": "制作团队"
+  },
+  "app.about.version": {
+    "message": "版本"
+  },
+  "app.about.platform": {
+    "message": "平台"
+  },
+  "app.about.license": {
+    "message": "许可证"
+  },
+  "app.about.license-value": {
+    "message": "GPL-3.0"
+  },
+  "app.about.view-source": {
+    "message": "查看源代码"
+  },
+  "app.about.report-issue": {
+    "message": "报告问题"
+  },
+  "app.about.legal-notice": {
+    "message": "这是 Modrinth App 的社区版本。Modrinth 及其商标归 Rinth, Inc. 所有。"
+  },
+  "app.about.easter-egg.override-authorized": {
+    "message": "系统覆写已授权"
+  },
+  "app.about.easter-egg.hall-of-fame-title": {
+    "message": "名人堂"
+  },
+  "app.about.easter-egg.hall-of-fame-description": {
+    "message": "此定制版本的缔造者："
+  },
+  "app.settings.tabs.translation": {
+    "message": "翻译"
+  },
+  "app.settings.tabs.advanced-instance-options": {
+    "message": "高级实例选项"
+  },
+  "app.settings.tabs.experimental-features": {
+    "message": "实验性功能"
+  },
+  "app.settings.tabs.about": {
+    "message": "关于"
+  },
+  "app.settings.downloading-version": {
+    "message": "正在下载 v{version}"
+  },
+  "app.translation-settings.title": {
+    "message": "自动翻译"
+  },
+  "app.translation-settings.description": {
+    "message": "在浏览内容时翻译 Modrinth 项目的标题、摘要和描述。"
+  },
+  "app.translation-settings.provider": {
+    "message": "翻译服务"
+  },
+  "app.translation-settings.provider.microsoft": {
+    "message": "Microsoft 翻译（免费）"
+  },
+  "app.translation-settings.provider.google": {
+    "message": "Google 翻译（免费）"
+  },
+  "app.translation-settings.provider.openai-compatible": {
+    "message": "OpenAI 兼容"
+  },
+  "app.translation-settings.target-language": {
+    "message": "目标语言"
+  },
+  "app.translation-settings.target-language.follow-app": {
+    "message": "跟随启动器语言"
+  },
+  "app.translation-settings.display-mode": {
+    "message": "显示模式"
+  },
+  "app.translation-settings.display-mode.bilingual": {
+    "message": "原文 + 翻译"
+  },
+  "app.translation-settings.display-mode.translation-only": {
+    "message": "仅翻译"
+  },
+  "app.translation-settings.auto-translate": {
+    "message": "自动翻译项目页面"
+  },
+  "app.translation-settings.auto-translate-description": {
+    "message": "打开 Modrinth 项目页面时立即开始翻译。"
+  },
+  "app.translation-settings.style": {
+    "message": "翻译样式"
+  },
+  "app.translation-settings.style.default": {
+    "message": "默认"
+  },
+  "app.translation-settings.style.weakened": {
+    "message": "弱化"
+  },
+  "app.translation-settings.style.brand": {
+    "message": "主题色"
+  },
+  "app.translation-settings.style.border": {
+    "message": "左边框"
+  },
+  "app.translation-settings.style.background": {
+    "message": "背景"
+  },
+  "app.translation-settings.style.preview": {
+    "message": "预览"
+  },
+  "app.translation-settings.style.preview-original-text": {
+    "message": "Explore high-quality Minecraft content on Modrinth."
+  },
+  "app.translation-settings.style.preview-text": {
+    "message": "在 Modrinth 上发现高质量的 Minecraft 内容。"
+  },
+  "app.translation-settings.openai.configuration": {
+    "message": "OpenAI 兼容配置"
+  },
+  "app.translation-settings.base-url": {
+    "message": "基础地址"
+  },
+  "app.translation-settings.model": {
+    "message": "模型"
+  },
+  "app.translation-settings.api-key": {
+    "message": "API Key"
+  },
+  "app.translation-settings.api-key-configured": {
+    "message": "API Key 已配置。输入新值以替换。"
+  },
+  "app.translation-settings.api-key-optional": {
+    "message": "本地或无需认证的端点可选择不填写。"
+  },
+  "app.translation-settings.save-key": {
+    "message": "保存 API Key"
+  },
+  "app.translation-settings.clear-key": {
+    "message": "清除 API Key"
+  },
+  "app.translation-settings.test": {
+    "message": "测试服务"
+  },
+  "app.translation-settings.testing": {
+    "message": "测试中..."
+  },
+  "app.translation-settings.test-success": {
+    "message": "连接成功：{translation}"
+  },
+  "app.translation-settings.cache": {
+    "message": "翻译缓存"
+  },
+  "app.translation-settings.cache-description": {
+    "message": "成功的翻译结果将缓存七天以减少请求次数。"
+  },
+  "app.translation-settings.clear-cache": {
+    "message": "清除翻译缓存"
+  },
+  "app.translation-settings.cache-cleared": {
+    "message": "翻译缓存已清除。"
+  },
+  "app.translation-settings.operation-failed": {
+    "message": "翻译操作失败。请检查配置后重试。"
+  },
+  "app.translation.error.rate-limited": {
+    "message": "翻译服务暂时被限流。请稍后重试。"
+  },
+  "app.translation.error.authentication": {
+    "message": "翻译服务认证失败。请稍后重试。"
+  },
+  "app.translation.error.content-too-long": {
+    "message": "内容过长，超出了所选翻译服务的限制。"
+  },
+  "app.translation.error.network": {
+    "message": "无法连接到翻译服务。请检查网络或代理设置。"
+  },
+  "app.advanced-instance.java-arguments.title": {
+    "message": "Java 参数"
+  },
+  "app.advanced-instance.java-arguments.placeholder": {
+    "message": "输入 Java 参数..."
+  },
+  "app.advanced-instance.env-variables.title": {
+    "message": "环境变量"
+  },
+  "app.advanced-instance.env-variables.placeholder": {
+    "message": "输入环境变量..."
+  },
+  "app.advanced-instance.hooks.title": {
+    "message": "钩子"
+  },
+  "app.advanced-instance.pre-launch-hook.title": {
+    "message": "启动前钩子"
+  },
+  "app.advanced-instance.pre-launch-hook.placeholder": {
+    "message": "输入启动前命令..."
+  },
+  "app.advanced-instance.pre-launch-hook.description": {
+    "message": "在启动实例前运行。"
+  },
+  "app.advanced-instance.pre-launch-wait": {
+    "message": "启动前等待命令完成"
+  },
+  "app.advanced-instance.wrapper-hook.title": {
+    "message": "包装器钩子"
+  },
+  "app.advanced-instance.wrapper-hook.placeholder": {
+    "message": "输入包装器命令..."
+  },
+  "app.advanced-instance.wrapper-hook.description": {
+    "message": "启动 Minecraft 的包装器命令。"
+  },
+  "app.advanced-instance.post-exit-hook.title": {
+    "message": "退出后钩子"
+  },
+  "app.advanced-instance.post-exit-hook.placeholder": {
+    "message": "输入退出后命令..."
+  },
+  "app.advanced-instance.post-exit-hook.description": {
+    "message": "在游戏关闭后运行。"
+  },
+  "app.advanced-instance.advanced-launch-options.title": {
+    "message": "高级启动选项"
+  },
+  "app.advanced-instance.renderer.title": {
+    "message": "渲染器"
+  },
+  "app.advanced-instance.renderer.description": {
+    "message": "覆盖 OpenGL 渲染器。可能导致不稳定。"
+  },
+  "app.advanced-instance.renderer.default": {
+    "message": "默认"
+  },
+  "app.advanced-instance.renderer.llvmpipe": {
+    "message": "llvmpipe（软件渲染器）"
+  },
+  "app.advanced-instance.renderer.d3d12": {
+    "message": "DirectX 12"
+  },
+  "app.advanced-instance.renderer.zink": {
+    "message": "Vulkan（Zink）"
+  },
+  "app.advanced-instance.extra-game-args.title": {
+    "message": "额外游戏参数"
+  },
+  "app.advanced-instance.extra-game-args.placeholder": {
+    "message": "例如 --demo"
+  },
+  "app.advanced-instance.extra-game-args.hint": {
+    "message": "追加到 Minecraft 启动参数的末尾。"
+  },
+  "app.advanced-instance.high-perf-gpu.title": {
+    "message": "高性能 GPU"
+  },
+  "app.advanced-instance.high-perf-gpu.description": {
+    "message": "为游戏进程请求使用高性能独立 GPU。"
+  },
+  "app.advanced-instance.use-java-exe.title": {
+    "message": "使用 java.exe"
+  },
+  "app.advanced-instance.use-java-exe.description": {
+    "message": "使用 java.exe 代替 javaw.exe，提供控制台窗口用于调试。"
+  },
+  "app.advanced-instance.compatibility.title": {
+    "message": "兼容性"
+  },
+  "app.advanced-instance.disable-jlw.title": {
+    "message": "禁用 Java 启动包装器"
+  },
+  "app.advanced-instance.disable-jlw.description": {
+    "message": "禁用 theseus.jar 启动包装器。部分功能可能无法使用。"
+  },
+  "app.advanced-instance.disable-lf.title": {
+    "message": "禁用 LegacyFix"
+  },
+  "app.advanced-instance.disable-lf.description": {
+    "message": "禁用旧版本 Minecraft 的兼容性修复。"
+  },
+  "app.advanced-instance.disable-lwjgl.title": {
+    "message": "禁用 LWJGL Unsafe Agent"
+  },
+  "app.advanced-instance.disable-lwjgl.description": {
+    "message": "禁用修复 FFM API 性能问题的 LWJGL Unsafe Agent。"
+  },
+  "app.advanced-instance.skip-unknown-pack.title": {
+    "message": "跳过未知包警告"
+  },
+  "app.advanced-instance.skip-unknown-pack.description": {
+    "message": "在安装未托管在 Modrinth 上的 .mrpack 文件时不再显示风险警告。"
+  },
+  "app.advanced-instance.skip-non-essential-warnings.title": {
+    "message": "跳过非必要警告"
+  },
+  "app.advanced-instance.skip-non-essential-warnings.description": {
+    "message": "自动跳过低风险确认弹窗（如重复安装、普通删除、批量更新、解绑整合包、修复提示等）。危险警告仍会显示。"
+  },
+  "app.advanced-instance.warnings.title": {
+    "message": "警告与确认"
+  },
+  "app.advanced-instance.reset-to-default": {
+    "message": "恢复默认"
+  },
+  "app.home-settings.worlds-tab.title": {
+    "message": "世界标签页"
+  },
+  "app.home-settings.worlds-tab.description": {
+    "message": "在侧边栏中显示独立的世界入口。"
+  },
+  "app.home-settings.worlds-in-home.title": {
+    "message": "主页显示世界"
+  },
+  "app.home-settings.worlds-in-home.description": {
+    "message": "在主页的「最近游玩」区域中显示最近游玩的世界。"
+  },
+  "app.home-settings.show-play-time.title": {
+    "message": "显示游戏时长"
+  },
+  "app.home-settings.show-play-time.description": {
+    "message": "在实例卡片上显示累计游戏时长。"
+  },
+  "app.home-settings.default-landing-page.title": {
+    "message": "默认启动页面"
+  },
+  "app.home-settings.default-landing-page.description": {
+    "message": "更改启动器打开时显示的默认页面。"
+  },
+  "app.home-settings.default-landing-page.home": {
+    "message": "主页"
+  },
+  "app.home-settings.default-landing-page.library": {
+    "message": "库"
+  },
+  "app.home-settings.default-landing-page.select-option": {
+    "message": "选择一个选项"
+  },
+  "app.default-instance.minimize-launcher.title": {
+    "message": "启动器可见性"
+  },
+  "app.default-instance.minimize-launcher.description": {
+    "message": "Minecraft 进程启动时启动器窗口的行为。"
+  },
+  "app.default-instance.launcher-visibility.keep-open": {
+    "message": "保持打开"
+  },
+  "app.default-instance.launcher-visibility.minimize": {
+    "message": "最小化"
+  },
+  "app.default-instance.launcher-visibility.hide-reopen": {
+    "message": "隐藏，退出时重新打开"
+  },
+  "app.default-instance.launcher-visibility.hide-exit": {
+    "message": "隐藏，游戏退出时关闭"
+  },
+  "app.default-instance.launcher-visibility.exit-immediately": {
+    "message": "立即退出"
+  },
+  "app.resource-management.download-sources.title": {
+    "message": "下载源"
+  },
+  "app.resource-management.download-sources.description": {
+    "message": "自动模式会根据本地网络状况和最近的连接质量在官方源和镜像源之间自动选择。"
+  },
+  "app.resource-management.source.automatic": {
+    "message": "自动（推荐）"
+  },
+  "app.resource-management.source.official": {
+    "message": "偏好官方源"
+  },
+  "app.resource-management.source.mirror": {
+    "message": "偏好镜像源"
+  },
+  "app.resource-management.minecraft-metadata-source.title": {
+    "message": "Minecraft 元数据"
+  },
+  "app.resource-management.minecraft-metadata-source.description": {
+    "message": "Minecraft 和支持的模组加载器的版本清单和元数据。"
+  },
+  "app.resource-management.minecraft-file-source.title": {
+    "message": "Minecraft 文件、加载器和 Java"
+  },
+  "app.resource-management.minecraft-file-source.description": {
+    "message": "游戏文件、资源、库文件、模组加载器和 Java 运行时。"
+  },
+  "app.resource-management.modrinth-source.title": {
+    "message": "Modrinth"
+  },
+  "app.resource-management.modrinth-source.description": {
+    "message": "Modrinth 模组文件下载。内容浏览始终使用 Modrinth API。"
+  },
+  "app.resource-management.curseforge-source.title": {
+    "message": "CurseForge"
+  },
+  "app.resource-management.curseforge-source.description": {
+    "message": "CurseForge API 请求和文件下载。"
+  },
+  "app.resource-management.max-chunks-per-file.title": {
+    "message": "单文件最大分块下载数"
+  },
+  "app.resource-management.max-chunks-per-file.description": {
+    "message": "对于大于 1 MB 的文件，启动器会通过 HTTP Range 请求将下载拆分为多个并行分块。分块越多，在高带宽连接上下载速度越快。（需重启应用生效）"
+  },
+  "app.appearance-settings.accent-color.title": {
+    "message": "强调色"
+  },
+  "app.appearance-settings.accent-color.description": {
+    "message": "选择按钮、选中项和高亮区域使用的颜色。"
+  },
+  "app.appearance-settings.accent-color.orange": {
+    "message": "橙色"
+  },
+  "app.appearance-settings.accent-color.green": {
+    "message": "绿色"
+  },
+  "app.appearance-settings.accent-color.blue": {
+    "message": "蓝色"
+  },
+  "app.appearance-settings.accent-color.purple": {
+    "message": "紫色"
+  },
+  "app.appearance-settings.accent-color.custom": {
+    "message": "自定义"
+  },
+  "app.appearance-settings.custom-background.title": {
+    "message": "启动器背景"
+  },
+  "app.appearance-settings.custom-background.description": {
+    "message": "选择自定义图片并调整其与启动器界面的融合效果。"
+  },
+  "app.appearance-settings.custom-background.empty": {
+    "message": "未选择自定义背景"
+  },
+  "app.appearance-settings.custom-background.choose": {
+    "message": "选择图片"
+  },
+  "app.appearance-settings.custom-background.replace": {
+    "message": "替换图片"
+  },
+  "app.appearance-settings.custom-background.remove": {
+    "message": "移除"
+  },
+  "app.appearance-settings.custom-background.blur": {
+    "message": "背景模糊"
+  },
+  "app.appearance-settings.custom-background.blur-description": {
+    "message": "柔化图片细节，确保启动器内容清晰可读。"
+  },
+  "app.appearance-settings.custom-background.opacity": {
+    "message": "背景可见度"
+  },
+  "app.appearance-settings.custom-background.opacity-description": {
+    "message": "控制背景图片透过界面的显示强度。"
+  },
+  "app.appearance-settings.image-viewer.title": {
+    "message": "应用内图片查看器"
+  },
+  "app.appearance-settings.image-viewer.description": {
+    "message": "在启动器内部打开截图和图片，而不是使用系统默认图片查看器。"
+  },
+  "app.appearance-settings.settings-as-page.title": {
+    "message": "设置作为页面"
+  },
+  "app.appearance-settings.settings-as-page.description": {
+    "message": "将设置面板显示为完整页面，而非模态弹窗。"
+  },
+  "app.appearance-settings.skin-click-particles.title": {
+    "message": "皮肤预览点击粒子"
+  },
+  "app.appearance-settings.skin-click-particles.description": {
+    "message": "在皮肤页面点击 3D 皮肤模型时生成像素粒子效果。"
+  },
+  "app.appearance-settings.skin-head-tracking.title": {
+    "message": "皮肤预览头部追踪"
+  },
+  "app.appearance-settings.skin-head-tracking.description": {
+    "message": "皮肤模型的头部会随鼠标光标移动而轻微跟随。"
+  },
+  "app.appearance-settings.skin-particle-bg.title": {
+    "message": "皮肤预览粒子背景"
+  },
+  "app.appearance-settings.skin-particle-bg.description": {
+    "message": "在 3D 皮肤模型后方添加漂浮的环境粒子以增强氛围。"
+  },
+  "app.appearance-settings.skin-preview-effects.heading": {
+    "message": "皮肤预览特效"
+  },
+  "app.appearance-settings.theme-pack.title": {
+    "message": "主题包"
+  },
+  "app.appearance-settings.theme-pack.description": {
+    "message": "安装可复用的主题包，一键切换背景、强调色和字体。主题包文件为包含 modrinth-theme.json 清单的 zip 压缩包。"
+  },
+  "app.appearance-settings.theme-pack.install": {
+    "message": "安装主题包"
+  },
+  "app.appearance-settings.theme-pack.open-folder": {
+    "message": "打开主题文件夹"
+  },
+  "app.appearance-settings.theme-pack.empty": {
+    "message": "暂无主题包。"
+  },
+  "app.appearance-settings.theme-pack.active": {
+    "message": "已启用"
+  },
+  "app.appearance-settings.theme-pack.activate": {
+    "message": "启用"
+  },
+  "app.appearance-settings.theme-pack.deactivate": {
+    "message": "停用"
+  },
+  "app.appearance-settings.theme-pack.export": {
+    "message": "导出"
+  },
+  "app.appearance-settings.theme-pack.delete": {
+    "message": "删除"
+  },
+  "app.appearance-settings.theme-pack.by-author": {
+    "message": "作者："
+  },
+  "app.feature-flag-settings.reset-to-default": {
+    "message": "恢复默认"
+  },
+  "app.feature-flag-settings.game-link.label": {
+    "message": "联机功能（Game Link）"
+  },
+  "app.feature-flag-settings.game-link.description": {
+    "message": "在侧边栏显示联机入口，允许创建或加入局域网游戏。此功能处于实验阶段，可能不稳定。"
+  },
+  "app.feature-flag-settings.experimental-badge": {
+    "message": "实验性"
   }
 }

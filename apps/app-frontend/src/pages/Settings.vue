@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-	commonMessages,
+	defineMessages,
 	ProgressBar,
 	useVIntl,
 } from '@modrinth/ui'
@@ -18,14 +18,25 @@ const activeTab = ref(0)
 const TabContent = computed(() => settingsTabs[activeTab.value]?.content ?? null)
 
 const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgress()
+
+const messages = defineMessages({
+	settingsTitle: {
+		id: 'app.settings.title',
+		defaultMessage: 'Settings',
+	},
+	downloading: {
+		id: 'app.settings.downloading-version',
+		defaultMessage: 'Downloading v{version}',
+	},
+})
 </script>
 
 <template>
 	<div class="flex h-full">
 		<!-- Sidebar -->
-		<nav class="settings-sidebar w-64 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1/75 p-4 backdrop-blur-md">
+		<nav class="settings-sidebar w-72 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1/75 p-4">
 			<div class="mb-5 pl-1">
-				<h2 class="text-xl font-extrabold text-contrast">Settings</h2>
+				<h2 class="text-xl font-extrabold text-contrast">{{ formatMessage(messages.settingsTitle) }}</h2>
 			</div>
 			<button
 				v-for="(tab, i) in settingsTabs"

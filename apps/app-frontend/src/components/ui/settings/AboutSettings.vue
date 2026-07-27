@@ -4,7 +4,7 @@ import { defineMessages, useVIntl } from '@modrinth/ui'
 import { getVersion } from '@tauri-apps/api/app'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const { formatMessage } = useVIntl()
 
@@ -15,11 +15,11 @@ const messages = defineMessages({
 	},
 	edition: {
 		id: 'app.about.edition',
-		defaultMessage: 'Community Custom Edition',
+		defaultMessage: 'Community Edition',
 	},
 	craftedBy: {
 		id: 'app.about.crafted-by',
-		defaultMessage: 'Crafted by',
+		defaultMessage: 'Crafted By',
 	},
 	version: {
 		id: 'app.about.version',
@@ -39,20 +39,20 @@ const messages = defineMessages({
 	},
 	viewSource: {
 		id: 'app.about.view-source',
-		defaultMessage: 'View source',
+		defaultMessage: 'View Source',
 	},
 	reportIssue: {
 		id: 'app.about.report-issue',
-		defaultMessage: 'Report an issue',
+		defaultMessage: 'Report an Issue',
 	},
 	legalNotice: {
 		id: 'app.about.legal-notice',
 		defaultMessage:
-			'This is an unofficial third-party customization of the open-source Modrinth App. Modrinth and its trademarks are the property of Rinth, Inc.',
+			'This is a community edition of the Modrinth App. Modrinth and its trademarks are owned by Rinth, Inc.',
 	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',
-		defaultMessage: 'System override authorized',
+		defaultMessage: 'System Override Authorized',
 	},
 	hallOfFameTitle: {
 		id: 'app.about.easter-egg.hall-of-fame-title',
@@ -60,7 +60,7 @@ const messages = defineMessages({
 	},
 	hallOfFameDescription: {
 		id: 'app.about.easter-egg.hall-of-fame-description',
-		defaultMessage: 'The architects behind this customized edition:',
+		defaultMessage: 'The creators of this custom build:',
 	},
 })
 
@@ -74,14 +74,6 @@ const platformLabel =
 const clickCount = ref(0)
 const showOverrideMessage = ref(false)
 const showHallOfFame = ref(false)
-
-// Konami state
-const konamiActive = ref(false)
-const shakeClass = ref('')
-let shakeTimer: ReturnType<typeof setTimeout> | null = null
-
-const konamiSequence = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a']
-const konamiBuffer = ref<string[]>([])
 
 // Arcade-style high score table — replaces the AI-ish card grid
 const highScores = [
@@ -115,56 +107,11 @@ function triggerEasterEgg() {
 	}
 }
 
-function triggerShake(direction: 'x' | 'y') {
-	if (shakeTimer) clearTimeout(shakeTimer)
-	shakeClass.value = direction === 'x' ? 'shake-x' : 'shake-y'
-	shakeTimer = setTimeout(() => {
-		shakeClass.value = ''
-	}, 400)
-}
-
-function onKeyDown(e: KeyboardEvent) {
-	const key = e.key.toLowerCase()
-	konamiBuffer.value.push(key)
-	konamiBuffer.value = konamiBuffer.value.slice(-konamiSequence.length)
-
-	console.log('[About Konami] buffer:', konamiBuffer.value.join(','))
-
-	// Shake the UI on each arrow press during Konami input
-	if (key === 'arrowleft' || key === 'arrowright') {
-		triggerShake('x')
-	} else if (key === 'arrowup' || key === 'arrowdown') {
-		triggerShake('y')
-	}
-
-	if (konamiBuffer.value.join(',') === konamiSequence.join(',')) {
-		console.log('[About Konami] activated')
-		konamiActive.value = true
-		konamiBuffer.value = []
-		// Stay activated until user dismisses
-	}
-}
-
-function dismissKonami() {
-	konamiActive.value = false
-}
-
-onMounted(() => {
-	window.addEventListener('keydown', onKeyDown)
-})
-
-onUnmounted(() => {
-	window.removeEventListener('keydown', onKeyDown)
-	if (shakeTimer) clearTimeout(shakeTimer)
-})
 </script>
 
 <template>
 	<div
 		class="about-root"
-		:class="{
-			[shakeClass]: shakeClass,
-		}"
 	>
 		<!-- Hero -->
 		<div class="hero">
@@ -238,7 +185,7 @@ onUnmounted(() => {
 
 		<!-- Links -->
 		<div class="actions">
-			<button class="action-link" @click="openUrl('https://github.com/luolita13')">
+			<button class="action-link" @click="openUrl('https://github.com/luolita13/code')">
 				<ExternalIcon class="size-4" />
 				<span>{{ formatMessage(messages.viewSource) }}</span>
 			</button>
@@ -257,35 +204,8 @@ onUnmounted(() => {
 				</button>
 			</p>
 			<p class="legal">{{ formatMessage(messages.legalNotice) }}</p>
-		</div>
-
-		<!-- Konami overlay — arcade "PLAYER ONE READY" -->
-		<Transition name="konami-in">
-			<div v-if="konamiActive" class="konami-overlay" @click="dismissKonami">
-				<div class="konami-arcade">
-					<!-- Pixel spaceship (SVG) -->
-					<svg class="pixel-ship" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true">
-						<g fill="currentColor">
-							<rect x="14" y="4" width="4" height="2" />
-							<rect x="12" y="6" width="8" height="2" />
-							<rect x="10" y="8" width="12" height="2" />
-							<rect x="8" y="10" width="16" height="4" />
-							<rect x="4" y="14" width="24" height="4" />
-							<rect x="2" y="18" width="28" height="2" />
-							<rect x="6" y="20" width="4" height="2" />
-							<rect x="22" y="20" width="4" height="2" />
-							<rect x="14" y="20" width="4" height="4" />
-						</g>
-					</svg>
-
-					<div class="arcade-line blink">PLAYER ONE</div>
-					<div class="arcade-line blink" style="animation-delay: 0.3s">READY</div>
-					<div class="arcade-cheat">30 LIVES — CHEAT ACTIVATED</div>
-					<div class="arcade-hint">CLICK ANYWHERE TO EXIT</div>
-				</div>
-			</div>
-		</Transition>
 	</div>
+</div>
 </template>
 
 <style scoped>
@@ -299,33 +219,6 @@ onUnmounted(() => {
 	margin: 0 auto;
 	text-align: center;
 	position: relative;
-}
-
-/* === Shake animations on Konami arrow keys === */
-@keyframes shake-x {
-	0%, 100% { transform: translateX(0); }
-	15% { transform: translateX(-10px); }
-	30% { transform: translateX(8px); }
-	45% { transform: translateX(-6px); }
-	60% { transform: translateX(4px); }
-	75% { transform: translateX(-2px); }
-}
-
-@keyframes shake-y {
-	0%, 100% { transform: translateY(0); }
-	15% { transform: translateY(-8px); }
-	30% { transform: translateY(6px); }
-	45% { transform: translateY(-4px); }
-	60% { transform: translateY(3px); }
-	75% { transform: translateY(-1px); }
-}
-
-.about-root.shake-x {
-	animation: shake-x 0.4s ease-in-out;
-}
-
-.about-root.shake-y {
-	animation: shake-y 0.4s ease-in-out;
 }
 
 /* === Hero === */
@@ -683,80 +576,6 @@ onUnmounted(() => {
 	max-width: 22rem;
 }
 
-/* === Konami overlay === */
-.konami-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 1000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: radial-gradient(circle at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.98) 100%);
-	cursor: pointer;
-	backdrop-filter: blur(2px);
-}
-
-.konami-arcade {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 1rem;
-	padding: 2rem;
-	font-family: 'Courier New', 'Consolas', monospace;
-	color: #4ade80;
-	text-shadow:
-		0 0 6px #4ade80,
-		0 0 12px rgba(74, 222, 128, 0.6);
-	animation: arcade-flicker 3s infinite;
-}
-
-@keyframes arcade-flicker {
-	0%, 100% { opacity: 1; }
-	48% { opacity: 1; }
-	50% { opacity: 0.85; }
-	52% { opacity: 1; }
-}
-
-.pixel-ship {
-	width: 4rem;
-	height: 4rem;
-	color: #facc15;
-	filter:
-		drop-shadow(0 0 6px #facc15)
-		drop-shadow(0 0 12px rgba(250, 204, 21, 0.5));
-	animation: ship-bob 1.2s ease-in-out infinite;
-}
-
-@keyframes ship-bob {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-6px); }
-}
-
-.arcade-line {
-	font-size: 1.5rem;
-	font-weight: 700;
-	letter-spacing: 0.3em;
-}
-
-.arcade-cheat {
-	font-size: 1rem;
-	font-weight: 700;
-	letter-spacing: 0.15em;
-	color: #f87171;
-	text-shadow:
-		0 0 6px #f87171,
-		0 0 12px rgba(248, 113, 113, 0.6);
-	margin-top: 0.5rem;
-}
-
-.arcade-hint {
-	margin-top: 1.5rem;
-	font-size: 0.7rem;
-	letter-spacing: 0.2em;
-	color: rgba(74, 222, 128, 0.6);
-	text-shadow: none;
-}
-
 /* === Transitions === */
 .fade-pop-enter-active,
 .fade-pop-leave-active {
@@ -769,18 +588,5 @@ onUnmounted(() => {
 .fade-pop-leave-to {
 	opacity: 0;
 	transform: scale(0.92) translateY(0.5rem);
-}
-
-.konami-in-enter-active {
-	transition: opacity 0.2s ease;
-}
-
-.konami-in-leave-active {
-	transition: opacity 0.3s ease;
-}
-
-.konami-in-enter-from,
-.konami-in-leave-to {
-	opacity: 0;
 }
 </style>

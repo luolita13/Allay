@@ -24,7 +24,7 @@ const messages = defineMessages({
 	},
 	fullscreenDescription: {
 		id: 'app.default-instance.fullscreen.description',
-		defaultMessage: 'Overwrites the options.txt file to start in full screen when launched.',
+		defaultMessage: 'Overrides the options.txt file to run in fullscreen mode at launch.',
 	},
 	widthTitle: {
 		id: 'app.default-instance.width.title',
@@ -32,7 +32,7 @@ const messages = defineMessages({
 	},
 	widthDescription: {
 		id: 'app.default-instance.width.description',
-		defaultMessage: 'The width of the game window when launched.',
+		defaultMessage: 'The width of the game window at launch.',
 	},
 	widthPlaceholder: {
 		id: 'app.default-instance.width.placeholder',
@@ -44,7 +44,7 @@ const messages = defineMessages({
 	},
 	heightDescription: {
 		id: 'app.default-instance.height.description',
-		defaultMessage: 'The height of the game window when launched.',
+		defaultMessage: 'The height of the game window at launch.',
 	},
 	heightPlaceholder: {
 		id: 'app.default-instance.height.placeholder',
@@ -52,11 +52,11 @@ const messages = defineMessages({
 	},
 	memoryAllocationTitle: {
 		id: 'app.default-instance.memory-allocation.title',
-		defaultMessage: 'Memory allocation',
+		defaultMessage: 'Memory Allocation',
 	},
 	memoryAllocationDescription: {
 		id: 'app.default-instance.memory-allocation.description',
-		defaultMessage: 'Choose how memory is allocated to instances.',
+		defaultMessage: 'Choose how memory is allocated for instances.',
 	},
 	memoryModeAuto: {
 		id: 'app.default-instance.memory-mode.auto',
@@ -68,12 +68,12 @@ const messages = defineMessages({
 	},
 	memoryAllocated: {
 		id: 'app.default-instance.memory-allocated',
-		defaultMessage: 'Memory allocated',
+		defaultMessage: 'Allocated Memory',
 	},
 	memoryWarning: {
 		id: 'app.default-instance.memory-warning',
 		defaultMessage:
-			'You are allocating more than 75% of your system memory to Minecraft. This may cause instability. Consider using "Auto" mode.',
+			'You are allocating more than 75% of your system memory to Minecraft. This may cause system instability. Using Auto mode is recommended.',
 	},
 	memoryAutoHint: {
 		id: 'app.default-instance.memory-auto-hint',
@@ -82,15 +82,15 @@ const messages = defineMessages({
 	},
 	launchOptionsTitle: {
 		id: 'app.default-instance.launch-options.title',
-		defaultMessage: 'Launch options',
+		defaultMessage: 'Launch Options',
 	},
 	processPriorityTitle: {
 		id: 'app.default-instance.process-priority.title',
-		defaultMessage: 'Process priority',
+		defaultMessage: 'Process Priority',
 	},
 	processPriorityDescription: {
 		id: 'app.default-instance.process-priority.description',
-		defaultMessage: 'Set the CPU priority of the game process.',
+		defaultMessage: 'Sets the CPU priority for the game process.',
 	},
 	priorityNormal: {
 		id: 'app.default-instance.priority.normal',
@@ -98,7 +98,7 @@ const messages = defineMessages({
 	},
 	priorityAboveNormal: {
 		id: 'app.default-instance.priority.above-normal',
-		defaultMessage: 'Above normal',
+		defaultMessage: 'Above Normal',
 	},
 	priorityHigh: {
 		id: 'app.default-instance.priority.high',
@@ -106,7 +106,7 @@ const messages = defineMessages({
 	},
 	priorityBelowNormal: {
 		id: 'app.default-instance.priority.below-normal',
-		defaultMessage: 'Below normal',
+		defaultMessage: 'Below Normal',
 	},
 	priorityRealtime: {
 		id: 'app.default-instance.priority.realtime',
@@ -114,11 +114,11 @@ const messages = defineMessages({
 	},
 	ipProtocolTitle: {
 		id: 'app.default-instance.ip-protocol.title',
-		defaultMessage: 'IP protocol preference',
+		defaultMessage: 'IP Protocol Preference',
 	},
 	ipProtocolDescription: {
 		id: 'app.default-instance.ip-protocol.description',
-		defaultMessage: 'Preferred IP stack for Java networking.',
+		defaultMessage: 'Preferred IP protocol stack for Java networking.',
 	},
 	ipDefault: {
 		id: 'app.default-instance.ip.default',
@@ -134,7 +134,7 @@ const messages = defineMessages({
 	},
 	windowTitleTitle: {
 		id: 'app.default-instance.window-title.title',
-		defaultMessage: 'Game window title',
+		defaultMessage: 'Game Window Title',
 	},
 	windowTitlePlaceholder: {
 		id: 'app.default-instance.window-title.placeholder',
@@ -146,7 +146,7 @@ const messages = defineMessages({
 	},
 	customInfoTitle: {
 		id: 'app.default-instance.custom-info.title',
-		defaultMessage: 'Custom info',
+		defaultMessage: 'Custom Info',
 	},
 	customInfoPlaceholder: {
 		id: 'app.default-instance.custom-info.placeholder',
@@ -154,15 +154,35 @@ const messages = defineMessages({
 	},
 	customInfoHint: {
 		id: 'app.default-instance.custom-info.hint',
-		defaultMessage: "Displayed in the game's bottom-left corner and F3 debug screen.",
+		defaultMessage: 'Displayed in the bottom-left of the game and the F3 debug screen.',
 	},
 	minimizeLauncherTitle: {
 		id: 'app.default-instance.minimize-launcher.title',
-		defaultMessage: 'Launcher visibility',
+		defaultMessage: 'Launcher Visibility',
 	},
 	minimizeLauncherDescription: {
 		id: 'app.default-instance.minimize-launcher.description',
-		defaultMessage: 'Behavior of the launcher window when a Minecraft process starts.',
+		defaultMessage: 'Behavior of the launcher window when the Minecraft process starts.',
+	},
+	launcherVisibilityKeepOpen: {
+		id: 'app.default-instance.launcher-visibility.keep-open',
+		defaultMessage: 'Keep Open',
+	},
+	launcherVisibilityMinimize: {
+		id: 'app.default-instance.launcher-visibility.minimize',
+		defaultMessage: 'Minimize',
+	},
+	launcherVisibilityHideReopen: {
+		id: 'app.default-instance.launcher-visibility.hide-reopen',
+		defaultMessage: 'Hide, reopen on exit',
+	},
+	launcherVisibilityHideExit: {
+		id: 'app.default-instance.launcher-visibility.hide-exit',
+		defaultMessage: 'Hide, close on game exit',
+	},
+	launcherVisibilityExitImmediately: {
+		id: 'app.default-instance.launcher-visibility.exit-immediately',
+		defaultMessage: 'Exit immediately',
 	},
 })
 
@@ -352,11 +372,11 @@ watch(
 					name="Launcher visibility dropdown"
 					class="max-w-56"
 					:options="[
-						{ value: '5', label: 'Keep open' },
-						{ value: '4', label: 'Minimize' },
-						{ value: '3', label: 'Hide, reopen on exit' },
-						{ value: '2', label: 'Hide, exit on game exit' },
-						{ value: '0', label: 'Exit immediately' },
+						{ value: '5', label: formatMessage(messages.launcherVisibilityKeepOpen) },
+						{ value: '4', label: formatMessage(messages.launcherVisibilityMinimize) },
+						{ value: '3', label: formatMessage(messages.launcherVisibilityHideReopen) },
+						{ value: '2', label: formatMessage(messages.launcherVisibilityHideExit) },
+						{ value: '0', label: formatMessage(messages.launcherVisibilityExitImmediately) },
 					]"
 					@update:model-value="(v: string) => settings.launcher_visibility = Number(v)"
 				/>

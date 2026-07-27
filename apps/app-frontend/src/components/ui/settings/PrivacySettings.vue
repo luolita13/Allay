@@ -10,12 +10,12 @@ const { formatMessage } = useVIntl()
 const messages = defineMessages({
 	personalizedAds: {
 		id: 'app.privacy-settings.personalized-ads',
-		defaultMessage: 'Personalized ads',
+		defaultMessage: 'Personalized Ads',
 	},
 	personalizedAdsDesc: {
 		id: 'app.privacy-settings.personalized-ads.desc',
 		defaultMessage:
-			"Modrinth's ad provider, Aditude, shows ads based on your preferences. By disabling this option, you opt out and ads will no longer be shown based on your interests.",
+			'Modrinth\'s ad provider, Aditude, shows ads based on your preferences. When disabled, ads will no longer be based on your interests.',
 	},
 	telemetry: {
 		id: 'app.privacy-settings.telemetry',
@@ -24,7 +24,7 @@ const messages = defineMessages({
 	telemetryDesc: {
 		id: 'app.privacy-settings.telemetry.desc',
 		defaultMessage:
-			'Modrinth collects anonymized analytics and usage data to improve our user experience and customize your experience. By disabling this option, you opt out and your data will no longer be collected.',
+			'Modrinth collects anonymous usage analytics and data to improve the user experience and provide personalized services. When disabled, this data will no longer be collected.',
 	},
 	discordRpc: {
 		id: 'app.privacy-settings.discord-rpc',
@@ -33,12 +33,12 @@ const messages = defineMessages({
 	discordRpcDesc: {
 		id: 'app.privacy-settings.discord-rpc.desc',
 		defaultMessage:
-			"Manages the Discord Rich Presence integration. Disabling this will cause 'Modrinth' to no longer show up as a game or app you are using on your Discord profile.",
+			'Manages Discord Rich Presence integration. When disabled, "Modrinth" will no longer appear as a game or app on your Discord profile.',
 	},
 	discordRpcNote: {
 		id: 'app.privacy-settings.discord-rpc.note',
 		defaultMessage:
-			"Note: This will not prevent any instance-specific Discord Rich Presence integrations, such as those added by mods. (app restart required to take effect)",
+			'Note: This setting does not prevent instance-specific Discord Rich Presence integrations (such as those added by mods). (Requires app restart)',
 	},
 	disabledInBuild: {
 		id: 'app.privacy-settings.disabled-in-build',

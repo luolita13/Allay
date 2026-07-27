@@ -17,59 +17,59 @@ const { formatMessage } = useVIntl()
 const messages = defineMessages({
 	appDirectoryTitle: {
 		id: 'app.resource-management.app-directory.title',
-		defaultMessage: 'App directory',
+		defaultMessage: 'App Directory',
 	},
 	appDirectoryDescription: {
 		id: 'app.resource-management.app-directory.description',
 		defaultMessage:
-			'The directory where the launcher stores all of its files. Changes will be applied after restarting the launcher.',
+			'The directory where the launcher stores all files. Changes take effect after restarting the launcher.',
 	},
 	purgeCacheConfirmTitle: {
 		id: 'app.resource-management.purge-cache.confirm-title',
-		defaultMessage: 'Are you sure you want to purge the cache?',
+		defaultMessage: 'Are you sure you want to clear the cache?',
 	},
 	purgeCacheConfirmDescription: {
 		id: 'app.resource-management.purge-cache.confirm-description',
 		defaultMessage:
-			'If you proceed, your entire cache will be purged. This may slow down the app temporarily.',
+			'If you continue, all caches will be cleared, which may cause the app to temporarily slow down.',
 	},
 	purgeCacheButton: {
 		id: 'app.resource-management.purge-cache.button',
-		defaultMessage: 'Purge cache',
+		defaultMessage: 'Clear Cache',
 	},
 	appCacheTitle: {
 		id: 'app.resource-management.app-cache.title',
-		defaultMessage: 'App cache',
+		defaultMessage: 'App Cache',
 	},
 	appCacheDescription: {
 		id: 'app.resource-management.app-cache.description',
 		defaultMessage:
-			'The Modrinth app stores a cache of data to speed up loading. This can be purged to force the app to reload data. This may slow down the app temporarily.',
+			'Modrinth App caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns.',
 	},
 	downloadSourcesTitle: {
 		id: 'app.resource-management.download-sources.title',
-		defaultMessage: 'Download sources',
+		defaultMessage: 'Download Sources',
 	},
 	downloadSourcesDescription: {
 		id: 'app.resource-management.download-sources.description',
 		defaultMessage:
-			'Automatic mode chooses between official and mirror sources based on your local environment and recent connection quality.',
+			'Auto mode automatically selects between official and mirror sources based on your local network conditions and recent connection quality.',
 	},
 	automaticSource: {
 		id: 'app.resource-management.source.automatic',
-		defaultMessage: 'Automatic (Recommended)',
+		defaultMessage: 'Auto (Recommended)',
 	},
 	officialSource: {
 		id: 'app.resource-management.source.official',
-		defaultMessage: 'Prefer official sources',
+		defaultMessage: 'Prefer Official Source',
 	},
 	mirrorSource: {
 		id: 'app.resource-management.source.mirror',
-		defaultMessage: 'Prefer mirror sources',
+		defaultMessage: 'Prefer Mirror Source',
 	},
 	minecraftMetadataSourceTitle: {
 		id: 'app.resource-management.minecraft-metadata-source.title',
-		defaultMessage: 'Minecraft metadata',
+		defaultMessage: 'Minecraft Metadata',
 	},
 	minecraftMetadataSourceDescription: {
 		id: 'app.resource-management.minecraft-metadata-source.description',
@@ -77,7 +77,7 @@ const messages = defineMessages({
 	},
 	minecraftFileSourceTitle: {
 		id: 'app.resource-management.minecraft-file-source.title',
-		defaultMessage: 'Minecraft files, loaders, and Java',
+		defaultMessage: 'Minecraft Files, Loaders, and Java',
 	},
 	minecraftFileSourceDescription: {
 		id: 'app.resource-management.minecraft-file-source.description',
@@ -101,60 +101,60 @@ const messages = defineMessages({
 		},
 	maxConcurrentDownloadsTitle: {
 		id: 'app.resource-management.max-concurrent-downloads.title',
-		defaultMessage: 'Maximum concurrent downloads',
+		defaultMessage: 'Max Concurrent Downloads',
 	},
 	maxConcurrentDownloadsDescription: {
 		id: 'app.resource-management.max-concurrent-downloads.description',
 		defaultMessage:
-			'The maximum amount of files the launcher can download at the same time. Set this to a lower value if you have a poor internet connection. (app restart required to take effect)',
+			'Maximum number of files the launcher can download simultaneously. Lower this value on poor network connections. (Requires app restart to take effect)',
 	},
 	maxChunksPerFileTitle: {
 		id: 'app.resource-management.max-chunks-per-file.title',
-		defaultMessage: 'Maximum chunks per file download',
+		defaultMessage: 'Max Chunks per File',
 	},
 	maxChunksPerFileDescription: {
 		id: 'app.resource-management.max-chunks-per-file.description',
 		defaultMessage:
-			'For large files (>1MB), the launcher splits the download into multiple parallel chunks using HTTP Range requests. More chunks = faster downloads on high-bandwidth connections. (app restart required to take effect)',
+			'For files larger than 1 MB, the launcher splits downloads into multiple parallel chunks using HTTP Range requests. More chunks means faster downloads on high-bandwidth connections. (Requires app restart to take effect)',
 	},
 	maxConcurrentWritesTitle: {
 		id: 'app.resource-management.max-concurrent-writes.title',
-		defaultMessage: 'Maximum concurrent writes',
+		defaultMessage: 'Max Concurrent Writes',
 	},
 	maxConcurrentWritesDescription: {
 		id: 'app.resource-management.max-concurrent-writes.description',
 		defaultMessage:
-			'The maximum amount of files the launcher can write to the disk at once. Set this to a lower value if you are frequently getting I/O errors. (app restart required to take effect)',
+			'Maximum number of files the launcher can write to disk simultaneously. Lower this value if you frequently encounter I/O errors. (Requires app restart to take effect)',
 	},
 	dbBackupsTitle: {
 		id: 'app.resource-management.db-backups.title',
-		defaultMessage: 'App database backups',
+		defaultMessage: 'App Database Backups',
 	},
 	dbBackupsButton: {
 		id: 'app.resource-management.db-backups.button',
-		defaultMessage: 'Open backups folder',
+		defaultMessage: 'Open Backup Folder',
 	},
 	dbBackupsDescription: {
 		id: 'app.resource-management.db-backups.description',
 		defaultMessage:
-			'Backups of important app data are stored here in case you need to recover them later.',
+			'Backups of important app data are stored here for easy recovery later.',
 	},
 	launcherLogsTitle: {
 		id: 'app.resource-management.launcher-logs.title',
-		defaultMessage: 'Launcher logs',
+		defaultMessage: 'Launcher Logs',
 	},
 	launcherLogsButton: {
 		id: 'app.resource-management.launcher-logs.button',
-		defaultMessage: 'Open logs folder',
+		defaultMessage: 'Open Logs Folder',
 	},
 	launcherLogsDescription: {
 		id: 'app.resource-management.launcher-logs.description',
 		defaultMessage:
-			'Session logs are stored here. If you encounter a bug or crash, please include the latest log file when reporting the issue.',
+			'Session logs are stored here. If you encounter a bug or crash, please attach the latest log file when reporting an issue.',
 	},
 	selectAppDirectory: {
 		id: 'app.resource-management.select-app-directory',
-		defaultMessage: 'Select a new app directory',
+		defaultMessage: 'Select new app directory',
 	},
 })
 

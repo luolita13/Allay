@@ -11,7 +11,7 @@ const { formatMessage } = useVIntl()
 const messages = defineMessages({
 	javaLocation: {
 		id: 'app.java-settings.java-location',
-		defaultMessage: 'Java {version} location',
+		defaultMessage: 'Java {version} Path',
 	},
 })
 

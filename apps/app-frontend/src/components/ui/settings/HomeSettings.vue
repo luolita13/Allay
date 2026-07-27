@@ -14,75 +14,99 @@ const settings = ref(await getSettings())
 const messages = defineMessages({
 	homePageCustomizationTitle: {
 		id: 'app.home-settings.title',
-		defaultMessage: 'Home page customization',
+		defaultMessage: 'Home Page Customization',
 	},
 	homePageCustomizationDescription: {
 		id: 'app.home-settings.description',
-		defaultMessage: 'Toggle which sections appear on the Home page.',
+		defaultMessage: 'Toggle the various sections displayed on the home page.',
 	},
 	jumpBackInTitle: {
 		id: 'app.home-settings.jump-back-in.title',
-		defaultMessage: 'Jump back in',
+		defaultMessage: 'Jump Back In',
 	},
 	jumpBackInDescription: {
 		id: 'app.home-settings.jump-back-in.description',
-		defaultMessage: 'Shows recently played worlds and instances.',
+		defaultMessage: 'Show recently played worlds and instances.',
 	},
 	discoverModpacksTitle: {
 		id: 'app.home-settings.discover-modpacks.title',
-		defaultMessage: 'Discover a modpack',
+		defaultMessage: 'Discover Modpacks',
 	},
 	discoverModpacksDescription: {
 		id: 'app.home-settings.discover-modpacks.description',
-		defaultMessage: 'Shows popular modpacks from Modrinth.',
+		defaultMessage: 'Show trending modpacks from Modrinth.',
 	},
 	discoverModsTitle: {
 		id: 'app.home-settings.discover-mods.title',
-		defaultMessage: 'Discover mods',
+		defaultMessage: 'Discover Mods',
 	},
 	discoverModsDescription: {
 		id: 'app.home-settings.discover-mods.description',
-		defaultMessage: 'Shows popular mods from Modrinth.',
+		defaultMessage: 'Show trending mods from Modrinth.',
 	},
 	updateRemindersTitle: {
 		id: 'app.home-settings.update-reminders.title',
-		defaultMessage: 'Game update reminders',
+		defaultMessage: 'Game Update Reminders',
 	},
 	updateRemindersDescription: {
 		id: 'app.home-settings.update-reminders.description',
-		defaultMessage: 'Shows instances with available modpack or mod updates.',
+		defaultMessage: 'Show instances that have available modpack or mod updates.',
 	},
 	systemStatusTitle: {
 		id: 'app.home-settings.system-status.title',
-		defaultMessage: 'System status',
+		defaultMessage: 'System Status',
 	},
 	systemStatusDescription: {
 		id: 'app.home-settings.system-status.description',
-		defaultMessage: 'Shows CPU, memory, disk, network usage, and quick launch actions.',
+		defaultMessage: 'Show CPU, memory, disk, and network usage along with quick launch actions.',
 	},
 	recentScreenshotsTitle: {
 		id: 'app.home-settings.recent-screenshots.title',
-		defaultMessage: 'Recent screenshots',
+		defaultMessage: 'Recent Screenshots',
 	},
 	recentScreenshotsDescription: {
 		id: 'app.home-settings.recent-screenshots.description',
-		defaultMessage: 'Shows recent screenshots from all instances.',
+		defaultMessage: 'Show recent screenshots from all instances.',
 	},
 	randomModsTitle: {
 		id: 'app.home-settings.random-mods.title',
-		defaultMessage: 'Random mod spotlight',
+		defaultMessage: 'Random Mod Recommendations',
 	},
 	randomModsDescription: {
 		id: 'app.home-settings.random-mods.description',
-		defaultMessage: 'Shows a random mod recommendation each time you open Home.',
+		defaultMessage: 'Display a random mod recommendation each time the home page opens.',
+	},
+	worldsTabTitle: {
+		id: 'app.home-settings.worlds-tab.title',
+		defaultMessage: 'Worlds Tab',
+	},
+	worldsTabDescription: {
+		id: 'app.home-settings.worlds-tab.description',
+		defaultMessage: 'Show a standalone Worlds entry in the sidebar.',
+	},
+	worldsInHomeTitle: {
+		id: 'app.home-settings.worlds-in-home.title',
+		defaultMessage: 'Show Worlds on Home',
+	},
+	worldsInHomeDescription: {
+		id: 'app.home-settings.worlds-in-home.description',
+		defaultMessage: 'Include recently played worlds in the Jump Back In section on the home page.',
+	},
+	showPlayTimeTitle: {
+		id: 'app.home-settings.show-play-time.title',
+		defaultMessage: 'Show Play Time',
+	},
+	showPlayTimeDescription: {
+		id: 'app.home-settings.show-play-time.description',
+		defaultMessage: 'Show cumulative play time on instance cards.',
 	},
 	defaultLandingPageTitle: {
 		id: 'app.home-settings.default-landing-page.title',
-		defaultMessage: 'Default landing page',
+		defaultMessage: 'Default Landing Page',
 	},
 	defaultLandingPageDescription: {
 		id: 'app.home-settings.default-landing-page.description',
-		defaultMessage: 'Change the page to which the launcher opens on.',
+		defaultMessage: 'Change the default page shown when the launcher opens.',
 	},
 	defaultLandingPageHome: {
 		id: 'app.home-settings.default-landing-page.home',
@@ -91,6 +115,10 @@ const messages = defineMessages({
 	defaultLandingPageLibrary: {
 		id: 'app.home-settings.default-landing-page.library',
 		defaultMessage: 'Library',
+	},
+	selectOption: {
+		id: 'app.home-settings.default-landing-page.select-option',
+		defaultMessage: 'Select an option',
 	},
 })
 
@@ -170,6 +198,45 @@ watch(
 			/>
 		</div>
 
+		<div class="mt-6 flex items-center justify-between gap-4">
+			<div>
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.worldsTabTitle) }}
+				</h2>
+				<p class="m-0 mt-1">{{ formatMessage(messages.worldsTabDescription) }}</p>
+			</div>
+			<Toggle
+				:model-value="themeStore.getFeatureFlag('worlds_tab')"
+				@update:model-value="() => setFeatureFlag('worlds_tab', !themeStore.getFeatureFlag('worlds_tab'))"
+			/>
+		</div>
+
+		<div class="mt-6 flex items-center justify-between gap-4">
+			<div>
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.worldsInHomeTitle) }}
+				</h2>
+				<p class="m-0 mt-1">{{ formatMessage(messages.worldsInHomeDescription) }}</p>
+			</div>
+			<Toggle
+				:model-value="themeStore.getFeatureFlag('worlds_in_home')"
+				@update:model-value="() => setFeatureFlag('worlds_in_home', !themeStore.getFeatureFlag('worlds_in_home'))"
+			/>
+		</div>
+
+		<div class="mt-6 flex items-center justify-between gap-4">
+			<div>
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.showPlayTimeTitle) }}
+				</h2>
+				<p class="m-0 mt-1">{{ formatMessage(messages.showPlayTimeDescription) }}</p>
+			</div>
+			<Toggle
+				:model-value="themeStore.getFeatureFlag('show_instance_play_time')"
+				@update:model-value="() => setFeatureFlag('show_instance_play_time', !themeStore.getFeatureFlag('show_instance_play_time'))"
+			/>
+		</div>
+
 		<hr class="my-6 bg-button-border border-none h-[1px]" />
 
 		<div class="mt-6 flex items-center justify-between">
@@ -194,7 +261,7 @@ watch(
 						label: formatMessage(messages.defaultLandingPageLibrary),
 					},
 				]"
-				:display-value="settings.default_page ?? 'Select an option'"
+				:display-value="settings.default_page ?? formatMessage(messages.selectOption)"
 			/>
 		</div>
 	</div>

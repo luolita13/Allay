@@ -11,7 +11,7 @@ import {
 	ToggleRightIcon,
 	WrenchIcon,
 } from '@modrinth/assets'
-import { commonMessages, defineMessage } from '@modrinth/ui'
+import { defineMessage } from '@modrinth/ui'
 
 import AppearanceSettings from '@/components/ui/settings/AppearanceSettings.vue'
 import DefaultInstanceSettings from '@/components/ui/settings/DefaultInstanceSettings.vue'
@@ -45,7 +45,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.home',
-			defaultMessage: 'Home page',
+			defaultMessage: 'Home',
 		}),
 		icon: HomeIcon,
 		content: HomeSettings,
@@ -57,10 +57,6 @@ export const settingsTabs: SettingsTab[] = [
 		}),
 		icon: LanguagesIcon,
 		content: LanguageSettings,
-		badge: defineMessage({
-			id: 'app.settings.language.beta',
-			defaultMessage: 'Beta',
-		}),
 	},
 	{
 		name: defineMessage({
@@ -69,7 +65,6 @@ export const settingsTabs: SettingsTab[] = [
 		}),
 		icon: GlobeIcon,
 		content: TranslationSettings,
-		badge: commonMessages.beta,
 	},
 	{
 		name: defineMessage({
@@ -82,7 +77,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.java-installations',
-			defaultMessage: 'Java installations',
+			defaultMessage: 'Java Installations',
 		}),
 		icon: CoffeeIcon,
 		content: JavaSettings,
@@ -90,7 +85,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.default-instance-options',
-			defaultMessage: 'Default instance options',
+			defaultMessage: 'Default Instance Options',
 		}),
 		icon: GameIcon,
 		content: DefaultInstanceSettings,
@@ -98,7 +93,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.advanced-instance-options',
-			defaultMessage: 'Advanced instance options',
+			defaultMessage: 'Advanced Instance Options',
 		}),
 		icon: WrenchIcon,
 		content: AdvancedInstanceSettings,
@@ -106,7 +101,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.resource-management',
-			defaultMessage: 'Resource management',
+			defaultMessage: 'Resource Management',
 		}),
 		icon: GaugeIcon,
 		content: ResourceManagementSettings,
@@ -114,7 +109,7 @@ export const settingsTabs: SettingsTab[] = [
 	{
 		name: defineMessage({
 			id: 'app.settings.tabs.experimental-features',
-			defaultMessage: '实验性功能',
+			defaultMessage: 'Experimental Features',
 		}),
 		icon: ToggleRightIcon,
 		content: FeatureFlagSettings,

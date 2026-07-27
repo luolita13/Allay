@@ -45,58 +45,58 @@ const testing = ref(false)
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 
 const messages = defineMessages({
-	title: { id: 'app.translation-settings.title', defaultMessage: 'Translation' },
+	title: { id: 'app.translation-settings.title', defaultMessage: 'Auto Translation' },
 	description: {
 		id: 'app.translation-settings.description',
 		defaultMessage:
 			'Translate Modrinth project titles, summaries, and descriptions while browsing content.',
 	},
-	provider: { id: 'app.translation-settings.provider', defaultMessage: 'Translation service' },
+	provider: { id: 'app.translation-settings.provider', defaultMessage: 'Translation Provider' },
 	microsoft: {
 		id: 'app.translation-settings.provider.microsoft',
-		defaultMessage: 'Microsoft Translate (free)',
+		defaultMessage: 'Microsoft Translator (Free)',
 	},
 	google: {
 		id: 'app.translation-settings.provider.google',
-		defaultMessage: 'Google Translate (free)',
+		defaultMessage: 'Google Translate (Free)',
 	},
 	openai: {
 		id: 'app.translation-settings.provider.openai-compatible',
-		defaultMessage: 'OpenAI compatible',
+		defaultMessage: 'OpenAI Compatible',
 	},
 	targetLanguage: {
 		id: 'app.translation-settings.target-language',
-		defaultMessage: 'Target language',
+		defaultMessage: 'Target Language',
 	},
 	followApp: {
 		id: 'app.translation-settings.target-language.follow-app',
-		defaultMessage: 'Follow launcher language',
+		defaultMessage: 'Follow Launcher Language',
 	},
 	displayMode: {
 		id: 'app.translation-settings.display-mode',
-		defaultMessage: 'Display mode',
+		defaultMessage: 'Display Mode',
 	},
 	bilingual: {
 		id: 'app.translation-settings.display-mode.bilingual',
-		defaultMessage: 'Original and translation',
+		defaultMessage: 'Original & Translation',
 	},
 	translationOnly: {
 		id: 'app.translation-settings.display-mode.translation-only',
-		defaultMessage: 'Translation only',
+		defaultMessage: 'Translation Only',
 	},
 	autoTranslate: {
 		id: 'app.translation-settings.auto-translate',
-		defaultMessage: 'Translate project pages automatically',
+		defaultMessage: 'Auto-Translate Project Pages',
 	},
 	autoTranslateDescription: {
 		id: 'app.translation-settings.auto-translate-description',
-		defaultMessage: 'Start translating as soon as a Modrinth project page is opened.',
+		defaultMessage: 'Start translating immediately when opening a Modrinth project page.',
 	},
-	style: { id: 'app.translation-settings.style', defaultMessage: 'Translation style' },
+	style: { id: 'app.translation-settings.style', defaultMessage: 'Translation Style' },
 	styleDefault: { id: 'app.translation-settings.style.default', defaultMessage: 'Default' },
-	styleWeakened: { id: 'app.translation-settings.style.weakened', defaultMessage: 'Muted' },
-	styleBrand: { id: 'app.translation-settings.style.brand', defaultMessage: 'Accent color' },
-	styleBorder: { id: 'app.translation-settings.style.border', defaultMessage: 'Left border' },
+	styleWeakened: { id: 'app.translation-settings.style.weakened', defaultMessage: 'Weakened' },
+	styleBrand: { id: 'app.translation-settings.style.brand', defaultMessage: 'Accent Color' },
+	styleBorder: { id: 'app.translation-settings.style.border', defaultMessage: 'Left Border' },
 	styleBackground: {
 		id: 'app.translation-settings.style.background',
 		defaultMessage: 'Background',
@@ -115,47 +115,47 @@ const messages = defineMessages({
 	},
 	openaiConfiguration: {
 		id: 'app.translation-settings.openai.configuration',
-		defaultMessage: 'OpenAI-compatible configuration',
+		defaultMessage: 'OpenAI Compatible Configuration',
 	},
 	baseUrl: { id: 'app.translation-settings.base-url', defaultMessage: 'Base URL' },
 	model: { id: 'app.translation-settings.model', defaultMessage: 'Model' },
-	apiKey: { id: 'app.translation-settings.api-key', defaultMessage: 'API key' },
+	apiKey: { id: 'app.translation-settings.api-key', defaultMessage: 'API Key' },
 	apiKeyConfigured: {
 		id: 'app.translation-settings.api-key-configured',
-		defaultMessage: 'An API key is already configured. Enter a new value to replace it.',
+		defaultMessage: 'API key is configured. Enter a new value to replace it.',
 	},
 	apiKeyOptional: {
 		id: 'app.translation-settings.api-key-optional',
-		defaultMessage: 'Optional for local or unauthenticated endpoints.',
+		defaultMessage: 'Optional for local or authentication-free endpoints.',
 	},
-	saveKey: { id: 'app.translation-settings.save-key', defaultMessage: 'Save API key' },
-	clearKey: { id: 'app.translation-settings.clear-key', defaultMessage: 'Clear API key' },
-	test: { id: 'app.translation-settings.test', defaultMessage: 'Test service' },
-	testing: { id: 'app.translation-settings.testing', defaultMessage: 'Testing…' },
+	saveKey: { id: 'app.translation-settings.save-key', defaultMessage: 'Save API Key' },
+	clearKey: { id: 'app.translation-settings.clear-key', defaultMessage: 'Clear API Key' },
+	test: { id: 'app.translation-settings.test', defaultMessage: 'Test Service' },
+	testing: { id: 'app.translation-settings.testing', defaultMessage: 'Testing...' },
 	testSuccess: {
 		id: 'app.translation-settings.test-success',
-		defaultMessage: 'Connection succeeded: {translation}',
+		defaultMessage: 'Connection successful: {translation}',
 	},
-	cache: { id: 'app.translation-settings.cache', defaultMessage: 'Translation cache' },
+	cache: { id: 'app.translation-settings.cache', defaultMessage: 'Translation Cache' },
 	cacheDescription: {
 		id: 'app.translation-settings.cache-description',
 		defaultMessage: 'Successful translations are cached for seven days to reduce requests.',
 	},
 	clearCache: {
 		id: 'app.translation-settings.clear-cache',
-		defaultMessage: 'Clear translation cache',
+		defaultMessage: 'Clear Translation Cache',
 	},
 	cacheCleared: {
 		id: 'app.translation-settings.cache-cleared',
-		defaultMessage: 'Translation cache cleared.',
+		defaultMessage: 'Translation cache has been cleared.',
 	},
 	operationFailed: {
 		id: 'app.translation-settings.operation-failed',
-		defaultMessage: 'The translation operation failed. Check the configuration and try again.',
+		defaultMessage: 'Translation operation failed. Please check your configuration and try again.',
 	},
 	rateLimited: {
 		id: 'app.translation.error.rate-limited',
-		defaultMessage: 'The translation service is temporarily rate limited. Please try again later.',
+		defaultMessage: 'The translation service is temporarily rate-limited. Please try again later.',
 	},
 	authenticationFailed: {
 		id: 'app.translation.error.authentication',
@@ -167,7 +167,7 @@ const messages = defineMessages({
 	},
 	networkFailed: {
 		id: 'app.translation.error.network',
-		defaultMessage: 'The translation service could not be reached. Check your network or proxy.',
+		defaultMessage: 'Unable to connect to the translation service. Please check your network or proxy settings.',
 	},
 })
 
@@ -316,7 +316,7 @@ async function clearCache() {
 			</div>
 			<div class="flex flex-col gap-2 font-semibold text-contrast">
 				<span>{{ formatMessage(messages.targetLanguage) }}</span>
-				<Combobox v-model="targetLanguage" :options="languageOptions" searchable />
+				<Combobox v-model="targetLanguage" :options="languageOptions" />
 			</div>
 			<div class="flex flex-col gap-2 font-semibold text-contrast">
 				<span>{{ formatMessage(messages.displayMode) }}</span>

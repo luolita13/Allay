@@ -17,20 +17,20 @@ const error = ref<string | null>(null)
 const messages = defineMessages({
 	sectionTitle: {
 		id: 'app.appearance-settings.theme-pack.title',
-		defaultMessage: 'Theme packs',
+		defaultMessage: 'Theme Packs',
 	},
 	sectionDescription: {
 		id: 'app.appearance-settings.theme-pack.description',
 		defaultMessage:
-			'Install reusable theme packs to switch backgrounds, accent colors and fonts at once. Pack files are zip archives containing a modrinth-theme.json manifest.',
+			'Install reusable theme packs to switch backgrounds, accent colors, and fonts in one click. Theme pack files are zip archives containing a modrinth-theme.json manifest.',
 	},
 	installButton: {
 		id: 'app.appearance-settings.theme-pack.install',
-		defaultMessage: 'Install theme pack',
+		defaultMessage: 'Install Theme Pack',
 	},
 	openFolder: {
 		id: 'app.appearance-settings.theme-pack.open-folder',
-		defaultMessage: 'Open themes folder',
+		defaultMessage: 'Open Themes Folder',
 	},
 	noPacks: {
 		id: 'app.appearance-settings.theme-pack.empty',
@@ -58,7 +58,7 @@ const messages = defineMessages({
 	},
 	byAuthor: {
 		id: 'app.appearance-settings.theme-pack.by-author',
-		defaultMessage: 'by',
+		defaultMessage: 'By: ',
 	},
 })
 

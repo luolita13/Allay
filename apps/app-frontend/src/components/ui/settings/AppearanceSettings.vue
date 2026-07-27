@@ -69,15 +69,15 @@ function clearBackgroundImage() {
 const messages = defineMessages({
 	colorThemeTitle: {
 		id: 'app.appearance-settings.color-theme.title',
-		defaultMessage: 'Color theme',
+		defaultMessage: 'Color Theme',
 	},
 	colorThemeDescription: {
 		id: 'app.appearance-settings.color-theme.description',
-		defaultMessage: 'Select your preferred color theme for Modrinth App.',
+		defaultMessage: 'Choose your preferred Modrinth App color theme.',
 	},
 	accentColorTitle: {
 		id: 'app.appearance-settings.accent-color.title',
-		defaultMessage: 'Accent color',
+		defaultMessage: 'Accent Color',
 	},
 	accentColorDescription: {
 		id: 'app.appearance-settings.accent-color.description',
@@ -99,13 +99,18 @@ const messages = defineMessages({
 		id: 'app.appearance-settings.accent-color.purple',
 		defaultMessage: 'Purple',
 	},
+	customAccentLabel: {
+		id: 'app.appearance-settings.accent-color.custom',
+		defaultMessage: 'Custom',
+	},
 	customBackgroundTitle: {
 		id: 'app.appearance-settings.custom-background.title',
-		defaultMessage: 'Launcher background',
+		defaultMessage: 'Launcher Background',
 	},
 	customBackgroundDescription: {
 		id: 'app.appearance-settings.custom-background.description',
-		defaultMessage: 'Choose a custom image and fine-tune how it blends with the launcher interface.',
+		defaultMessage:
+			'Choose a custom image and adjust how it blends with the launcher interface.',
 	},
 	customBackgroundEmpty: {
 		id: 'app.appearance-settings.custom-background.empty',
@@ -113,11 +118,11 @@ const messages = defineMessages({
 	},
 	customBackgroundChoose: {
 		id: 'app.appearance-settings.custom-background.choose',
-		defaultMessage: 'Choose image',
+		defaultMessage: 'Choose Image',
 	},
 	customBackgroundReplace: {
 		id: 'app.appearance-settings.custom-background.replace',
-		defaultMessage: 'Replace image',
+		defaultMessage: 'Replace Image',
 	},
 	customBackgroundRemove: {
 		id: 'app.appearance-settings.custom-background.remove',
@@ -125,57 +130,57 @@ const messages = defineMessages({
 	},
 	customBackgroundBlur: {
 		id: 'app.appearance-settings.custom-background.blur',
-		defaultMessage: 'Background blur',
+		defaultMessage: 'Background Blur',
 	},
 	customBackgroundBlurDescription: {
 		id: 'app.appearance-settings.custom-background.blur-description',
-		defaultMessage: 'Soften image details to keep launcher content easy to read.',
+		defaultMessage: 'Softens image details to keep launcher content legible.',
 	},
 	customBackgroundOpacity: {
 		id: 'app.appearance-settings.custom-background.opacity',
-		defaultMessage: 'Background visibility',
+		defaultMessage: 'Background Visibility',
 	},
 	customBackgroundOpacityDescription: {
 		id: 'app.appearance-settings.custom-background.opacity-description',
-		defaultMessage: 'Control how strongly the image shows through the interface.',
+		defaultMessage: 'Controls how strongly the background image shows through the interface.',
 	},
 	advancedRenderingTitle: {
 		id: 'app.appearance-settings.advanced-rendering.title',
-		defaultMessage: 'Advanced rendering',
+		defaultMessage: 'Advanced Rendering',
 	},
 	advancedRenderingDescription: {
 		id: 'app.appearance-settings.advanced-rendering.description',
 		defaultMessage:
-			'Enables advanced rendering such as blur effects that may cause performance issues without hardware-accelerated rendering.',
+			'Enables advanced rendering such as blur effects. May cause performance issues without hardware acceleration.',
 	},
 	hideNametagTitle: {
 		id: 'app.appearance-settings.hide-nametag.title',
-		defaultMessage: 'Hide nametag',
+		defaultMessage: 'Hide Name Tags',
 	},
 	hideNametagDescription: {
 		id: 'app.appearance-settings.hide-nametag.description',
-		defaultMessage: 'Disables the nametag above your player on the skins page.',
+		defaultMessage: 'Hide the name tag above players on the skins page.',
 	},
 	nativeDecorationsTitle: {
 		id: 'app.appearance-settings.native-decorations.title',
-		defaultMessage: 'Native decorations',
+		defaultMessage: 'Native Window Decorations',
 	},
 	nativeDecorationsDescription: {
 		id: 'app.appearance-settings.native-decorations.description',
-		defaultMessage: 'Use system window frame (app restart required).',
+		defaultMessage: 'Use the system window borders. (Requires app restart)',
 	},
 	imageViewerTitle: {
 		id: 'app.appearance-settings.image-viewer.title',
-		defaultMessage: 'In-app image viewer',
+		defaultMessage: 'In-App Image Viewer',
 	},
 	imageViewerDescription: {
 		id: 'app.appearance-settings.image-viewer.description',
 		defaultMessage:
-			'Open screenshots and images inside the launcher instead of the system default image viewer.',
+			'Open screenshots and images inside the launcher instead of using the system default image viewer.',
 	},
 	settingsAsPageTitle: {
 		id: 'app.appearance-settings.settings-as-page.title',
-		defaultMessage: 'Settings as page',
+		defaultMessage: 'Settings as Page',
 	},
 	settingsAsPageDescription: {
 		id: 'app.appearance-settings.settings-as-page.description',
@@ -184,38 +189,42 @@ const messages = defineMessages({
 	},
 	skinClickParticlesTitle: {
 		id: 'app.appearance-settings.skin-click-particles.title',
-		defaultMessage: 'Skin preview click particles',
+		defaultMessage: 'Skin Preview Click Particles',
 	},
 	skinClickParticlesDescription: {
 		id: 'app.appearance-settings.skin-click-particles.description',
 		defaultMessage:
-			'Spawn pixel particles when clicking the 3D skin model on the Skins page.',
+			'Generate pixel particles when clicking on the 3D skin model on the skins page.',
 	},
 	skinHeadTrackingTitle: {
 		id: 'app.appearance-settings.skin-head-tracking.title',
-		defaultMessage: 'Skin preview head tracking',
+		defaultMessage: 'Skin Preview Head Tracking',
 	},
 	skinHeadTrackingDescription: {
 		id: 'app.appearance-settings.skin-head-tracking.description',
 		defaultMessage:
-			'The skin model\'s head gently follows your mouse cursor as it moves over the preview.',
+			'The skin model\'s head gently follows the mouse cursor as it moves.',
 	},
 	skinParticleBgTitle: {
 		id: 'app.appearance-settings.skin-particle-bg.title',
-		defaultMessage: 'Skin preview particle background',
+		defaultMessage: 'Skin Preview Particle Background',
 	},
 	skinParticleBgDescription: {
 		id: 'app.appearance-settings.skin-particle-bg.description',
 		defaultMessage:
-			'Add floating ambient particles behind the 3D skin model for extra atmosphere.',
+			'Add floating ambient particles behind the 3D skin model to enhance the atmosphere.',
 	},
 	toggleSidebarTitle: {
 		id: 'app.appearance-settings.toggle-sidebar.title',
-		defaultMessage: 'Toggle sidebar',
+		defaultMessage: 'Toggle Sidebar',
 	},
 	toggleSidebarDescription: {
 		id: 'app.appearance-settings.toggle-sidebar.description',
-		defaultMessage: 'Enables the ability to toggle the sidebar.',
+		defaultMessage: 'Enable manual show/hide toggling of the sidebar.',
+	},
+	skinPreviewEffectsHeading: {
+		id: 'app.appearance-settings.skin-preview-effects.heading',
+		defaultMessage: 'Skin Preview Effects',
 	},
 })
 
@@ -313,7 +322,7 @@ watch(
 								: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
 						}"
 					/>
-					<span class="truncate">Custom</span>
+					<span class="truncate">{{ formatMessage(messages.customAccentLabel) }}</span>
 					<CheckIcon
 						v-if="themeStore.customAccentColor"
 						class="ml-auto size-4 shrink-0"
@@ -518,7 +527,7 @@ watch(
 
 	<div class="mt-8 mb-2 border-t border-surface-5 pt-6">
 		<h2 class="m-0 text-sm font-bold uppercase tracking-wide text-tertiary">
-			Skin Preview Effects
+			{{ formatMessage(messages.skinPreviewEffectsHeading) }}
 		</h2>
 	</div>
 

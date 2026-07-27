@@ -3,29 +3,33 @@ import { ButtonStyled, Combobox, defineMessages, StyledInput, Toggle, useVIntl }
 import { computed, ref, watch } from 'vue'
 
 import { get, set } from '@/helpers/settings.ts'
+import { useTheming } from '@/store/state'
+import type { FeatureFlag } from '@/store/theme.ts'
+
+const themeStore = useTheming()
 
 const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
 	javaArgumentsTitle: {
 		id: 'app.advanced-instance.java-arguments.title',
-		defaultMessage: 'Java arguments',
+		defaultMessage: 'Java Arguments',
 	},
 	resetToDefault: {
 		id: 'app.advanced-instance.reset-to-default',
-		defaultMessage: 'Reset to default',
+		defaultMessage: 'Reset to Default',
 	},
 	javaArgumentsPlaceholder: {
 		id: 'app.advanced-instance.java-arguments.placeholder',
-		defaultMessage: 'Enter java arguments...',
+		defaultMessage: 'Enter Java arguments...',
 	},
 	envVariablesTitle: {
 		id: 'app.advanced-instance.env-variables.title',
-		defaultMessage: 'Environmental variables',
+		defaultMessage: 'Environment Variables',
 	},
 	envVariablesPlaceholder: {
 		id: 'app.advanced-instance.env-variables.placeholder',
-		defaultMessage: 'Enter environmental variables...',
+		defaultMessage: 'Enter environment variables...',
 	},
 	hooksTitle: {
 		id: 'app.advanced-instance.hooks.title',
@@ -33,7 +37,7 @@ const messages = defineMessages({
 	},
 	preLaunchHookTitle: {
 		id: 'app.advanced-instance.pre-launch-hook.title',
-		defaultMessage: 'Pre-launch hook',
+		defaultMessage: 'Pre-Launch Hook',
 	},
 	preLaunchHookPlaceholder: {
 		id: 'app.advanced-instance.pre-launch-hook.placeholder',
@@ -41,15 +45,15 @@ const messages = defineMessages({
 	},
 	preLaunchHookDescription: {
 		id: 'app.advanced-instance.pre-launch-hook.description',
-		defaultMessage: 'Ran before the instance is launched.',
+		defaultMessage: 'Executed before launching the instance.',
 	},
 	preLaunchWait: {
 		id: 'app.advanced-instance.pre-launch-wait',
-		defaultMessage: 'Wait for command to finish before launching',
+		defaultMessage: 'Wait for command to complete before launching',
 	},
 	wrapperHookTitle: {
 		id: 'app.advanced-instance.wrapper-hook.title',
-		defaultMessage: 'Wrapper hook',
+		defaultMessage: 'Wrapper Hook',
 	},
 	wrapperHookPlaceholder: {
 		id: 'app.advanced-instance.wrapper-hook.placeholder',
@@ -57,11 +61,11 @@ const messages = defineMessages({
 	},
 	wrapperHookDescription: {
 		id: 'app.advanced-instance.wrapper-hook.description',
-		defaultMessage: 'Wrapper command for launching Minecraft.',
+		defaultMessage: 'Wrapper command used to launch Minecraft.',
 	},
 	postExitHookTitle: {
 		id: 'app.advanced-instance.post-exit-hook.title',
-		defaultMessage: 'Post-exit hook',
+		defaultMessage: 'Post-Exit Hook',
 	},
 	postExitHookPlaceholder: {
 		id: 'app.advanced-instance.post-exit-hook.placeholder',
@@ -69,11 +73,11 @@ const messages = defineMessages({
 	},
 	postExitHookDescription: {
 		id: 'app.advanced-instance.post-exit-hook.description',
-		defaultMessage: 'Ran after the game closes.',
+		defaultMessage: 'Executed after the game closes.',
 	},
 	advancedLaunchOptionsTitle: {
 		id: 'app.advanced-instance.advanced-launch-options.title',
-		defaultMessage: 'Advanced launch options',
+		defaultMessage: 'Advanced Launch Options',
 	},
 	rendererTitle: {
 		id: 'app.advanced-instance.renderer.title',
@@ -89,7 +93,7 @@ const messages = defineMessages({
 	},
 	rendererLlvmpipe: {
 		id: 'app.advanced-instance.renderer.llvmpipe',
-		defaultMessage: 'llvmpipe (software)',
+		defaultMessage: 'llvmpipe (Software Renderer)',
 	},
 	rendererD3d12: {
 		id: 'app.advanced-instance.renderer.d3d12',
@@ -101,7 +105,7 @@ const messages = defineMessages({
 	},
 	extraGameArgsTitle: {
 		id: 'app.advanced-instance.extra-game-args.title',
-		defaultMessage: 'Extra game arguments',
+		defaultMessage: 'Extra Game Arguments',
 	},
 	extraGameArgsPlaceholder: {
 		id: 'app.advanced-instance.extra-game-args.placeholder',
@@ -113,11 +117,11 @@ const messages = defineMessages({
 	},
 	highPerfGpuTitle: {
 		id: 'app.advanced-instance.high-perf-gpu.title',
-		defaultMessage: 'High-performance GPU',
+		defaultMessage: 'High-Performance GPU',
 	},
 	highPerfGpuDescription: {
 		id: 'app.advanced-instance.high-perf-gpu.description',
-		defaultMessage: 'Request the high-performance GPU for the game process.',
+		defaultMessage: 'Request the use of a high-performance discrete GPU for the game process.',
 	},
 	useJavaExeTitle: {
 		id: 'app.advanced-instance.use-java-exe.title',
@@ -126,7 +130,7 @@ const messages = defineMessages({
 	useJavaExeDescription: {
 		id: 'app.advanced-instance.use-java-exe.description',
 		defaultMessage:
-			'Use java.exe instead of javaw.exe. Provides a console window for debugging.',
+			'Use java.exe instead of javaw.exe, providing a console window for debugging.',
 	},
 	compatibilityTitle: {
 		id: 'app.advanced-instance.compatibility.title',
@@ -138,7 +142,7 @@ const messages = defineMessages({
 	},
 	disableJlwDescription: {
 		id: 'app.advanced-instance.disable-jlw.description',
-		defaultMessage: 'Disable the theseus.jar launch wrapper. May break some features.',
+		defaultMessage: 'Disable the theseus.jar launch wrapper. Some features may not work.',
 	},
 	disableLfTitle: {
 		id: 'app.advanced-instance.disable-lf.title',
@@ -146,7 +150,7 @@ const messages = defineMessages({
 	},
 	disableLfDescription: {
 		id: 'app.advanced-instance.disable-lf.description',
-		defaultMessage: 'Disable compatibility fixes for old Minecraft versions.',
+		defaultMessage: 'Disable compatibility fixes for older versions of Minecraft.',
 	},
 	disableLwjglTitle: {
 		id: 'app.advanced-instance.disable-lwjgl.title',
@@ -154,7 +158,28 @@ const messages = defineMessages({
 	},
 	disableLwjglDescription: {
 		id: 'app.advanced-instance.disable-lwjgl.description',
-		defaultMessage: 'Disable the LWJGL unsafe agent that patches FFM API performance issues.',
+		defaultMessage: 'Disable the LWJGL Unsafe Agent that patches FFM API performance issues.',
+	},
+	skipUnknownPackTitle: {
+		id: 'app.advanced-instance.skip-unknown-pack.title',
+		defaultMessage: 'Skip Unknown Pack Warning',
+	},
+	skipUnknownPackDescription: {
+		id: 'app.advanced-instance.skip-unknown-pack.description',
+		defaultMessage: 'No longer show a risk warning when installing .mrpack files not hosted on Modrinth.',
+	},
+	skipNonEssentialWarningsTitle: {
+		id: 'app.advanced-instance.skip-non-essential-warnings.title',
+		defaultMessage: 'Skip Non-Essential Warnings',
+	},
+	skipNonEssentialWarningsDescription: {
+		id: 'app.advanced-instance.skip-non-essential-warnings.description',
+		defaultMessage:
+			'Automatically skip low-risk confirmation dialogs such as duplicate installs, regular deletions, batch updates, unlinking modpacks, and repair prompts. Dangerous warnings will still be shown.',
+	},
+	warningsTitle: {
+		id: 'app.advanced-instance.warnings.title',
+		defaultMessage: 'Warnings & Confirmations',
 	},
 })
 
@@ -174,6 +199,11 @@ const showJvmReset = computed(() => settings.value.launchArgs.trim() !== DEFAULT
 
 function resetJvmArgs() {
 	settings.value.launchArgs = DEFAULT_JVM_ARGS
+}
+
+function setFeatureFlag(key: FeatureFlag, value: boolean) {
+	themeStore.featureFlags[key] = value
+	settings.value.feature_flags[key] = value
 }
 
 watch(
@@ -422,6 +452,45 @@ watch(
 					</p>
 				</div>
 				<Toggle id="disable-lwjgl" v-model="settings.disable_lwjgl_unsafe_agent" />
+			</div>
+		</div>
+
+		<hr class="my-6 bg-button-border border-none h-[1px]" />
+
+		<!-- Warnings & confirmations -->
+		<div class="flex flex-col gap-6">
+			<h3 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.warningsTitle) }}</h3>
+
+			<div class="flex items-center justify-between gap-4">
+				<div class="flex flex-col gap-1">
+					<h4 class="m-0 text-sm font-semibold text-contrast">
+						{{ formatMessage(messages.skipUnknownPackTitle) }}
+					</h4>
+					<p class="m-0 leading-tight">
+						{{ formatMessage(messages.skipUnknownPackDescription) }}
+					</p>
+				</div>
+				<Toggle
+					id="skip-unknown-pack"
+					:model-value="themeStore.getFeatureFlag('skip_unknown_pack_warning')"
+					@update:model-value="() => setFeatureFlag('skip_unknown_pack_warning', !themeStore.getFeatureFlag('skip_unknown_pack_warning'))"
+				/>
+			</div>
+
+			<div class="flex items-center justify-between gap-4">
+				<div class="flex flex-col gap-1">
+					<h4 class="m-0 text-sm font-semibold text-contrast">
+						{{ formatMessage(messages.skipNonEssentialWarningsTitle) }}
+					</h4>
+					<p class="m-0 leading-tight">
+						{{ formatMessage(messages.skipNonEssentialWarningsDescription) }}
+					</p>
+				</div>
+				<Toggle
+					id="skip-non-essential-warnings"
+					:model-value="themeStore.getFeatureFlag('skip_non_essential_warnings')"
+					@update:model-value="() => setFeatureFlag('skip_non_essential_warnings', !themeStore.getFeatureFlag('skip_non_essential_warnings'))"
+				/>
 			</div>
 		</div>
 	</div>
