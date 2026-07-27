@@ -40,6 +40,7 @@ import {
 	get_search_results_v3,
 	get_version_many,
 } from '@/helpers/cache.js'
+import { cfGetFileDownloadUrl, cfGetModFiles, cfInstallFile, cfSearch } from '@/helpers/curseforge'
 import { instance_listener } from '@/helpers/events.js'
 import {
 	get as getInstance,
@@ -49,7 +50,6 @@ import { getInstanceIconSrc } from '@/helpers/instance-icon'
 import { get_loader_versions as getLoaderManifest } from '@/helpers/metadata'
 import { get_categories, get_game_versions, get_loaders } from '@/helpers/tags'
 import { get_instance_worlds } from '@/helpers/worlds'
-import { cfGetFileDownloadUrl, cfGetModFiles, cfInstallFile, cfSearch } from '@/helpers/curseforge'
 import { injectContentInstall } from '@/providers/content-install'
 import { injectServerInstall } from '@/providers/server-install'
 import {
@@ -1305,34 +1305,36 @@ provideBrowseManager({
 
 <template>
 	<div class="flex flex-col gap-3 p-6">
-		<!-- Source switcher: Modrinth / CurseForge -->
-		<div
-			v-if="projectType !== 'server' && !isServerContext && !isFromWorlds"
-			class="flex items-center gap-3"
-		>
-			<span class="text-sm font-medium text-secondary">{{ 'Source:' }}</span>
-			<div class="flex rounded-lg bg-surface-2 p-0.5">
-				<button
-					class="rounded-md px-4 py-1.5 text-sm font-medium leading-5 transition-all duration-150"
-					:class="
-						browseSource === 'modrinth'
-							? 'bg-color-brand text-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]'
-							: 'text-secondary hover:text-contrast hover:bg-surface-4'
-					"
-					@click="browseSource = 'modrinth'"
-				>
-					{{ formatMessage(messages.browseSourceModrinth) }}
-				</button>
-				<button
-					class="cursor-not-allowed rounded-md px-4 py-1.5 text-sm font-medium leading-5 text-tertiary opacity-50"
-					disabled
-					v-tooltip="formatMessage(messages.curseforgeWip)"
-				>
-					{{ formatMessage(messages.browseSourceCurseforge) }}
-				</button>
-			</div>
-		</div>
 		<BrowsePageLayout>
+			<template #install-header-after>
+				<!-- Source switcher: Modrinth / CurseForge -->
+				<div
+					v-if="projectType !== 'server' && !isServerContext && !isFromWorlds"
+					class="flex items-center gap-3"
+				>
+					<span class="text-sm font-medium text-secondary">{{ 'Source:' }}</span>
+					<div class="flex rounded-lg bg-surface-2 p-0.5">
+						<button
+							class="rounded-md px-4 py-1.5 text-sm font-medium leading-5 transition-all duration-150"
+							:class="
+								browseSource === 'modrinth'
+									? 'bg-color-brand text-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]'
+									: 'text-secondary hover:text-contrast hover:bg-surface-4'
+							"
+							@click="browseSource = 'modrinth'"
+						>
+							{{ formatMessage(messages.browseSourceModrinth) }}
+						</button>
+						<button
+							v-tooltip="formatMessage(messages.curseforgeWip)"
+							class="cursor-not-allowed rounded-md px-4 py-1.5 text-sm font-medium leading-5 text-tertiary opacity-50"
+							disabled
+						>
+							{{ formatMessage(messages.browseSourceCurseforge) }}
+						</button>
+					</div>
+				</div>
+			</template>
 			<template #after>
 				<ContextMenu ref="contextMenuRef" @option-clicked="handleOptionsClick">
 					<template #open_link>

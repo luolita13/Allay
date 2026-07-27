@@ -52,7 +52,6 @@
 				</div>
 			</div>
 		</Card>
-
 	</div>
 </template>
 
@@ -85,9 +84,15 @@ const messages = defineMessages({
 	linkType: { id: 'app.instance.overview.link-type', defaultMessage: 'Source' },
 	updateChannel: { id: 'app.instance.overview.update-channel', defaultMessage: 'Update channel' },
 	installed: { id: 'app.instance.overview.status.installed', defaultMessage: 'Installed' },
-	notInstalled: { id: 'app.instance.overview.status.not-installed', defaultMessage: 'Not installed' },
+	notInstalled: {
+		id: 'app.instance.overview.status.not-installed',
+		defaultMessage: 'Not installed',
+	},
 	installing: { id: 'app.instance.overview.status.installing', defaultMessage: 'Installing' },
-	packInstalled: { id: 'app.instance.overview.status.pack-installed', defaultMessage: 'Modpack installed' },
+	packInstalled: {
+		id: 'app.instance.overview.status.pack-installed',
+		defaultMessage: 'Modpack installed',
+	},
 	packInstalling: {
 		id: 'app.instance.overview.status.pack-installing',
 		defaultMessage: 'Modpack installing',
@@ -97,12 +102,27 @@ const messages = defineMessages({
 		defaultMessage: 'Minecraft installing',
 	},
 	neverPlayed: { id: 'app.instance.overview.never-played', defaultMessage: 'Never played' },
-	modrinthModpack: { id: 'app.instance.overview.link-type.modrinth-modpack', defaultMessage: 'Modrinth modpack' },
-	serverProject: { id: 'app.instance.overview.link-type.server-project', defaultMessage: 'Server project' },
-	serverModpack: { id: 'app.instance.overview.link-type.server-modpack', defaultMessage: 'Server modpack' },
-	importedModpack: { id: 'app.instance.overview.link-type.imported-modpack', defaultMessage: 'Imported modpack' },
+	modrinthModpack: {
+		id: 'app.instance.overview.link-type.modrinth-modpack',
+		defaultMessage: 'Modrinth modpack',
+	},
+	serverProject: {
+		id: 'app.instance.overview.link-type.server-project',
+		defaultMessage: 'Server project',
+	},
+	serverModpack: {
+		id: 'app.instance.overview.link-type.server-modpack',
+		defaultMessage: 'Server modpack',
+	},
+	importedModpack: {
+		id: 'app.instance.overview.link-type.imported-modpack',
+		defaultMessage: 'Imported modpack',
+	},
 	hosting: { id: 'app.instance.overview.link-type.hosting', defaultMessage: 'Hosting' },
-	sharedInstance: { id: 'app.instance.overview.link-type.shared-instance', defaultMessage: 'Shared instance' },
+	sharedInstance: {
+		id: 'app.instance.overview.link-type.shared-instance',
+		defaultMessage: 'Shared instance',
+	},
 })
 
 const props = defineProps<{
@@ -115,9 +135,8 @@ const props = defineProps<{
 	openSettings?: () => void
 }>()
 
-const emit = defineEmits<{
-	(event: 'play'): void
-	(event: 'stop'): void
+defineEmits<{
+	(event: 'play' | 'stop'): void
 }>()
 
 const instance = computed(() => props.instance)
@@ -176,7 +195,6 @@ function formatLinkType(type: string): string {
 	}
 	return labels[type] ?? type
 }
-
 </script>
 
 <style scoped lang="scss">
@@ -205,5 +223,4 @@ function formatLinkType(type: string): string {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-
 </style>

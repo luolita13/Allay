@@ -69,7 +69,7 @@
 			<template #delete><TrashIcon /> {{ formatMessage(messages.delete) }}</template>
 		</ContextMenu>
 
-		<ConfirmModalWrapper
+		<ConfirmModal
 			ref="deleteConfirmModal"
 			:title="formatMessage(messages.delete)"
 			:description="formatMessage(messages.confirmDelete, { name: selected?.name ?? '' })"
@@ -91,6 +91,7 @@ import {
 import {
 	ButtonStyled,
 	commonMessages,
+	ConfirmModal,
 	defineMessages,
 	EmptyState,
 	injectNotificationManager,
@@ -105,7 +106,6 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
-import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
 import ImageViewer from '@/components/ui/ImageViewer.vue'
 import { get_full_path } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'

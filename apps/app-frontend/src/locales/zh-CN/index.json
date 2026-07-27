@@ -104,35 +104,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "色彩主题"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "更改启动器打开的页面。"
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "首页"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "库"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "默认起始页"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "在皮肤页面中禁用你玩家头顶上的名牌。"
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "隐藏名牌"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "在主页的“快速回到”部分包含最近的世界。"
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "快速回到世界"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "当 Minecraft 进程启动时，将启动器最小化。"
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "最小化启动器"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "使用系统窗口边框（需要重启应用）。"
@@ -140,50 +116,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "原生窗口"
   },
-  "app.appearance-settings.select-option": {
-    "message": "选择一个选项"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "显示你在每个实例中游玩的时间。"
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "显示总游玩时间"
-  },
-  "app.appearance-settings.background-blur.description": {
-    "message": "调整应用到背景图的模糊程度。"
-  },
-  "app.appearance-settings.background-blur.title": {
-    "message": "背景模糊"
-  },
-  "app.appearance-settings.background-image.clear-button": {
-    "message": "清除"
-  },
-  "app.appearance-settings.background-image.description": {
-    "message": "为启动器设置自定义背景图。"
-  },
-  "app.appearance-settings.background-image.select-button": {
-    "message": "选择图片"
-  },
-  "app.appearance-settings.background-image.title": {
-    "message": "背景图"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "自动跳过低风险确认，包括重复安装整合包、常规内容删除、批量更新、解除整合包关联及修复提示。危险警告仍会显示。"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "跳过非必要的警告"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "启用切换侧边栏的功能。"
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "切换侧边栏"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "如果你尝试安装一个未托管在 Modrinth 上的 Modrinth 整合包文件（.mrpack），我们会确保你在安装之前了解相关风险。"
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "安装未知整合包前提醒我"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraft 身份验证服务器现在可能无法使用。请检查你的网络连接，并稍后再试。"
@@ -365,12 +302,6 @@
   "app.create-instance.versions": {
     "message": "个版本"
   },
-  "app.default-instance.advanced-launch-options.title": {
-    "message": "高级启动选项"
-  },
-  "app.default-instance.compatibility.title": {
-    "message": "兼容性"
-  },
   "app.default-instance.custom-info.hint": {
     "message": "显示在游戏左下角和 F3 调试屏幕。"
   },
@@ -379,39 +310,6 @@
   },
   "app.default-instance.custom-info.title": {
     "message": "自定义信息"
-  },
-  "app.default-instance.disable-jlw.description": {
-    "message": "禁用 theseus.jar 启动包装器。可能导致某些功能失效。"
-  },
-  "app.default-instance.disable-jlw.title": {
-    "message": "禁用 Java 启动包装器"
-  },
-  "app.default-instance.disable-lf.description": {
-    "message": "禁用旧版 Minecraft 的兼容性修复。"
-  },
-  "app.default-instance.disable-lf.title": {
-    "message": "禁用 LegacyFix"
-  },
-  "app.default-instance.disable-lwjgl.description": {
-    "message": "禁用修补 FFM API 性能问题的 LWJGL unsafe agent。"
-  },
-  "app.default-instance.disable-lwjgl.title": {
-    "message": "禁用 LWJGL Unsafe Agent"
-  },
-  "app.default-instance.env-variables.placeholder": {
-    "message": "输入环境变量……"
-  },
-  "app.default-instance.env-variables.title": {
-    "message": "环境变量"
-  },
-  "app.default-instance.extra-game-args.hint": {
-    "message": "追加到 Minecraft 启动参数末尾。"
-  },
-  "app.default-instance.extra-game-args.placeholder": {
-    "message": "例如 --demo"
-  },
-  "app.default-instance.extra-game-args.title": {
-    "message": "额外游戏参数"
   },
   "app.default-instance.fullscreen.description": {
     "message": "启动时覆盖 options.txt 文件以全屏模式启动。"
@@ -428,15 +326,6 @@
   "app.default-instance.height.title": {
     "message": "高度"
   },
-  "app.default-instance.high-perf-gpu.description": {
-    "message": "为游戏进程请求使用高性能 GPU。"
-  },
-  "app.default-instance.high-perf-gpu.title": {
-    "message": "高性能 GPU"
-  },
-  "app.default-instance.hooks.title": {
-    "message": "Hooks"
-  },
   "app.default-instance.ip-protocol.description": {
     "message": "Java 网络的首选 IP 协议栈。"
   },
@@ -451,12 +340,6 @@
   },
   "app.default-instance.ip.prefer-v6": {
     "message": "优先 IPv6"
-  },
-  "app.default-instance.java-arguments.placeholder": {
-    "message": "输入 Java 参数……"
-  },
-  "app.default-instance.java-arguments.title": {
-    "message": "Java 参数"
   },
   "app.default-instance.launch-options.title": {
     "message": "启动选项"
@@ -482,27 +365,6 @@
   "app.default-instance.memory-warning": {
     "message": "你正在将超过 75% 的系统内存分配给 Minecraft，这可能导致不稳定。建议使用「自动」模式。"
   },
-  "app.default-instance.post-exit-hook.description": {
-    "message": "在游戏关闭后运行。"
-  },
-  "app.default-instance.post-exit-hook.placeholder": {
-    "message": "输入退出后命令……"
-  },
-  "app.default-instance.post-exit-hook.title": {
-    "message": "退出后钩子"
-  },
-  "app.default-instance.pre-launch-hook.description": {
-    "message": "在实例启动前运行。"
-  },
-  "app.default-instance.pre-launch-hook.placeholder": {
-    "message": "输入启动前命令……"
-  },
-  "app.default-instance.pre-launch-hook.title": {
-    "message": "启动前钩子"
-  },
-  "app.default-instance.pre-launch-wait": {
-    "message": "等待命令完成后再启动"
-  },
   "app.default-instance.priority.above-normal": {
     "message": "高于正常"
   },
@@ -524,33 +386,6 @@
   "app.default-instance.process-priority.title": {
     "message": "进程优先级"
   },
-  "app.default-instance.renderer.d3d12": {
-    "message": "DirectX 12"
-  },
-  "app.default-instance.renderer.default": {
-    "message": "默认"
-  },
-  "app.default-instance.renderer.description": {
-    "message": "覆盖 OpenGL 渲染器。可能导致不稳定。"
-  },
-  "app.default-instance.renderer.llvmpipe": {
-    "message": "llvmpipe（软件渲染）"
-  },
-  "app.default-instance.renderer.title": {
-    "message": "渲染器"
-  },
-  "app.default-instance.renderer.zink": {
-    "message": "Vulkan (Zink)"
-  },
-  "app.default-instance.reset-to-default": {
-    "message": "恢复默认"
-  },
-  "app.default-instance.use-java-exe.description": {
-    "message": "使用 java.exe 替代 javaw.exe。提供控制台窗口用于调试。"
-  },
-  "app.default-instance.use-java-exe.title": {
-    "message": "使用 java.exe"
-  },
   "app.default-instance.width.description": {
     "message": "游戏启动时的窗口宽度。"
   },
@@ -569,53 +404,239 @@
   "app.default-instance.window-title.title": {
     "message": "游戏窗口标题"
   },
-  "app.default-instance.wrapper-hook.description": {
-    "message": "用于启动 Minecraft 的包装器命令。"
+  "app.downloads.in-progress": {
+    "message": "进行中"
   },
-  "app.default-instance.wrapper-hook.placeholder": {
-    "message": "输入包装器命令…"
+  "app.downloads.history": {
+    "message": "历史记录"
   },
-  "app.default-instance.wrapper-hook.title": {
-    "message": "包装器钩子"
+  "app.downloads.search": {
+    "message": "搜索下载"
+  },
+  "app.downloads.all-sources": {
+    "message": "全部来源"
+  },
+  "app.downloads.all-statuses": {
+    "message": "全部状态"
+  },
+  "app.downloads.application": {
+    "message": "应用"
+  },
+  "app.downloads.local": {
+    "message": "本地"
+  },
+  "app.downloads.clear-history": {
+    "message": "清除历史"
+  },
+  "app.downloads.clear-history-title": {
+    "message": "清除下载历史？"
+  },
+  "app.downloads.copy-diagnostics": {
+    "message": "复制诊断信息"
+  },
+  "app.downloads.open-instance": {
+    "message": "打开实例"
+  },
+  "app.downloads.instance-deleted": {
+    "message": "实例已删除"
+  },
+  "app.downloads.details": {
+    "message": "详情"
+  },
+  "app.downloads.hide-details": {
+    "message": "隐藏详情"
+  },
+  "app.downloads.delete-record": {
+    "message": "删除记录"
+  },
+  "app.downloads.error-details": {
+    "message": "下载失败"
+  },
+  "app.downloads.progress": {
+    "message": "进度"
+  },
+  "app.downloads.no-file-details-title": {
+    "message": "无文件详情"
+  },
+  "app.downloads.no-file-details": {
+    "message": "文件将在下载时显示在这里。"
+  },
+  "app.downloads.empty-title": {
+    "message": "暂无下载"
+  },
+  "app.downloads.empty-description": {
+    "message": "新的下载和安装进度将显示在这里。"
+  },
+  "app.downloads.no-results-title": {
+    "message": "无匹配下载"
+  },
+  "app.downloads.no-results-description": {
+    "message": "尝试更改搜索或筛选条件。"
+  },
+  "app.downloads.confirm-clear": {
+    "message": "已完成、失败、中断和取消的记录将被永久删除。"
+  },
+  "app.downloads.instance-target": {
+    "message": "实例：{instance}"
+  },
+  "app.downloads.not-available": {
+    "message": "—"
+  },
+  "app.downloads.item-name": {
+    "message": "文件"
+  },
+  "app.downloads.item-status": {
+    "message": "状态"
+  },
+  "app.downloads.item-attempts": {
+    "message": "尝试次数"
+  },
+  "app.downloads.item-attempt-progress": {
+    "message": "{attempt}/{maxAttempts}"
+  },
+  "app.downloads.item-progress": {
+    "message": "已下载"
+  },
+  "app.downloads.manual-download-required": {
+    "message": "CurseForge 要求手动下载此文件。"
+  },
+  "app.downloads.download-source": {
+    "message": "来源：{source}"
+  },
+  "app.downloads.source.official": {
+    "message": "官方"
+  },
+  "app.downloads.source.bmclapi": {
+    "message": "OpenBMCLAPI"
+  },
+  "app.downloads.source.mcim": {
+    "message": "MCIM"
+  },
+  "app.downloads.source.alternate": {
+    "message": "备用源"
+  },
+  "app.downloads.download-speed": {
+    "message": "速度：{speed}/s"
+  },
+  "app.downloads.download-eta-seconds": {
+    "message": "剩余 {seconds} 秒"
+  },
+  "app.downloads.download-eta-minutes": {
+    "message": "剩余 {minutes} 分钟"
+  },
+  "app.downloads.download-eta-hours": {
+    "message": "剩余 {hours} 小时 {minutes} 分钟"
+  },
+  "app.downloads.download-fallbacks": {
+    "message": "{count} 次回退"
+  },
+  "app.downloads.curseforge-file-install": {
+    "message": "CurseForge 文件安装"
+  },
+  "app.downloads.job-kind": {
+    "message": "类型"
+  },
+  "app.downloads.target-label": {
+    "message": "目标"
+  },
+  "app.downloads.target-new-instance": {
+    "message": "新建实例"
+  },
+  "app.downloads.target-existing-instance": {
+    "message": "现有实例"
+  },
+  "app.downloads.file-details-description": {
+    "message": "此下载任务中的单个文件"
+  },
+  "app.downloads.kind.create-instance": {
+    "message": "创建实例"
+  },
+  "app.downloads.kind.create-modpack": {
+    "message": "创建整合包实例"
+  },
+  "app.downloads.kind.import-instance": {
+    "message": "导入实例"
+  },
+  "app.downloads.kind.duplicate-instance": {
+    "message": "复制实例"
+  },
+  "app.downloads.kind.install-existing": {
+    "message": "安装至实例"
+  },
+  "app.downloads.kind.install-pack": {
+    "message": "安装整合包至实例"
+  },
+  "app.downloads.kind.install-content": {
+    "message": "安装内容"
+  },
+  "app.downloads.status.waiting-for-user": {
+    "message": "需要操作"
+  },
+  "app.downloads.item-status.completed": {
+    "message": "已完成"
+  },
+  "app.downloads.item-status.skipped": {
+    "message": "已跳过"
+  },
+  "app.downloads.item-status.downloading": {
+    "message": "下载中"
+  },
+  "app.downloads.item-status.verifying": {
+    "message": "校验中"
+  },
+  "app.downloads.item-status.writing": {
+    "message": "写入中"
+  },
+  "app.downloads.phase.preparing-instance": {
+    "message": "准备实例"
+  },
+  "app.downloads.phase.resolving-pack": {
+    "message": "解析整合包"
+  },
+  "app.downloads.phase.downloading-pack-file": {
+    "message": "下载整合包"
+  },
+  "app.downloads.phase.reading-pack-manifest": {
+    "message": "读取清单"
+  },
+  "app.downloads.phase.downloading-content": {
+    "message": "下载内容"
+  },
+  "app.downloads.phase.extracting-overrides": {
+    "message": "提取覆盖文件"
+  },
+  "app.downloads.phase.resolving-minecraft": {
+    "message": "解析 Minecraft"
+  },
+  "app.downloads.phase.resolving-loader": {
+    "message": "解析加载器"
+  },
+  "app.downloads.phase.preparing-java": {
+    "message": "准备 Java"
+  },
+  "app.downloads.phase.downloading-minecraft": {
+    "message": "下载 Minecraft"
+  },
+  "app.downloads.phase.running-loader-processors": {
+    "message": "安装加载器"
+  },
+  "app.downloads.phase.finalizing": {
+    "message": "正在完成"
+  },
+  "app.downloads.phase.rolling-back": {
+    "message": "回滚更改"
+  },
+  "app.curseforge.manual-downloads.open": {
+    "message": "打开"
+  },
+  "app.curseforge.manual-downloads.project-file": {
+    "message": "项目 {projectId} · 文件 {fileId}"
   },
   "app.downloads.cancel": {
     "message": "取消"
   },
-  "app.downloads.created": {
-    "message": "创建时间"
-  },
-  "app.downloads.dismiss": {
-    "message": "忽略"
-  },
-  "app.downloads.error": {
-    "message": "错误"
-  },
-  "app.downloads.no-downloads": {
-    "message": "没有下载"
-  },
-  "app.downloads.no-downloads-description": {
-    "message": "当前没有进行中的下载，也没有近期下载记录。"
-  },
-  "app.downloads.pause": {
-    "message": "暂停"
-  },
   "app.downloads.refresh": {
     "message": "刷新"
-  },
-  "app.downloads.resume": {
-    "message": "继续"
-  },
-  "app.downloads.tab.active": {
-    "message": "下载中"
-  },
-  "app.downloads.tab.active-count": {
-    "message": "下载中 ({count})"
-  },
-  "app.downloads.tab.finished": {
-    "message": "已完成"
-  },
-  "app.downloads.tab.finished-count": {
-    "message": "已完成 ({count})"
   },
   "app.downloads.retry": {
     "message": "重试"
@@ -629,9 +650,6 @@
   "app.downloads.status.interrupted": {
     "message": "已中断"
   },
-  "app.downloads.status.paused": {
-    "message": "已暂停"
-  },
   "app.downloads.status.queued": {
     "message": "队列中"
   },
@@ -640,15 +658,6 @@
   },
   "app.downloads.status.succeeded": {
     "message": "成功"
-  },
-  "app.downloads.title": {
-    "message": "下载"
-  },
-  "app.downloads.unknown-job": {
-    "message": "安装任务"
-  },
-  "app.downloads.updated": {
-    "message": "更新时间"
   },
   "app.error-modal.cancel-directory-change": {
     "message": "取消目录更改"
@@ -1679,6 +1688,75 @@
   "app.game-link.join.hint": {
     "message": "正在建立点对点网络，最多可能需要 15 秒。"
   },
+  "app.game-link.report.button": {
+    "message": "举报"
+  },
+  "app.game-link.report.title": {
+    "message": "举报问题"
+  },
+  "app.game-link.report.category": {
+    "message": "分类"
+  },
+  "app.game-link.report.category.inappropriate-content": {
+    "message": "不当内容与言论"
+  },
+  "app.game-link.report.category.multiplayer-disruption": {
+    "message": "联机秩序违规"
+  },
+  "app.game-link.report.category.cheating-fairness": {
+    "message": "作弊与公平性"
+  },
+  "app.game-link.report.category.fraud-trading": {
+    "message": "交易与欺诈"
+  },
+  "app.game-link.report.category.account-security": {
+    "message": "账号与安全"
+  },
+  "app.game-link.report.category.platform-abuse": {
+    "message": "平台功能滥用"
+  },
+  "app.game-link.report.category.other": {
+    "message": "其他"
+  },
+  "app.game-link.report.description": {
+    "message": "描述"
+  },
+  "app.game-link.report.description-hint": {
+    "message": "描述您遇到的问题"
+  },
+  "app.game-link.report.player": {
+    "message": "举报玩家（可选）"
+  },
+  "app.game-link.report.submit": {
+    "message": "提交举报"
+  },
+  "app.game-link.report.under-construction": {
+    "message": "此功能正在建设中，将在未来版本中可用。"
+  },
+  "app.game-link.report.attach-logs": {
+    "message": "自动附加会话日志"
+  },
+  "app.game-link.report.session-info": {
+    "message": "会话信息"
+  },
+  "app.game-link.report.lobby-code": {
+    "message": "房间码"
+  },
+  "app.game-link.report.player-count": {
+    "message": "房间内玩家"
+  },
+  "app.game-link.chat.title": {
+    "message": "房间聊天"
+  },
+  "app.game-link.chat.empty": {
+    "message": "还没有消息，说点什么吧！"
+  },
+  "app.game-link.chat.placeholder": {
+    "message": "输入消息..."
+  },
+  "app.game-link.chat.send": {
+    "message": "发送"
+  },
   "app.minecraft-auth.contact-support": {
     "message": "联系支持"
   },
@@ -1964,21 +2042,6 @@
   "app.resource-management.app-directory.title": {
     "message": "应用目录"
   },
-  "app.resource-management.community-source.auto": {
-    "message": "自动（推荐）"
-  },
-  "app.resource-management.community-source.description": {
-    "message": "Modrinth mod 文件的下载来源。自动：优先尝试 Modrinth 官方源，失败后回退到 MCIMirror。MCIMirror 优先：优先尝试镜像源，失败后回退到官方源。内容浏览始终使用 Modrinth API。"
-  },
-  "app.resource-management.community-source.mcimirror-first": {
-    "message": "MCIMirror 优先"
-  },
-  "app.resource-management.community-source.modrinth-only": {
-    "message": "仅 Modrinth 官方源"
-  },
-  "app.resource-management.community-source.title": {
-    "message": "社区资源下载源"
-  },
   "app.resource-management.db-backups.button": {
     "message": "打开备份文件夹"
   },
@@ -1997,36 +2060,6 @@
   "app.resource-management.launcher-logs.title": {
     "message": "启动器日志"
   },
-  "app.resource-management.game-file-source.auto": {
-    "message": "自动（推荐）"
-  },
-  "app.resource-management.game-file-source.bmclapi-first": {
-    "message": "BMCLAPI 优先"
-  },
-  "app.resource-management.game-file-source.description": {
-    "message": "Minecraft 游戏文件（客户端 JAR、库、资源）的下载来源。自动：优先尝试 Mojang 官方源，失败后回退到 BMCLAPI。BMCLAPI 优先：优先尝试镜像源，失败后回退到官方源。"
-  },
-  "app.resource-management.game-file-source.mojang-only": {
-    "message": "仅 Mojang 官方源"
-  },
-  "app.resource-management.game-file-source.title": {
-    "message": "游戏文件下载源"
-  },
-  "app.resource-management.version-list-source.auto": {
-    "message": "自动（推荐）"
-  },
-  "app.resource-management.version-list-source.bmclapi-first": {
-    "message": "BMCLAPI 优先"
-  },
-  "app.resource-management.version-list-source.description": {
-    "message": "Minecraft 版本列表和加载器元数据（Forge、NeoForge、Fabric、Quilt）的来源。自动：优先尝试官方源，失败后回退到 BMCLAPI。BMCLAPI 优先：优先尝试镜像源，失败后回退到官方源。"
-  },
-  "app.resource-management.version-list-source.mojang-only": {
-    "message": "仅官方源"
-  },
-  "app.resource-management.version-list-source.title": {
-    "message": "版本列表源"
-  },
   "app.resource-management.max-concurrent-downloads.description": {
     "message": "启动器同时下载文件的最大数量。如果你的网络连接较差，请设为较低的值。（需重启应用生效）"
   },
@@ -2034,7 +2067,7 @@
     "message": "最大并发下载数"
   },
   "app.resource-management.max-chunks-per-file.description": {
-    "message": "对于大文件（>1MB），启动器会使用 HTTP Range 请求将下载拆分为多个并行分块。分块数越多，高带宽连接下下载越快。（需重启应用生效）"
+    "message": "对于大于 1 MB 的文件，启动器会通过 HTTP Range 请求将下载拆分为多个并行分块。分块越多，在高带宽连接上下载速度越快。（需重启应用生效）"
   },
   "app.resource-management.max-chunks-per-file.title": {
     "message": "单文件最大分块下载数"
@@ -3223,12 +3256,6 @@
   },
   "app.resource-management.curseforge-source.description": {
     "message": "CurseForge API 请求和文件下载。"
-  },
-  "app.resource-management.max-chunks-per-file.title": {
-    "message": "单文件最大分块下载数"
-  },
-  "app.resource-management.max-chunks-per-file.description": {
-    "message": "对于大于 1 MB 的文件，启动器会通过 HTTP Range 请求将下载拆分为多个并行分块。分块越多，在高带宽连接上下载速度越快。（需重启应用生效）"
   },
   "app.appearance-settings.accent-color.title": {
     "message": "强调色"

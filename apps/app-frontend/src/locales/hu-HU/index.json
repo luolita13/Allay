@@ -62,35 +62,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Téma"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Állítsd be, hogy az indító melyik oldalon nyíljon meg."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Kezdőlap"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Könyvtár"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Alapértelmezett nyitóoldal"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Letiltja a játékosod felett megjelenő névcímkét a Kinézetek oldalon."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Névcímke eltüntetése"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "A kezdőlap „Folytasd itt” részében a legújabb világok is megtalálhatók."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Visszaugrás a világokba"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimalizáld az indítót a Minecraft indításakor."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Indító minimalizálása"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "A rendszer ablakkeret használata (az alkalmazás újraindítása szükséges)."
@@ -98,26 +74,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Rendszer ablakkeret használata"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Válassz egy lehetőséget"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Megmutatja, mennyi időt töltöttél játszva egy profillal."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Játékidő megjelenítése"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Lehetővé teszi az oldalsáv be- és kikapcsolását."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Oldalsáv megjelenítése/elrejtése"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Ha olyan Modrinth Csomagfájlt (.mrpack) próbálsz telepíteni, amely nem a Modrinth szerverén található, a telepítés előtt gondoskodunk arról, hogy tisztában legyél a kockázatokkal."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Figyelmeztess, mielőtt ismeretlen modcsomagokat telepítenék"
   },
   "app.auth-servers.unreachable.body": {
     "message": "A Minecraft hitelesítő szerverek lehet, hogy nem üzemelnek. Bizonyosodj meg róla, hogy van internetkapcsolatod és próbáld meg újra."

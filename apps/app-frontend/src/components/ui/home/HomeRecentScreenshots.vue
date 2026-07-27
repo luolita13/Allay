@@ -6,10 +6,10 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
+import ImageViewer from '@/components/ui/ImageViewer.vue'
 import { get_full_path, list } from '@/helpers/instance'
 import { openPath } from '@/helpers/utils.js'
 import { useTheming } from '@/store/theme'
-import ImageViewer from '@/components/ui/ImageViewer.vue'
 
 dayjs.extend(relativeTime)
 

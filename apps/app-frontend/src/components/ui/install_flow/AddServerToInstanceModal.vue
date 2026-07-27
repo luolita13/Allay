@@ -6,13 +6,13 @@ import {
 	ButtonStyled,
 	defineMessages,
 	injectNotificationManager,
+	NewModal as Modal,
 	StyledInput,
 	useVIntl,
 } from '@modrinth/ui'
 import { useQueryClient } from '@tanstack/vue-query'
 import { computed, ref } from 'vue'
 
-import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { list } from '@/helpers/instance'
 import { getInstanceIconSrc } from '@/helpers/instance-icon'
@@ -98,7 +98,7 @@ async function addServer(instance) {
 </script>
 
 <template>
-	<ModalWrapper ref="modal" :header="formatMessage(messages.header)">
+	<Modal ref="modal" :header="formatMessage(messages.header)">
 		<div class="flex flex-col gap-4 min-w-[350px]">
 			<Admonition type="warning" :body="formatMessage(messages.warning)" />
 			<StyledInput
@@ -114,17 +114,18 @@ async function addServer(instance) {
 					:key="instance.id"
 					class="flex w-full items-center justify-between gap-2 bg-bg-raised text-icon shadow-none"
 				>
-					<router-link
-						class="btn btn-transparent p-2 text-left"
-						:to="`/instance/${encodeURIComponent(instance.id)}`"
-						@click="modal.hide()"
-					>
-						<Avatar
-							:src="getInstanceIconSrc(instance)"
-							class="mr-2 [--size:2rem]"
-						/>
-						{{ instance.name }}
-					</router-link>
+					<ButtonStyled type="transparent">
+						<router-link
+							:to="`/instance/${encodeURIComponent(instance.id)}`"
+							@click="modal.hide()"
+						>
+							<Avatar
+								:src="getInstanceIconSrc(instance)"
+								class="mr-2 [--size:2rem]"
+							/>
+							{{ instance.name }}
+						</router-link>
+					</ButtonStyled>
 					<ButtonStyled>
 						<button :disabled="instance.added || instance.adding" @click="addServer(instance)">
 							<PlusIcon v-if="!instance.added && !instance.adding" />
@@ -146,5 +147,5 @@ async function addServer(instance) {
 				</ButtonStyled>
 			</div>
 		</div>
-	</ModalWrapper>
+	</Modal>
 </template>

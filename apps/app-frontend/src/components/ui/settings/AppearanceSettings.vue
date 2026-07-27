@@ -9,7 +9,6 @@ import { get, set } from '@/helpers/settings.ts'
 import { getOS } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
 import type { AccentColor, ColorTheme } from '@/store/theme.ts'
-import { ACCENT_COLOR_OPTIONS } from '@/store/theme.ts'
 // Temporarily disabled — theme pack feature is a work in progress
 // import ThemePackManager from '@/components/ui/settings/ThemePackManager.vue'
 
@@ -109,8 +108,7 @@ const messages = defineMessages({
 	},
 	customBackgroundDescription: {
 		id: 'app.appearance-settings.custom-background.description',
-		defaultMessage:
-			'Choose a custom image and adjust how it blends with the launcher interface.',
+		defaultMessage: 'Choose a custom image and adjust how it blends with the launcher interface.',
 	},
 	customBackgroundEmpty: {
 		id: 'app.appearance-settings.custom-background.empty',
@@ -184,8 +182,7 @@ const messages = defineMessages({
 	},
 	settingsAsPageDescription: {
 		id: 'app.appearance-settings.settings-as-page.description',
-		defaultMessage:
-			'Display the settings panel as a full page instead of a modal dialog.',
+		defaultMessage: 'Display the settings panel as a full page instead of a modal dialog.',
 	},
 	skinClickParticlesTitle: {
 		id: 'app.appearance-settings.skin-click-particles.title',
@@ -202,8 +199,7 @@ const messages = defineMessages({
 	},
 	skinHeadTrackingDescription: {
 		id: 'app.appearance-settings.skin-head-tracking.description',
-		defaultMessage:
-			'The skin model\'s head gently follows the mouse cursor as it moves.',
+		defaultMessage: "The skin model's head gently follows the mouse cursor as it moves.",
 	},
 	skinParticleBgTitle: {
 		id: 'app.appearance-settings.skin-particle-bg.title',
@@ -229,10 +225,18 @@ const messages = defineMessages({
 })
 
 const accentColorOptions: Array<{ value: AccentColor; color: string; label: string }> = [
-	{ value: 'orange', color: 'var(--color-orange)', label: formatMessage(messages.accentColorOrange) },
+	{
+		value: 'orange',
+		color: 'var(--color-orange)',
+		label: formatMessage(messages.accentColorOrange),
+	},
 	{ value: 'green', color: 'var(--color-green)', label: formatMessage(messages.accentColorGreen) },
 	{ value: 'blue', color: 'var(--color-blue)', label: formatMessage(messages.accentColorBlue) },
-	{ value: 'purple', color: 'var(--color-purple)', label: formatMessage(messages.accentColorPurple) },
+	{
+		value: 'purple',
+		color: 'var(--color-purple)',
+		label: formatMessage(messages.accentColorPurple),
+	},
 ]
 
 const os = ref(await getOS())
@@ -271,10 +275,10 @@ watch(
 		<p class="m-0 mt-1">{{ formatMessage(messages.accentColorDescription) }}</p>
 
 		<div
-				class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5"
-				role="radiogroup"
-				:aria-label="formatMessage(messages.accentColorTitle)"
-			>
+			class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5"
+			role="radiogroup"
+			:aria-label="formatMessage(messages.accentColorTitle)"
+		>
 			<button
 				v-for="accentColor in accentColorOptions"
 				:key="accentColor.value"
@@ -295,47 +299,48 @@ watch(
 				/>
 				<span class="truncate">{{ accentColor.label }}</span>
 				<CheckIcon
-					v-if="themeStore.selectedAccentColor === accentColor.value && !themeStore.customAccentColor"
+					v-if="
+						themeStore.selectedAccentColor === accentColor.value && !themeStore.customAccentColor
+					"
 					class="ml-auto size-4 shrink-0"
 				/>
 			</button>
 
 			<!-- Custom color picker -->
-				<button
-					type="button"
-					role="radio"
-					:aria-checked="!!themeStore.customAccentColor"
-					class="custom-accent-btn flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97]"
-					:class="
-						themeStore.customAccentColor
-							? 'border-brand bg-brand-highlight text-brand'
-							: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+			<button
+				type="button"
+				role="radio"
+				:aria-checked="!!themeStore.customAccentColor"
+				class="custom-accent-btn flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97]"
+				:class="
+					themeStore.customAccentColor
+						? 'border-brand bg-brand-highlight text-brand'
+						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+				"
+				@click="openCustomAccentPicker"
+			>
+				<span
+					class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
+					:style="{
+						backgroundColor: themeStore.customAccentColor || 'transparent',
+						backgroundImage: themeStore.customAccentColor
+							? 'none'
+							: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+					}"
+				/>
+				<span class="truncate">{{ formatMessage(messages.customAccentLabel) }}</span>
+				<CheckIcon v-if="themeStore.customAccentColor" class="ml-auto size-4 shrink-0" />
+				<input
+					ref="customAccentInput"
+					type="color"
+					class="sr-only"
+					:value="themeStore.customAccentColor || '#ff496e'"
+					@input="
+						(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)
 					"
-					@click="openCustomAccentPicker"
-				>
-					<span
-						class="size-4 shrink-0 rounded-full ring-2 ring-white/20"
-						:style="{
-							backgroundColor: themeStore.customAccentColor || 'transparent',
-							backgroundImage: themeStore.customAccentColor
-								? 'none'
-								: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-						}"
-					/>
-					<span class="truncate">{{ formatMessage(messages.customAccentLabel) }}</span>
-					<CheckIcon
-						v-if="themeStore.customAccentColor"
-						class="ml-auto size-4 shrink-0"
-					/>
-					<input
-						ref="customAccentInput"
-						type="color"
-						class="sr-only"
-						:value="themeStore.customAccentColor || '#ff496e'"
-						@input="(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)"
-						@click.stop
-					/>
-				</button>
+					@click.stop
+				/>
+			</button>
 		</div>
 	</div>
 
@@ -359,10 +364,7 @@ watch(
 			/>
 			<div class="absolute inset-0 bg-bg/35" />
 			<div class="relative flex h-full items-center justify-center">
-				<div
-					v-if="!backgroundPreviewUrl"
-					class="flex flex-col items-center gap-2 text-secondary"
-				>
+				<div v-if="!backgroundPreviewUrl" class="flex flex-col items-center gap-2 text-secondary">
 					<ImageIcon class="size-8" />
 					<span class="font-semibold">{{ formatMessage(messages.customBackgroundEmpty) }}</span>
 				</div>
@@ -375,7 +377,9 @@ watch(
 					<UploadIcon />
 					{{
 						formatMessage(
-							backgroundPreviewUrl ? messages.customBackgroundReplace : messages.customBackgroundChoose,
+							backgroundPreviewUrl
+								? messages.customBackgroundReplace
+								: messages.customBackgroundChoose,
 						)
 					}}
 				</button>
@@ -424,8 +428,8 @@ watch(
 		</div>
 	</div>
 
-		<!-- Theme pack manager: temporarily disabled (feature is a work in progress) -->
-		<!-- <ThemePackManager /> -->
+	<!-- Theme pack manager: temporarily disabled (feature is a work in progress) -->
+	<!-- <ThemePackManager /> -->
 
 	<div class="mt-6 flex items-center justify-between">
 		<div>

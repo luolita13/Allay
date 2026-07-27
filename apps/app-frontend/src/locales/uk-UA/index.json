@@ -56,35 +56,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Колірна тема"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Змініть сторінку, на якій відкривається запускач."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Головна"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Бібліотека"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Усталена цільова сторінка"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Вимикає ім'я над вашим гравцем на сторінці скінів."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Приховати ім'я"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Уключає нещодавні світи в розділі «Повернутися» на головній сторінці."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Повернутися у світи"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Згортає запускач під час запуску процесу Minecraft."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Мінімізувати запускач"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Використовувати рамку системного вікна (потрібно перезапустити програму)."
@@ -92,26 +68,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Системне оформлення"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Виберіть опцію"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Показує, скільки часу ви провели в цьому профілі."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Час гри"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Умикає можливість перемикання бокової панелі."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Перемикання бокової панелі"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Якщо ви спробуєте встановити файл пакета Modrinth (.mrpack), який не розміщено на Modrinth, ми переконаємося, що ви розумієте ризики, перш ніж установлювати його."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Попередження перед установленням невідомих збірок"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Сервери автентифікації Minecraft можуть зараз не працювати. Перевірте з’єднання з інтернетом та спробуйте пізніше."

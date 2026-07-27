@@ -127,6 +127,27 @@ pub struct HostModInfo {
     pub name: String,
 }
 
+/// A chat message in the lobby.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessage {
+    /// Unique message ID (UUID).
+    pub id: String,
+    /// Sender's machine_id.
+    pub sender_id: String,
+    /// Sender's display name.
+    pub sender_name: String,
+    /// Message content (max 500 chars).
+    pub content: String,
+    /// Unix timestamp in milliseconds.
+    pub timestamp: u64,
+}
+
+/// Chat send request (client -> server).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatSendRequest {
+    pub content: String,
+}
+
 /// Result of mod compatibility check.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModCompatibilityResult {
@@ -146,6 +167,8 @@ pub(crate) const PROTOCOL_PLAYER_PROFILES_LIST: &str = "c:player_profiles_list";
 pub(crate) const PROTOCOL_PROTOCOLS: &str = "c:protocols";
 pub(crate) const PROTOCOL_PING: &str = "c:ping";
 pub(crate) const PROTOCOL_HOST_MODS: &str = "c:host_mods";
+pub(crate) const PROTOCOL_CHAT_SEND: &str = "c:chat_send";
+pub(crate) const PROTOCOL_CHAT_POLL: &str = "c:chat_poll";
 
 /// All protocols this implementation supports.
 pub const SUPPORTED_PROTOCOLS: &[&str] = &[
@@ -155,4 +178,6 @@ pub const SUPPORTED_PROTOCOLS: &[&str] = &[
     PROTOCOL_PROTOCOLS,
     PROTOCOL_PING,
     PROTOCOL_HOST_MODS,
+    PROTOCOL_CHAT_SEND,
+    PROTOCOL_CHAT_POLL,
 ];

@@ -14,13 +14,13 @@ import {
 	Collapsible,
 	defineMessages,
 	injectNotificationManager,
+	NewModal as Modal,
 	useVIntl,
 } from '@modrinth/ui'
 import { computed, ref } from 'vue'
 
 import { ChatIcon } from '@/assets/icons'
 import MinecraftLoginModal from '@/components/ui/modal/MinecraftLoginModal.vue'
-import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { set_default_user } from '@/helpers/auth.js'
 import { install_existing_instance } from '@/helpers/install'
@@ -149,7 +149,10 @@ const messages = defineMessages({
 		id: 'app.error-modal.state-init.fix-1',
 		defaultMessage: 'Ensuring you are connected to the internet, then try restarting the app.',
 	},
-	stateInitFix2: { id: 'app.error-modal.state-init.fix-2', defaultMessage: 'Redownloading the app.' },
+	stateInitFix2: {
+		id: 'app.error-modal.state-init.fix-2',
+		defaultMessage: 'Redownloading the app.',
+	},
 	noLoaderDesc: {
 		id: 'app.error-modal.no-loader.description',
 		defaultMessage: 'The Modrinth App failed to find the loader version for this instance.',
@@ -303,118 +306,118 @@ async function copyToClipboard(text) {
 </script>
 
 <template>
-	<ModalWrapper ref="errorModal" :header="title" :closable="closable">
-		<div class="modal-body max-w-[550px]">
+	<Modal ref="errorModal" :header="title" :closable="closable" max-width="550px">
+		<div class="modal-body">
 			<div class="markdown-body">
 				<template v-if="errorType === 'minecraft_auth'">
 					<template v-if="metadata.network">
-					<h3>{{ formatMessage(messages.networkIssues) }}</h3>
-					<p>
-						{{ formatMessage(messages.networkIssuesDesc) }}
-						<a
-							href="https://support.modrinth.com/en/articles/9038231-minecraft-sign-in-issues#h_e71a5f805f"
-						>
-							{{ formatMessage(messages.ourSupportArticle) }}
-						</a>
-						{{ formatMessage(messages.networkIssuesDescSuffix) }}
-					</p>
-				</template>
+						<h3>{{ formatMessage(messages.networkIssues) }}</h3>
+						<p>
+							{{ formatMessage(messages.networkIssuesDesc) }}
+							<a
+								href="https://support.modrinth.com/en/articles/9038231-minecraft-sign-in-issues#h_e71a5f805f"
+							>
+								{{ formatMessage(messages.ourSupportArticle) }}
+							</a>
+							{{ formatMessage(messages.networkIssuesDescSuffix) }}
+						</p>
+					</template>
 					<template v-else-if="metadata.hostsFile">
-					<h3>{{ formatMessage(messages.networkIssues) }}</h3>
-					<p>
-						{{ formatMessage(messages.hostsFileDesc) }}
-						<a
-							href="https://support.modrinth.com/en/articles/9038231-minecraft-sign-in-issues#h_d694a29256"
-						>
-							{{ formatMessage(messages.ourSupportArticle) }}
-						</a>
-						{{ formatMessage(messages.hostsFileDescSuffix) }}
-					</p>
-				</template>
+						<h3>{{ formatMessage(messages.networkIssues) }}</h3>
+						<p>
+							{{ formatMessage(messages.hostsFileDesc) }}
+							<a
+								href="https://support.modrinth.com/en/articles/9038231-minecraft-sign-in-issues#h_d694a29256"
+							>
+								{{ formatMessage(messages.ourSupportArticle) }}
+							</a>
+							{{ formatMessage(messages.hostsFileDescSuffix) }}
+						</p>
+					</template>
 					<template v-else>
-					<h3>{{ formatMessage(messages.tryAnotherAccount) }}</h3>
-					<p>{{ formatMessage(messages.tryAnotherAccountDesc) }}</p>
+						<h3>{{ formatMessage(messages.tryAnotherAccount) }}</h3>
+						<p>{{ formatMessage(messages.tryAnotherAccountDesc) }}</p>
+						<div class="cta-button">
+							<ButtonStyled color="brand">
+								<button :disabled="loadingMinecraft" @click="loginMinecraft">
+									<LogInIcon /> {{ formatMessage(messages.tryAnotherAccountBtn) }}
+								</button>
+							</ButtonStyled>
+						</div>
+						<h3>{{ formatMessage(messages.gamePassTitle) }}</h3>
+						<p>{{ formatMessage(messages.gamePassDesc) }}</p>
+					</template>
 					<div class="cta-button">
-						<button class="btn btn-primary" :disabled="loadingMinecraft" @click="loginMinecraft">
-							<LogInIcon /> {{ formatMessage(messages.tryAnotherAccountBtn) }}
-						</button>
+						<ButtonStyled color="brand">
+							<button :disabled="loadingMinecraft" @click="loginMinecraft">
+								<LogInIcon /> {{ formatMessage(messages.trySigningInAgain) }}
+							</button>
+						</ButtonStyled>
 					</div>
-					<h3>{{ formatMessage(messages.gamePassTitle) }}</h3>
-					<p>{{ formatMessage(messages.gamePassDesc) }}</p>
-				</template>
-					<div class="cta-button">
-					<button class="btn btn-primary" :disabled="loadingMinecraft" @click="loginMinecraft">
-						<LogInIcon /> {{ formatMessage(messages.trySigningInAgain) }}
-					</button>
-				</div>
 				</template>
 				<template v-if="errorType === 'directory_move'">
 					<template v-if="metadata.readOnly">
-					<h3>{{ formatMessage(messages.changeDirectoryPermissions) }}</h3>
-					<p>{{ formatMessage(messages.changeDirectoryPermissionsDesc) }}</p>
-				</template>
+						<h3>{{ formatMessage(messages.changeDirectoryPermissions) }}</h3>
+						<p>{{ formatMessage(messages.changeDirectoryPermissionsDesc) }}</p>
+					</template>
 					<template v-else-if="metadata.notEnoughSpace">
-					<h3>{{ formatMessage(messages.notEnoughSpace) }}</h3>
-					<p>{{ formatMessage(messages.notEnoughSpaceDesc) }}</p>
-				</template>
+						<h3>{{ formatMessage(messages.notEnoughSpace) }}</h3>
+						<p>{{ formatMessage(messages.notEnoughSpaceDesc) }}</p>
+					</template>
 					<template v-else>
-					<p>{{ formatMessage(messages.migrateFailedDesc) }}</p>
-				</template>
+						<p>{{ formatMessage(messages.migrateFailedDesc) }}</p>
+					</template>
 
 					<div class="cta-button">
-					<button class="btn" @click="retryDirectoryChange">
-						<UpdatedIcon /> {{ formatMessage(messages.retryDirectoryChange) }}
-					</button>
-					<button class="btn btn-danger" @click="cancelDirectoryChange">
-						<XIcon /> {{ formatMessage(messages.cancelDirectoryChange) }}
-					</button>
-				</div>
+						<ButtonStyled>
+							<button @click="retryDirectoryChange">
+								<UpdatedIcon /> {{ formatMessage(messages.retryDirectoryChange) }}
+							</button>
+						</ButtonStyled>
+						<ButtonStyled color="red">
+							<button @click="cancelDirectoryChange">
+								<XIcon /> {{ formatMessage(messages.cancelDirectoryChange) }}
+							</button>
+						</ButtonStyled>
+					</div>
 				</template>
 				<div v-else-if="errorType === 'minecraft_sign_in'">
-				<p>{{ formatMessage(messages.signInToPlayDesc) }}</p>
-				<div class="cta-button">
-					<button class="btn btn-primary" :disabled="loadingMinecraft" @click="loginMinecraft">
-						<LogInIcon /> {{ formatMessage(messages.signInToMinecraft) }}
-					</button>
+					<p>{{ formatMessage(messages.signInToPlayDesc) }}</p>
+					<div class="cta-button">
+						<ButtonStyled color="brand">
+							<button :disabled="loadingMinecraft" @click="loginMinecraft">
+								<LogInIcon /> {{ formatMessage(messages.signInToMinecraft) }}
+							</button>
+						</ButtonStyled>
+					</div>
 				</div>
-			</div>
 				<template v-else-if="errorType === 'state_init'">
-				<p>{{ formatMessage(messages.stateInitDesc) }}</p>
-				<p>{{ formatMessage(messages.stateInitFix) }}</p>
-				<ul>
-					<li>{{ formatMessage(messages.stateInitFix1) }}</li>
-					<li>{{ formatMessage(messages.stateInitFix2) }}</li>
-				</ul>
-			</template>
+					<p>{{ formatMessage(messages.stateInitDesc) }}</p>
+					<p>{{ formatMessage(messages.stateInitFix) }}</p>
+					<ul>
+						<li>{{ formatMessage(messages.stateInitFix1) }}</li>
+						<li>{{ formatMessage(messages.stateInitFix2) }}</li>
+					</ul>
+				</template>
 				<template v-else-if="errorType === 'no_loader_version'">
-				<p>{{ formatMessage(messages.noLoaderDesc) }}</p>
-				<p>{{ formatMessage(messages.noLoaderFix) }}</p>
-				<div class="cta-button">
-					<button class="btn btn-primary" :disabled="loadingRepair" @click="repairInstance">
-						<HammerIcon /> {{ formatMessage(messages.repairInstance) }}
-					</button>
-				</div>
-			</template>
+					<p>{{ formatMessage(messages.noLoaderDesc) }}</p>
+					<p>{{ formatMessage(messages.noLoaderFix) }}</p>
+					<div class="cta-button">
+						<ButtonStyled color="brand">
+							<button :disabled="loadingRepair" @click="repairInstance">
+								<HammerIcon /> {{ formatMessage(messages.repairInstance) }}
+							</button>
+						</ButtonStyled>
+					</div>
+				</template>
 				<template v-else>
 					{{ debugInfo }}
 				</template>
 				<template v-if="hasDebugInfo">
-				<div class="w-full h-[1px] bg-surface-5 mb-3"></div>
-				<p>{{ formatMessage(messages.supportDesc) }}</p>
-			</template>
+					<div class="w-full h-[1px] bg-surface-5 mb-3"></div>
+					<p>{{ formatMessage(messages.supportDesc) }}</p>
+				</template>
 			</div>
-			<div class="flex items-center gap-2">
-			<ButtonStyled>
-				<a :href="supportLink" @click="errorModal.hide()"
-					><ChatIcon /> {{ formatMessage(messages.getSupport) }}</a
-				>
-			</ButtonStyled>
-			<ButtonStyled v-if="closable">
-				<button @click="errorModal.hide()">
-					<XIcon /> {{ formatMessage(messages.close) }}
-				</button>
-			</ButtonStyled>
-		</div>
 			<template v-if="hasDebugInfo">
 				<div class="flex flex-col gap-2">
 					<div class="w-full h-[1px] bg-surface-5"></div>
@@ -425,9 +428,9 @@ async function copyToClipboard(text) {
 							@click="errorCollapsed = !errorCollapsed"
 						>
 							<span class="flex items-center gap-2 text-contrast font-extrabold m-0">
-							<WrenchIcon class="h-4 w-4" />
-							{{ formatMessage(messages.debugInfo) }}
-						</span>
+								<WrenchIcon class="h-4 w-4" />
+								{{ formatMessage(messages.debugInfo) }}
+							</span>
 							<DropdownIcon
 								class="h-5 w-5 text-secondary transition-transform"
 								:class="{ 'rotate-180': !errorCollapsed }"
@@ -444,10 +447,10 @@ async function copyToClipboard(text) {
 								</div>
 								<ButtonStyled circular>
 									<button
-									v-tooltip="formatMessage(messages.copyDebugInfo)"
-									:disabled="copied"
-									@click="copyToClipboard(debugInfo)"
-								>
+										v-tooltip="formatMessage(messages.copyDebugInfo)"
+										:disabled="copied"
+										@click="copyToClipboard(debugInfo)"
+									>
 										<template v-if="copied"> <CheckIcon class="text-green" /> </template>
 										<template v-else> <CopyIcon /> </template>
 									</button>
@@ -458,7 +461,19 @@ async function copyToClipboard(text) {
 				</div>
 			</template>
 		</div>
-	</ModalWrapper>
+		<template #actions>
+			<div class="flex gap-2 justify-end">
+				<ButtonStyled>
+					<a :href="supportLink" target="_blank" @click="errorModal?.hide()">
+						<ChatIcon /> {{ formatMessage(messages.getSupport) }}
+					</a>
+				</ButtonStyled>
+				<ButtonStyled v-if="closable">
+					<button @click="errorModal?.hide()"><XIcon /> {{ formatMessage(messages.close) }}</button>
+				</ButtonStyled>
+			</div>
+		</template>
+	</Modal>
 
 	<MinecraftLoginModal ref="loginModal" @success="onLoginSuccess" />
 </template>

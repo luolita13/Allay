@@ -73,7 +73,6 @@ import ModrinthAppLogo from '@/assets/modrinth_app.svg?component'
 import AccountsCard from '@/components/ui/AccountsCard.vue'
 import AppActionBar from '@/components/ui/AppActionBar.vue'
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
-import CrashDiagnosisModal from '@/components/ui/modal/CrashDiagnosisModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import FriendsList from '@/components/ui/friends/FriendsList.vue'
 import AddServerToInstanceModal from '@/components/ui/install_flow/AddServerToInstanceModal.vue'
@@ -81,6 +80,7 @@ import UnknownPackWarningModal from '@/components/ui/install_flow/UnknownPackWar
 import MinecraftAuthErrorModal from '@/components/ui/minecraft-auth-error-modal/MinecraftAuthErrorModal.vue'
 import AppSettingsModal from '@/components/ui/modal/AppSettingsModal.vue'
 import AuthGrantFlowWaitModal from '@/components/ui/modal/AuthGrantFlowWaitModal.vue'
+import CrashDiagnosisModal from '@/components/ui/modal/CrashDiagnosisModal.vue'
 import InstallToPlayModal from '@/components/ui/modal/InstallToPlayModal.vue'
 import ModpackAlreadyInstalledModal from '@/components/ui/modal/ModpackAlreadyInstalledModal.vue'
 import UpdateToPlayModal from '@/components/ui/modal/UpdateToPlayModal.vue'
@@ -93,7 +93,7 @@ import StartupNoticeModal from '@/components/ui/StartupNoticeModal.vue'
 import WindowControls from '@/components/ui/WindowControls.vue'
 import { useCheckDisableMouseover } from '@/composables/macCssFix.js'
 import { config } from '@/config'
-import { hide_ads_window, init_ads_window, show_ads_window } from '@/helpers/ads.js'
+// ads helpers (hide_ads_window, init_ads_window, show_ads_window) are imported lazily when needed
 import { debugAnalytics, initAnalytics, trackEvent } from '@/helpers/analytics'
 import { check_reachable } from '@/helpers/auth.js'
 import { get_user, get_version } from '@/helpers/cache.js'
@@ -438,11 +438,13 @@ const messages = defineMessages({
 	},
 	surveyDescription: {
 		id: 'app.survey.description',
-		defaultMessage: 'Would you mind answering a few questions about your experience with Modrinth App?',
+		defaultMessage:
+			'Would you mind answering a few questions about your experience with Modrinth App?',
 	},
 	surveyFeedback: {
 		id: 'app.survey.feedback',
-		defaultMessage: 'This feedback will go directly to the Modrinth team and help guide future updates!',
+		defaultMessage:
+			'This feedback will go directly to the Modrinth team and help guide future updates!',
 	},
 	surveyTake: {
 		id: 'app.survey.take',
@@ -1522,211 +1524,220 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 </script>
 
 <template>
+	<div class="app-root" :class="{ 'has-background-image': !!themeStore.backgroundImagePath }">
 		<div
-			class="app-root"
-			:class="{ 'has-background-image': !!themeStore.backgroundImagePath }"
-		>
-			<div
-				v-if="stateInitialized && backgroundUrl"
-				class="launcher-background"
-				:style="{
-					backgroundImage: `url(&quot;${backgroundUrl}&quot;)`,
-					filter: `blur(${themeStore.backgroundBlur}px)`,
-					opacity: themeStore.backgroundOpacity / 100,
-				}"
-			/>
-			<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
-			<div id="teleports"></div>
-			<div
-				v-if="stateInitialized"
-				class="app-grid-layout relative"
-				:class="{
-					'disable-advanced-rendering': !themeStore.advancedRendering,
-					'has-custom-background': !!themeStore.backgroundImagePath,
-				}"
-			>
-		<Transition name="fade">
-			<div
-				v-if="restarting"
-				data-tauri-drag-region
-				class="inset-0 fixed bg-black/80 backdrop-blur z-[200] flex items-center justify-center"
-			>
-				<span
-					data-tauri-drag-region
-					class="flex items-center gap-4 text-contrast font-semibold text-xl select-none cursor-default"
-				>
-					<RefreshCwIcon data-tauri-drag-region class="animate-spin w-6 h-6" />
-					{{ formatMessage(messages.restarting) }}
-				</span>
-			</div>
-		</Transition>
-		<Suspense>
-			<AppSettingsModal ref="settingsModalRef" />
-		</Suspense>
-		<Suspense>
-			<AuthGrantFlowWaitModal ref="modrinthLoginFlowWaitModal" @flow-cancel="cancelLogin" />
-		</Suspense>
-		<CreationFlowModal
-			ref="installationModal"
-			type="instance"
-			show-snapshot-toggle
-			:fetch-existing-instance-names="fetchExistingInstanceNames"
-			:search-modpacks="searchModpacks"
-			:get-project-versions="getProjectVersions"
-			:get-loader-manifest="getLoaderManifest"
-			@create="handleCreate"
-			@browse-modpacks="handleBrowseModpacks"
+			v-if="stateInitialized && backgroundUrl"
+			class="launcher-background"
+			:style="{
+				backgroundImage: `url(&quot;${backgroundUrl}&quot;)`,
+				filter: `blur(${themeStore.backgroundBlur}px)`,
+				opacity: themeStore.backgroundOpacity / 100,
+			}"
 		/>
-		<UnknownPackWarningModal ref="unknownPackWarningModal" />
+		<SplashScreen v-if="!stateFailed" ref="splashScreen" data-tauri-drag-region />
+		<div id="teleports"></div>
 		<div
-			class="app-grid-navbar bg-bg-raised flex flex-col p-[0.5rem] pt-0 gap-[0.5rem] w-[--left-bar-width]"
+			v-if="stateInitialized"
+			class="app-grid-layout relative"
+			:class="{
+				'disable-advanced-rendering': !themeStore.advancedRendering,
+				'has-custom-background': !!themeStore.backgroundImagePath,
+			}"
 		>
-			<NavButton v-tooltip.right="formatMessage(messages.navHome)" to="/">
-				<HomeIcon />
-			</NavButton>
-			<NavButton v-if="themeStore.featureFlags.worlds_tab" v-tooltip.right="formatMessage(messages.navWorlds)" to="/worlds">
-				<WorldIcon />
-			</NavButton>
-			<NavButton
-				v-tooltip.right="formatMessage(messages.navDiscover)"
-				to="/browse/modpack"
-				:is-primary="() => route.path.startsWith('/browse') && !route.query.i"
-				:is-subpage="(route) => route.path.startsWith('/project') && !route.query.i"
-			>
-				<CompassIcon />
-			</NavButton>
-			<NavButton v-tooltip.right="formatMessage(messages.navSkins)" to="/skins">
-				<ChangeSkinIcon />
-			</NavButton>
-			<NavButton
-				v-if="themeStore.getFeatureFlag('game_link')"
-				v-tooltip.right="formatMessage(messages.navGameLink)"
-				to="/gamelink"
-				:is-primary="(r) => r.path === '/gamelink'"
-			>
-				<GlobeIcon />
-			</NavButton>
-			<NavButton
-				v-tooltip.right="formatMessage(messages.navLibrary)"
-				to="/library"
-				:is-primary="(r) => r.path === '/library' || r.path === '/library'"
-				:is-subpage="
-					() =>
-						route.path.startsWith('/instance') ||
-						((route.path.startsWith('/browse') || route.path.startsWith('/project')) &&
-							route.query.i)
-				"
-			>
-				<LibraryIcon />
-			</NavButton>
-			<NavButton
-				v-if="false"
-				v-tooltip.right="formatMessage(messages.navHosting)"
-				to="/hosting/manage"
-				:is-primary="(r) => r.path === '/hosting/manage' || r.path === '/hosting/manage/'"
-				:is-subpage="(r) => r.path.startsWith('/hosting/manage/') && r.path !== '/hosting/manage/'"
-			>
-				<ServerStackIcon />
-			</NavButton>
-			<NavButton v-tooltip.right="formatMessage(messages.navDownloads)" to="/downloads">
-				<DownloadIcon />
-			</NavButton>
-			<div class="h-px w-6 mx-auto my-2 bg-surface-5"></div>
-			<suspense>
-				<QuickInstanceSwitcher />
-			</suspense>
-			<NavButton
-				v-tooltip.right="formatMessage(messages.navCreateInstance)"
-				to="/create"
-				:disabled="offline"
-			>
-				<PlusIcon />
-			</NavButton>
-			<div class="flex flex-grow"></div>
-			<NavButton
-				v-tooltip.right="formatMessage(commonMessages.settingsLabel)"
-				@click="themeStore.settingsAsPage ? router.push('/settings') : $refs.settingsModalRef.show()"
-			>
-				<SettingsIcon />
-			</NavButton>
-			<OverflowMenu
-				v-if="credentials?.user && !MODRINTH_LOGIN_DISABLED"
-				v-tooltip.right="`Modrinth account`"
-				class="w-12 h-12 text-primary rounded-full flex items-center justify-center text-2xl transition-all bg-transparent hover:bg-button-bg hover:text-contrast border-0 cursor-pointer"
-				:options="[
-					{
-						id: 'view-profile',
-						action: () => openUrl('https://modrinth.com/user/' + credentials.user.username),
-					},
-					{
-						id: 'sign-out',
-						action: () => logOut(),
-						color: 'danger',
-					},
-				]"
-				placement="right-end"
-			>
-				<Avatar :src="credentials?.user?.avatar_url" alt="" size="32px" circle />
-				<template #view-profile>
-					<UserIcon />
-					<span class="inline-flex items-center gap-1">
-						{{ formatMessage(messages.signedInAs) }}
-						<span class="inline-flex items-center gap-1 text-contrast font-semibold">
-							<Avatar :src="credentials?.user?.avatar_url" alt="" size="20px" circle />
-							{{ credentials?.user?.username }}
-						</span>
-					</span>
-					<ExternalIcon />
-				</template>
-				<template #sign-out> <LogOutIcon /> {{ formatMessage(messages.signOut) }} </template>
-			</OverflowMenu>
-			<NavButton v-else-if="!MODRINTH_LOGIN_DISABLED" v-tooltip.right="formatMessage(messages.signInModrinth)" :to="() => signIn()">
-				<LogInIcon class="text-brand" />
-			</NavButton>
-		</div>
-		<div data-tauri-drag-region class="app-grid-statusbar bg-bg-raised h-[--top-bar-height] flex">
-			<div data-tauri-drag-region class="flex min-w-0 flex-1 overflow-hidden p-3">
-				<ModrinthAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
-				<div data-tauri-drag-region class="flex shrink-0 items-center gap-1 ml-3">
-					<button
-						class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"
-						@click="router.back()"
-					>
-						<LeftArrowIcon />
-					</button>
-					<button
-						class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"
-						@click="router.forward()"
-					>
-						<RightArrowIcon />
-					</button>
-				</div>
-				<Breadcrumbs class="pt-[2px]" />
-			</div>
-			<section data-tauri-drag-region class="flex shrink-0 ml-auto items-center">
-				<ButtonStyled
-					v-if="!forceSidebar && themeStore.toggleSidebar"
-					:type="sidebarToggled ? 'standard' : 'transparent'"
-					circular
+			<Transition name="fade">
+				<div
+					v-if="restarting"
+					data-tauri-drag-region
+					class="inset-0 fixed bg-black/80 backdrop-blur z-[200] flex items-center justify-center"
 				>
-					<button
-						class="mr-3 transition-transform"
-						:class="{ 'rotate-180': !sidebarToggled }"
-						@click="sidebarToggled = !sidebarToggled"
+					<span
+						data-tauri-drag-region
+						class="flex items-center gap-4 text-contrast font-semibold text-xl select-none cursor-default"
 					>
-						<RightArrowIcon />
-					</button>
-				</ButtonStyled>
-				<div class="flex mr-3">
-					<Suspense>
-						<AppActionBar />
-					</Suspense>
+						<RefreshCwIcon data-tauri-drag-region class="animate-spin w-6 h-6" />
+						{{ formatMessage(messages.restarting) }}
+					</span>
 				</div>
-				<WindowControls />
-			</section>
+			</Transition>
+			<Suspense>
+				<AppSettingsModal ref="settingsModalRef" />
+			</Suspense>
+			<Suspense>
+				<AuthGrantFlowWaitModal ref="modrinthLoginFlowWaitModal" @flow-cancel="cancelLogin" />
+			</Suspense>
+			<CreationFlowModal
+				ref="installationModal"
+				type="instance"
+				show-snapshot-toggle
+				:fetch-existing-instance-names="fetchExistingInstanceNames"
+				:search-modpacks="searchModpacks"
+				:get-project-versions="getProjectVersions"
+				:get-loader-manifest="getLoaderManifest"
+				@create="handleCreate"
+				@browse-modpacks="handleBrowseModpacks"
+			/>
+			<UnknownPackWarningModal ref="unknownPackWarningModal" />
+			<div
+				class="app-grid-navbar bg-bg-raised flex flex-col p-[0.5rem] pt-0 gap-[0.5rem] w-[--left-bar-width]"
+			>
+				<NavButton v-tooltip.right="formatMessage(messages.navHome)" to="/">
+					<HomeIcon />
+				</NavButton>
+				<NavButton
+					v-if="themeStore.featureFlags.worlds_tab"
+					v-tooltip.right="formatMessage(messages.navWorlds)"
+					to="/worlds"
+				>
+					<WorldIcon />
+				</NavButton>
+				<NavButton
+					v-tooltip.right="formatMessage(messages.navDiscover)"
+					to="/browse/modpack"
+					:is-primary="() => route.path.startsWith('/browse') && !route.query.i"
+					:is-subpage="(route) => route.path.startsWith('/project') && !route.query.i"
+				>
+					<CompassIcon />
+				</NavButton>
+				<NavButton v-tooltip.right="formatMessage(messages.navSkins)" to="/skins">
+					<ChangeSkinIcon />
+				</NavButton>
+				<NavButton
+					v-if="themeStore.getFeatureFlag('game_link')"
+					v-tooltip.right="formatMessage(messages.navGameLink)"
+					to="/gamelink"
+					:is-primary="(r) => r.path === '/gamelink'"
+				>
+					<GlobeIcon />
+				</NavButton>
+				<NavButton
+					v-tooltip.right="formatMessage(messages.navLibrary)"
+					to="/library"
+					:is-primary="(r) => r.path === '/library' || r.path === '/library'"
+					:is-subpage="
+						() =>
+							route.path.startsWith('/instance') ||
+							((route.path.startsWith('/browse') || route.path.startsWith('/project')) &&
+								route.query.i)
+					"
+				>
+					<LibraryIcon />
+				</NavButton>
+				<NavButton
+					v-if="false"
+					v-tooltip.right="formatMessage(messages.navHosting)"
+					to="/hosting/manage"
+					:is-primary="(r) => r.path === '/hosting/manage' || r.path === '/hosting/manage/'"
+					:is-subpage="
+						(r) => r.path.startsWith('/hosting/manage/') && r.path !== '/hosting/manage/'
+					"
+				>
+					<ServerStackIcon />
+				</NavButton>
+				<NavButton v-tooltip.right="formatMessage(messages.navDownloads)" to="/downloads">
+					<DownloadIcon />
+				</NavButton>
+				<div class="h-px w-6 mx-auto my-2 bg-surface-5"></div>
+				<suspense>
+					<QuickInstanceSwitcher />
+				</suspense>
+				<NavButton
+					v-tooltip.right="formatMessage(messages.navCreateInstance)"
+					to="/create"
+					:disabled="offline"
+				>
+					<PlusIcon />
+				</NavButton>
+				<div class="flex flex-grow"></div>
+				<NavButton
+					v-tooltip.right="formatMessage(commonMessages.settingsLabel)"
+					@click="
+						themeStore.settingsAsPage ? router.push('/settings') : $refs.settingsModalRef.show()
+					"
+				>
+					<SettingsIcon />
+				</NavButton>
+				<OverflowMenu
+					v-if="credentials?.user && !MODRINTH_LOGIN_DISABLED"
+					v-tooltip.right="`Modrinth account`"
+					class="w-12 h-12 text-primary rounded-full flex items-center justify-center text-2xl transition-all bg-transparent hover:bg-button-bg hover:text-contrast border-0 cursor-pointer"
+					:options="[
+						{
+							id: 'view-profile',
+							action: () => openUrl('https://modrinth.com/user/' + credentials.user.username),
+						},
+						{
+							id: 'sign-out',
+							action: () => logOut(),
+							color: 'danger',
+						},
+					]"
+					placement="right-end"
+				>
+					<Avatar :src="credentials?.user?.avatar_url" alt="" size="32px" circle />
+					<template #view-profile>
+						<UserIcon />
+						<span class="inline-flex items-center gap-1">
+							{{ formatMessage(messages.signedInAs) }}
+							<span class="inline-flex items-center gap-1 text-contrast font-semibold">
+								<Avatar :src="credentials?.user?.avatar_url" alt="" size="20px" circle />
+								{{ credentials?.user?.username }}
+							</span>
+						</span>
+						<ExternalIcon />
+					</template>
+					<template #sign-out> <LogOutIcon /> {{ formatMessage(messages.signOut) }} </template>
+				</OverflowMenu>
+				<NavButton
+					v-else-if="!MODRINTH_LOGIN_DISABLED"
+					v-tooltip.right="formatMessage(messages.signInModrinth)"
+					:to="() => signIn()"
+				>
+					<LogInIcon class="text-brand" />
+				</NavButton>
+			</div>
+			<div data-tauri-drag-region class="app-grid-statusbar bg-bg-raised h-[--top-bar-height] flex">
+				<div data-tauri-drag-region class="flex min-w-0 flex-1 overflow-hidden p-3">
+					<ModrinthAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
+					<div data-tauri-drag-region class="flex shrink-0 items-center gap-1 ml-3">
+						<button
+							class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"
+							@click="router.back()"
+						>
+							<LeftArrowIcon />
+						</button>
+						<button
+							class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"
+							@click="router.forward()"
+						>
+							<RightArrowIcon />
+						</button>
+					</div>
+					<Breadcrumbs class="pt-[2px]" />
+				</div>
+				<section data-tauri-drag-region class="flex shrink-0 ml-auto items-center">
+					<ButtonStyled
+						v-if="!forceSidebar && themeStore.toggleSidebar"
+						:type="sidebarToggled ? 'standard' : 'transparent'"
+						circular
+					>
+						<button
+							class="mr-3 transition-transform"
+							:class="{ 'rotate-180': !sidebarToggled }"
+							@click="sidebarToggled = !sidebarToggled"
+						>
+							<RightArrowIcon />
+						</button>
+					</ButtonStyled>
+					<div class="flex mr-3">
+						<Suspense>
+							<AppActionBar />
+						</Suspense>
+					</div>
+					<WindowControls />
+				</section>
+			</div>
 		</div>
-	</div>
-	<div
+		<div
 			v-if="stateInitialized"
 			class="app-contents"
 			:class="{
@@ -1735,198 +1746,216 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				'has-custom-background': !!themeStore.backgroundImagePath,
 			}"
 		>
-		<div class="app-viewport flex-grow router-view">
-			<transition name="popup-survey">
-				<div
-					v-if="availableSurvey"
-					class="w-[400px] z-20 fixed -bottom-12 pb-16 right-[--right-bar-width] mr-4 rounded-t-2xl card-shadow bg-bg-raised border-surface-5 border-[1px] border-solid border-b-0 p-4"
-				>
-					<h2 class="text-lg font-extrabold mt-0 mb-2">{{ formatMessage(messages.surveyHeyThere) }}</h2>
-					<p class="m-0 leading-tight">
-						{{ formatMessage(messages.surveyDescription) }}
-					</p>
-					<p class="mt-3 mb-4 leading-tight">
-						{{ formatMessage(messages.surveyFeedback) }}
-					</p>
-					<div class="flex gap-2">
-						<ButtonStyled color="brand">
-							<button @click="openSurvey"><NotepadTextIcon /> {{ formatMessage(messages.surveyTake) }}</button>
-						</ButtonStyled>
-						<ButtonStyled>
-							<button @click="dismissSurvey"><XIcon /> {{ formatMessage(messages.surveyNoThanks) }}</button>
-						</ButtonStyled>
+			<div class="app-viewport flex-grow router-view">
+				<transition name="popup-survey">
+					<div
+						v-if="availableSurvey"
+						class="w-[400px] z-20 fixed -bottom-12 pb-16 right-[--right-bar-width] mr-4 rounded-t-2xl card-shadow bg-bg-raised border-surface-5 border-[1px] border-solid border-b-0 p-4"
+					>
+						<h2 class="text-lg font-extrabold mt-0 mb-2">
+							{{ formatMessage(messages.surveyHeyThere) }}
+						</h2>
+						<p class="m-0 leading-tight">
+							{{ formatMessage(messages.surveyDescription) }}
+						</p>
+						<p class="mt-3 mb-4 leading-tight">
+							{{ formatMessage(messages.surveyFeedback) }}
+						</p>
+						<div class="flex gap-2">
+							<ButtonStyled color="brand">
+								<button @click="openSurvey">
+									<NotepadTextIcon /> {{ formatMessage(messages.surveyTake) }}
+								</button>
+							</ButtonStyled>
+							<ButtonStyled>
+								<button @click="dismissSurvey">
+									<XIcon /> {{ formatMessage(messages.surveyNoThanks) }}
+								</button>
+							</ButtonStyled>
+						</div>
 					</div>
-				</div>
-			</transition>
-			<div
-				class="loading-indicator-container h-8 fixed z-50 pointer-events-none"
-				:style="{
-					top: 'calc(var(--top-bar-height))',
-					left: 'calc(var(--left-bar-width))',
-					width: 'calc(100% - var(--left-bar-width) - var(--right-bar-width))',
-				}"
-			>
-				<LoadingBar position="absolute" />
-			</div>
-			<div
-				v-if="themeStore.featureFlags.page_path"
-				class="absolute bottom-0 left-0 m-2 bg-tooltip-bg text-tooltip-text font-semibold rounded-full px-2 py-1 text-xs z-50"
-			>
-				{{ route.fullPath }}
-			</div>
-			<div
-				id="background-teleport-target"
-				class="absolute h-full -z-10 rounded-tl-[--radius-xl] overflow-hidden"
-				:style="{
-					width: 'calc(100% - var(--right-bar-width))',
-				}"
-			></div>
-			<Admonition
-				v-if="criticalErrorMessage"
-				type="critical"
-				:header="criticalErrorMessage.header"
-				class="m-6 mb-0"
-			>
+				</transition>
 				<div
-					class="markdown-body text-primary"
-					v-html="renderString(criticalErrorMessage.body ?? '')"
+					class="loading-indicator-container h-8 fixed z-50 pointer-events-none"
+					:style="{
+						top: 'calc(var(--top-bar-height))',
+						left: 'calc(var(--left-bar-width))',
+						width: 'calc(100% - var(--left-bar-width) - var(--right-bar-width))',
+					}"
+				>
+					<LoadingBar position="absolute" />
+				</div>
+				<div
+					v-if="themeStore.featureFlags.page_path"
+					class="absolute bottom-0 left-0 m-2 bg-tooltip-bg text-tooltip-text font-semibold rounded-full px-2 py-1 text-xs z-50"
+				>
+					{{ route.fullPath }}
+				</div>
+				<div
+					id="background-teleport-target"
+					class="absolute h-full -z-10 rounded-tl-[--radius-xl] overflow-hidden"
+					:style="{
+						width: 'calc(100% - var(--right-bar-width))',
+					}"
 				></div>
-			</Admonition>
-			<Admonition
-				v-if="authUnreachable"
-				type="warning"
-				:header="formatMessage(messages.authUnreachableHeader)"
-				class="m-6 mb-0"
-			>
-				{{ formatMessage(messages.authUnreachableBody) }}
-			</Admonition>
-			<RouterView v-slot="{ Component }">
+				<Admonition
+					v-if="criticalErrorMessage"
+					type="critical"
+					:header="criticalErrorMessage.header"
+					class="m-6 mb-0"
+				>
+					<div
+						class="markdown-body text-primary"
+						v-html="renderString(criticalErrorMessage.body ?? '')"
+					></div>
+				</Admonition>
+				<Admonition
+					v-if="authUnreachable"
+					type="warning"
+					:header="formatMessage(messages.authUnreachableHeader)"
+					class="m-6 mb-0"
+				>
+					{{ formatMessage(messages.authUnreachableBody) }}
+				</Admonition>
+				<RouterView v-slot="{ Component }">
 					<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
 						<component :is="Component" />
 						<template #fallback>
 							<div class="flex items-center justify-center h-full w-full">
 								<div class="flex flex-col items-center gap-3">
-									<div class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"></div>
+									<div
+										class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"
+									></div>
 									<span class="text-sm text-[--color-text-secondary]">Loading...</span>
 								</div>
 							</div>
 						</template>
 					</Suspense>
 				</RouterView>
-		</div>
-		<div
-			class="app-sidebar mt-px shrink-0 flex flex-col border-0 border-l-[1px] border-[--brand-gradient-border] border-solid"
-			:class="{
-				'has-plus': hasPlus,
-				'sidebar-empty-below': !hasContentBelowAccounts,
-			}"
-		>
+			</div>
 			<div
-				v-overlay-scrollbars="sidebarOverlayScrollbarsOptions"
-				class="app-sidebar-scrollable flex-grow shrink relative"
-				:class="{ 'pb-12': !hasPlus }"
-				data-overlayscrollbars-initialize
+				class="app-sidebar mt-px shrink-0 flex flex-col border-0 border-l-[1px] border-[--brand-gradient-border] border-solid"
+				:class="{
+					'has-plus': hasPlus,
+					'sidebar-empty-below': !hasContentBelowAccounts,
+				}"
 			>
-				<div id="sidebar-teleport-target" class="sidebar-teleport-content"></div>
-				<div class="sidebar-default-content" :class="{ 'sidebar-enabled': sidebarVisible }">
-					<div
-						class="p-4"
-						:class="{ 'border-0 border-b-[1px] border-[--brand-gradient-border] border-solid': hasContentBelowAccounts }"
-					>
-						<h3 class="text-base text-primary font-medium m-0">{{ formatMessage(messages.sidebarPlayingAs) }}</h3>
-						<suspense>
-							<AccountsCard ref="accounts" />
-						</suspense>
-					</div>
-					<div v-if="!MODRINTH_LOGIN_DISABLED" class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid">
-						<suspense>
-							<FriendsList :credentials="credentials" :sign-in="() => signIn()" />
-						</suspense>
-					</div>
-					<PrideFundraiserBanner
-						v-if="prideFundraiserEnabled"
-						class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid"
-					/>
-					<div v-if="false && news && news.length > 0" class="p-4 flex flex-col items-center">
-						<h3 class="text-base mb-4 text-primary font-medium m-0 text-left w-full">{{ formatMessage(messages.newsTitle) }}</h3>
-						<div class="space-y-4 flex flex-col items-center w-full">
-							<NewsArticleCard
-								v-for="(item, index) in news"
-								:key="`news-${index}`"
-								:article="item"
-							/>
-							<ButtonStyled color="brand" size="large">
-								<a href="https://modrinth.com/news" target="_blank" class="my-4">
-									<NewspaperIcon /> {{ formatMessage(messages.viewAllNews) }}
-								</a>
-							</ButtonStyled>
+				<div
+					v-overlay-scrollbars="sidebarOverlayScrollbarsOptions"
+					class="app-sidebar-scrollable flex-grow shrink relative"
+					:class="{ 'pb-12': !hasPlus }"
+					data-overlayscrollbars-initialize
+				>
+					<div id="sidebar-teleport-target" class="sidebar-teleport-content"></div>
+					<div class="sidebar-default-content" :class="{ 'sidebar-enabled': sidebarVisible }">
+						<div
+							class="p-4"
+							:class="{
+								'border-0 border-b-[1px] border-[--brand-gradient-border] border-solid':
+									hasContentBelowAccounts,
+							}"
+						>
+							<h3 class="text-base text-primary font-medium m-0">
+								{{ formatMessage(messages.sidebarPlayingAs) }}
+							</h3>
+							<suspense>
+								<AccountsCard ref="accounts" />
+							</suspense>
+						</div>
+						<div
+							v-if="!MODRINTH_LOGIN_DISABLED"
+							class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid"
+						>
+							<suspense>
+								<FriendsList :credentials="credentials" :sign-in="() => signIn()" />
+							</suspense>
+						</div>
+						<PrideFundraiserBanner
+							v-if="prideFundraiserEnabled"
+							class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid"
+						/>
+						<div v-if="false && news && news.length > 0" class="p-4 flex flex-col items-center">
+							<h3 class="text-base mb-4 text-primary font-medium m-0 text-left w-full">
+								{{ formatMessage(messages.newsTitle) }}
+							</h3>
+							<div class="space-y-4 flex flex-col items-center w-full">
+								<NewsArticleCard
+									v-for="(item, index) in news"
+									:key="`news-${index}`"
+									:article="item"
+								/>
+								<ButtonStyled color="brand" size="large">
+									<a href="https://modrinth.com/news" target="_blank" class="my-4">
+										<NewspaperIcon /> {{ formatMessage(messages.viewAllNews) }}
+									</a>
+								</ButtonStyled>
+							</div>
 						</div>
 					</div>
 				</div>
+				<template v-if="false && showAd">
+					<a
+						href="https://modrinth.plus?app"
+						class="absolute bottom-[250px] w-full flex justify-center items-center gap-1 px-4 py-3 text-purple font-medium hover:underline z-10"
+						target="_blank"
+					>
+						<ArrowBigUpDashIcon class="text-2xl" /> Upgrade to Modrinth+
+					</a>
+					<PromotionWrapper />
+				</template>
 			</div>
-			<template v-if="false && showAd">
-				<a
-					href="https://modrinth.plus?app"
-					class="absolute bottom-[250px] w-full flex justify-center items-center gap-1 px-4 py-3 text-purple font-medium hover:underline z-10"
-					target="_blank"
-				>
-					<ArrowBigUpDashIcon class="text-2xl" /> Upgrade to Modrinth+
-				</a>
-				<PromotionWrapper />
-			</template>
 		</div>
-	</div>
-	<I18nDebugPanel />
-	<NotificationPanel :has-sidebar="sidebarVisible" />
-	<PopupNotificationPanel :has-sidebar="sidebarVisible" />
-	<ErrorModal ref="errorModal" />
+		<I18nDebugPanel />
+		<NotificationPanel :has-sidebar="sidebarVisible" />
+		<PopupNotificationPanel :has-sidebar="sidebarVisible" />
+		<ErrorModal ref="errorModal" />
 		<CrashDiagnosisModal ref="crashDiagnosisModal" />
 		<MinecraftAuthErrorModal ref="minecraftAuthErrorModal" />
-	<ContentInstallModal
-		ref="modInstallModal"
-		:instances="contentInstallInstances"
-		:compatible-loaders="contentInstallLoaders"
-		:game-versions="contentInstallGameVersions"
-		:loading="contentInstallLoading"
-		:default-tab="contentInstallDefaultTab"
-		:preferred-loader="contentInstallPreferredLoader"
-		:preferred-game-version="contentInstallPreferredGameVersion"
-		:release-game-versions="contentInstallReleaseGameVersions"
-		:project-info="contentInstallProjectInfo"
-		@install="handleInstallToInstance"
-		@create-and-install="handleCreateAndInstall"
-		@navigate="handleContentInstallNavigate"
-		@cancel="handleContentInstallCancel"
-	/>
-	<ModpackAlreadyInstalledModal
-		ref="modpackAlreadyInstalledModal"
-		@create-anyway="handleModpackDuplicateCreateAnyway"
-		@go-to-instance="handleModpackDuplicateGoToInstance"
-	/>
-	<AddServerToInstanceModal ref="addServerToInstanceModal" />
-	<ContentUpdaterModal
-		ref="incompatibilityWarningModal"
-		mode="incompatibility-warning"
-		:versions="contentInstallIncompatibilityWarningVersions"
-		:current-game-version="contentInstallIncompatibilityWarningCurrentGameVersion"
-		:current-loader="contentInstallIncompatibilityWarningCurrentLoader"
-		current-version-id=""
-		:is-app="true"
-		:project-type="contentInstallIncompatibilityWarningProjectType"
-		:project-icon-url="contentInstallIncompatibilityWarningProjectIconUrl"
-		:project-name="contentInstallIncompatibilityWarningProjectName"
-		:warning="contentInstallIncompatibilityWarningMessage"
-		:action-loading="contentInstallIncompatibilityWarningInstalling"
-		@update="handleContentInstallIncompatibilityWarningInstall"
-		@cancel="handleContentInstallIncompatibilityWarningCancel"
-	/>
-	<ModpackAlreadyInstalledModal
-		ref="contentInstallModpackAlreadyInstalledModal"
-		@create-anyway="handleContentInstallModpackDuplicateCreateAnyway"
-		@go-to-instance="handleContentInstallModpackDuplicateGoToInstance"
-	/>
-	<InstallToPlayModal ref="installToPlayModal" />
-	<UpdateToPlayModal ref="updateToPlayModal" />
+		<ContentInstallModal
+			ref="modInstallModal"
+			:instances="contentInstallInstances"
+			:compatible-loaders="contentInstallLoaders"
+			:game-versions="contentInstallGameVersions"
+			:loading="contentInstallLoading"
+			:default-tab="contentInstallDefaultTab"
+			:preferred-loader="contentInstallPreferredLoader"
+			:preferred-game-version="contentInstallPreferredGameVersion"
+			:release-game-versions="contentInstallReleaseGameVersions"
+			:project-info="contentInstallProjectInfo"
+			@install="handleInstallToInstance"
+			@create-and-install="handleCreateAndInstall"
+			@navigate="handleContentInstallNavigate"
+			@cancel="handleContentInstallCancel"
+		/>
+		<ModpackAlreadyInstalledModal
+			ref="modpackAlreadyInstalledModal"
+			@create-anyway="handleModpackDuplicateCreateAnyway"
+			@go-to-instance="handleModpackDuplicateGoToInstance"
+		/>
+		<AddServerToInstanceModal ref="addServerToInstanceModal" />
+		<ContentUpdaterModal
+			ref="incompatibilityWarningModal"
+			mode="incompatibility-warning"
+			:versions="contentInstallIncompatibilityWarningVersions"
+			:current-game-version="contentInstallIncompatibilityWarningCurrentGameVersion"
+			:current-loader="contentInstallIncompatibilityWarningCurrentLoader"
+			current-version-id=""
+			:is-app="true"
+			:project-type="contentInstallIncompatibilityWarningProjectType"
+			:project-icon-url="contentInstallIncompatibilityWarningProjectIconUrl"
+			:project-name="contentInstallIncompatibilityWarningProjectName"
+			:warning="contentInstallIncompatibilityWarningMessage"
+			:action-loading="contentInstallIncompatibilityWarningInstalling"
+			@update="handleContentInstallIncompatibilityWarningInstall"
+			@cancel="handleContentInstallIncompatibilityWarningCancel"
+		/>
+		<ModpackAlreadyInstalledModal
+			ref="contentInstallModpackAlreadyInstalledModal"
+			@create-anyway="handleContentInstallModpackDuplicateCreateAnyway"
+			@go-to-instance="handleContentInstallModpackDuplicateGoToInstance"
+		/>
+		<InstallToPlayModal ref="installToPlayModal" />
+		<UpdateToPlayModal ref="updateToPlayModal" />
 		<StartupNoticeModal />
 	</div>
 </template>
@@ -1946,38 +1975,38 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 }
 
 .launcher-background {
-		position: fixed;
-		inset: -3rem;
-		z-index: 0;
-		pointer-events: none;
-		background-position: center;
-		background-size: cover;
-		background-repeat: no-repeat;
-		transition:
-			filter 180ms ease,
-			opacity 180ms ease;
-	}
+	position: fixed;
+	inset: -3rem;
+	z-index: 0;
+	pointer-events: none;
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	transition:
+		filter 180ms ease,
+		opacity 180ms ease;
+}
 
-	.app-grid-layout {
-		display: grid;
-		grid-template: 'status status' 'nav dummy';
-		grid-template-columns: auto 1fr;
-		grid-template-rows: auto 1fr;
-		position: relative;
-		//z-index: 0;
-		background-color: var(--color-raised-bg);
-		height: 100vh;
-	}
+.app-grid-layout {
+	display: grid;
+	grid-template: 'status status' 'nav dummy';
+	grid-template-columns: auto 1fr;
+	grid-template-rows: auto 1fr;
+	position: relative;
+	//z-index: 0;
+	background-color: var(--color-raised-bg);
+	height: 100vh;
+}
 
-	.app-grid-layout.has-custom-background {
-		background-color: transparent;
+.app-grid-layout.has-custom-background {
+	background-color: transparent;
 
-		.app-grid-navbar,
-		.app-grid-statusbar {
-			background-color: color-mix(in srgb, var(--color-raised-bg) 82%, transparent) !important;
-			backdrop-filter: blur(18px) saturate(120%);
-		}
+	.app-grid-navbar,
+	.app-grid-statusbar {
+		background-color: color-mix(in srgb, var(--color-raised-bg) 82%, transparent) !important;
+		backdrop-filter: blur(18px) saturate(120%);
 	}
+}
 
 .app-grid-navbar {
 	grid-area: nav;
@@ -1997,44 +2026,44 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 }
 
 .app-contents {
-		position: absolute;
-		z-index: 1;
-		left: var(--left-bar-width);
-		top: var(--top-bar-height);
-		right: 0;
-		bottom: 0;
-		height: calc(100vh - var(--top-bar-height));
-		background-color: var(--color-bg);
-		border-top-left-radius: var(--radius-xl);
-		overflow: hidden;
+	position: absolute;
+	z-index: 1;
+	left: var(--left-bar-width);
+	top: var(--top-bar-height);
+	right: 0;
+	bottom: 0;
+	height: calc(100vh - var(--top-bar-height));
+	background-color: var(--color-bg);
+	border-top-left-radius: var(--radius-xl);
+	overflow: hidden;
 
-		display: grid;
-		grid-template-columns: 1fr 0px;
-		// transition: grid-template-columns 0.4s ease-in-out;
+	display: grid;
+	grid-template-columns: 1fr 0px;
+	// transition: grid-template-columns 0.4s ease-in-out;
 
-		&.sidebar-enabled {
-			grid-template-columns: 1fr 300px;
-		}
+	&.sidebar-enabled {
+		grid-template-columns: 1fr 300px;
+	}
 
-		&.has-custom-background {
-			background-color: color-mix(in srgb, var(--color-bg) 76%, transparent);
-			border-top-left-radius: 0;
+	&.has-custom-background {
+		background-color: color-mix(in srgb, var(--color-bg) 76%, transparent);
+		border-top-left-radius: 0;
 
-			&::before {
-				border: none;
-				box-shadow: none;
-			}
+		&::before {
+			border: none;
+			box-shadow: none;
 		}
 	}
+}
 
 .loading-indicator-container {
-		border-top-left-radius: var(--radius-xl);
-		overflow: hidden;
+	border-top-left-radius: var(--radius-xl);
+	overflow: hidden;
 
-		.has-custom-background & {
-			border-top-left-radius: 0;
-		}
+	.has-custom-background & {
+		border-top-left-radius: 0;
 	}
+}
 
 .app-sidebar {
 	overflow: visible;

@@ -11,7 +11,7 @@
 //! The server runs on the host's machine, listening on localhost.
 //! Clients connect through EasyTier's port-forwarded local port.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -21,6 +21,9 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
 
 use super::types::*;
+
+/// Maximum chat history to keep (ring buffer).
+const MAX_CHAT_HISTORY: usize = 200;
 
 /// Player heartbeat timeout (seconds).
 const PLAYER_TIMEOUT_SECS: u64 = 10;
@@ -156,6 +159,7 @@ struct ServerState {
     mc_port: RwLock<u16>,
     host_profile: PlayerProfile,
     host_mods: RwLock<Vec<HostModInfo>>,
+    chat_history: RwLock<VecDeque<ChatMessage>>,
 }
 
 impl ServerState {
@@ -174,6 +178,7 @@ impl ServerState {
             mc_port: RwLock::new(mc_port),
             host_profile,
             host_mods: RwLock::new(Vec::new()),
+            chat_history: RwLock::new(VecDeque::new()),
         }
     }
 
@@ -207,6 +212,33 @@ impl ServerState {
                 last_seen: Instant::now(),
             },
         );
+    }
+
+    fn add_chat_message(&self, msg: ChatMessage) {
+        let mut history = self.chat_history.write();
+        history.push_back(msg);
+        while history.len() > MAX_CHAT_HISTORY {
+            history.pop_front();
+        }
+    }
+
+    fn get_messages_since(&self, since_ts: u64) -> Vec<ChatMessage> {
+        let history = self.chat_history.read();
+        history
+            .iter()
+            .filter(|m| m.timestamp >= since_ts)
+            .cloned()
+            .collect()
+    }
+
+    fn get_recent_messages(&self, limit: usize) -> Vec<ChatMessage> {
+        let history = self.chat_history.read();
+        let len = history.len();
+        if len <= limit {
+            history.iter().cloned().collect()
+        } else {
+            history.iter().skip(len - limit).cloned().collect()
+        }
     }
 }
 
@@ -287,6 +319,27 @@ impl ScaffoldingServer {
         self.state.get_player_list()
     }
 
+    /// Add a chat message from the host (server-side, no TCP round-trip).
+    pub fn add_chat_message(&self, sender_id: String, sender_name: String, content: String) -> ChatMessage {
+        let msg = ChatMessage {
+            id: uuid::Uuid::new_v4().to_string(),
+            sender_id,
+            sender_name,
+            content,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis() as u64,
+        };
+        self.state.add_chat_message(msg.clone());
+        msg
+    }
+
+    /// Get chat messages since the given timestamp (host-side).
+    pub fn get_chat_messages_since(&self, since_ts: u64) -> Vec<ChatMessage> {
+        self.state.get_messages_since(since_ts)
+    }
+
     /// Stop the server.
     pub async fn stop(&self) {
         if let Some(tx) = self.shutdown_tx.lock().await.take() {
@@ -323,13 +376,25 @@ impl ScaffoldingServer {
         stream: &mut TcpStream,
         state: &ServerState,
     ) -> Result<(), String> {
+        let mut sender_id = String::new();
+        let mut sender_name = String::new();
+
         loop {
             let (type_str, body) = match read_request(stream).await {
                 Ok(frame) => frame,
                 Err(_) => break, // Connection closed
             };
 
-            let (status, response_body) = Self::handle_request(&type_str, &body, state).await;
+            // Update sender identity on player_ping
+            if type_str == PROTOCOL_PLAYER_PING {
+                if let Ok(profile) = serde_json::from_slice::<PlayerProfile>(&body) {
+                    sender_id = profile.machine_id.clone();
+                    sender_name = profile.name.clone();
+                }
+            }
+
+            let (status, response_body) =
+                Self::handle_request(&type_str, &body, state, &sender_id, &sender_name);
 
             if let Err(e) = write_response(stream, status, &response_body).await {
                 tracing::debug!("scaffolding server write error: {e}");
@@ -339,10 +404,12 @@ impl ScaffoldingServer {
         Ok(())
     }
 
-    async fn handle_request(
+    fn handle_request(
         type_str: &str,
         body: &[u8],
         state: &ServerState,
+        sender_id: &str,
+        sender_name: &str,
     ) -> (u8, Vec<u8>) {
         match type_str {
             PROTOCOL_PLAYER_PING => {
@@ -377,6 +444,39 @@ impl ScaffoldingServer {
                 let mods = state.host_mods.read().clone();
                 let resp = serde_json::to_vec(&mods).unwrap_or_default();
                 (0, resp)
+            }
+            PROTOCOL_CHAT_SEND => {
+                if let Ok(req) = serde_json::from_slice::<ChatSendRequest>(body) {
+                    if req.content.is_empty() || req.content.len() > 500 {
+                        return (1, b"invalid message".to_vec());
+                    }
+                    let msg = ChatMessage {
+                        id: uuid::Uuid::new_v4().to_string(),
+                        sender_id: sender_id.to_string(),
+                        sender_name: sender_name.to_string(),
+                        content: req.content,
+                        timestamp: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_millis() as u64,
+                    };
+                    state.add_chat_message(msg.clone());
+                    let resp = serde_json::to_vec(&msg).unwrap_or_default();
+                    (0, resp)
+                } else {
+                    (1, b"invalid chat_send request".to_vec())
+                }
+            }
+            PROTOCOL_CHAT_POLL => {
+                if let Ok(since_ts) = serde_json::from_slice::<u64>(body) {
+                    let messages = state.get_messages_since(since_ts);
+                    let resp = serde_json::to_vec(&messages).unwrap_or_default();
+                    (0, resp)
+                } else {
+                    let messages = state.get_recent_messages(50);
+                    let resp = serde_json::to_vec(&messages).unwrap_or_default();
+                    (0, resp)
+                }
             }
             _ => (1, b"unknown protocol".to_vec()),
         }
@@ -488,6 +588,43 @@ impl ScaffoldingClient {
             }
         }
         Ok(())
+    }
+
+    /// Send a chat message to the room.
+    pub async fn send_chat_message(
+        &self,
+        stream: Arc<Mutex<TcpStream>>,
+        content: String,
+    ) -> Result<ChatMessage, String> {
+        let mut s = stream.lock().await;
+        let req = ChatSendRequest { content };
+        let body = serde_json::to_vec(&req).map_err(|e| e.to_string())?;
+        write_request(&mut s, PROTOCOL_CHAT_SEND, &body).await?;
+        let (status, resp_body) = read_response(&mut s).await?;
+        if status == 0 {
+            serde_json::from_slice::<ChatMessage>(&resp_body)
+                .map_err(|e| format!("parse chat message: {e}"))
+        } else {
+            Err("chat send failed".to_string())
+        }
+    }
+
+    /// Poll for new chat messages since the given timestamp.
+    pub async fn poll_chat_messages(
+        &self,
+        stream: Arc<Mutex<TcpStream>>,
+        since_ts: u64,
+    ) -> Result<Vec<ChatMessage>, String> {
+        let mut s = stream.lock().await;
+        let body = serde_json::to_vec(&since_ts).map_err(|e| e.to_string())?;
+        write_request(&mut s, PROTOCOL_CHAT_POLL, &body).await?;
+        let (status, resp_body) = read_response(&mut s).await?;
+        if status == 0 {
+            serde_json::from_slice::<Vec<ChatMessage>>(&resp_body)
+                .map_err(|e| format!("parse chat messages: {e}"))
+        } else {
+            Err("chat poll failed".to_string())
+        }
     }
 
     /// Stop the client.

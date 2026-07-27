@@ -140,29 +140,29 @@
 	--shadow-card: rgba(50, 50, 100, 0.1) 0px 2px 4px 0px;
 
 	--brand-gradient-bg: linear-gradient(
-			0deg,
-			color-mix(in srgb, var(--color-brand) 14%, transparent) 0%,
-			color-mix(in srgb, var(--color-brand) 9%, transparent) 100%
-		);
-		--brand-gradient-strong-bg: linear-gradient(
-			270deg,
-			color-mix(in srgb, var(--color-brand) 18%, var(--surface-1)) 0%,
-			color-mix(in srgb, var(--color-brand) 11%, var(--surface-1)) 100%
-		);
-		--brand-gradient-button: rgba(255, 255, 255, 0.5);
-		--brand-gradient-border: color-mix(in srgb, var(--color-brand) 16%, transparent);
-		--brand-gradient-fade-out-color: linear-gradient(to bottom, rgba(213, 235, 224, 0), #d0ece0 70%);
+		0deg,
+		color-mix(in srgb, var(--color-brand) 14%, transparent) 0%,
+		color-mix(in srgb, var(--color-brand) 9%, transparent) 100%
+	);
+	--brand-gradient-strong-bg: linear-gradient(
+		270deg,
+		color-mix(in srgb, var(--color-brand) 18%, var(--surface-1)) 0%,
+		color-mix(in srgb, var(--color-brand) 11%, var(--surface-1)) 100%
+	);
+	--brand-gradient-button: rgba(255, 255, 255, 0.5);
+	--brand-gradient-border: color-mix(in srgb, var(--color-brand) 16%, transparent);
+	--brand-gradient-fade-out-color: linear-gradient(to bottom, rgba(213, 235, 224, 0), #d0ece0 70%);
 
-		--color-button-bg-selected: var(--color-brand);
-		--color-button-text-selected: var(--color-accent-contrast);
+	--color-button-bg-selected: var(--color-brand);
+	--color-button-text-selected: var(--color-accent-contrast);
 
-		--color-gradient-button-bg: linear-gradient(180deg, #f8f9fa 0%, #dce0e6 100%);
+	--color-gradient-button-bg: linear-gradient(180deg, #f8f9fa 0%, #dce0e6 100%);
 
-		--loading-bar-gradient: linear-gradient(
-			to right,
-			var(--color-brand) 0%,
-			color-mix(in srgb, var(--color-brand) 68%, white) 100%
-		);
+	--loading-bar-gradient: linear-gradient(
+		to right,
+		var(--color-brand) 0%,
+		color-mix(in srgb, var(--color-brand) 68%, white) 100%
+	);
 
 	--color-platform-fabric: #8a7b71;
 	--color-platform-quilt: #8b61b4;
@@ -366,18 +366,18 @@ html {
 	--shadow-card: rgba(0, 0, 0, 0.25) 0px 2px 4px 0px;
 
 	--brand-gradient-bg: linear-gradient(
-			0deg,
-			color-mix(in srgb, var(--color-brand) 14%, transparent) 0%,
-			color-mix(in srgb, var(--color-brand) 9%, transparent) 100%
-		);
-		--brand-gradient-strong-bg: linear-gradient(
-			270deg,
-			color-mix(in srgb, var(--color-brand) 18%, var(--surface-1)) 0%,
-			color-mix(in srgb, var(--color-brand) 11%, var(--surface-1)) 100%
-		);
-		--brand-gradient-button: rgba(255, 255, 255, 0.08);
-		--brand-gradient-border: color-mix(in srgb, var(--color-brand) 16%, transparent);
-		--brand-gradient-fade-out-color: linear-gradient(to bottom, rgba(24, 30, 31, 0), #171d1e 80%);
+		0deg,
+		color-mix(in srgb, var(--color-brand) 14%, transparent) 0%,
+		color-mix(in srgb, var(--color-brand) 9%, transparent) 100%
+	);
+	--brand-gradient-strong-bg: linear-gradient(
+		270deg,
+		color-mix(in srgb, var(--color-brand) 18%, var(--surface-1)) 0%,
+		color-mix(in srgb, var(--color-brand) 11%, var(--surface-1)) 100%
+	);
+	--brand-gradient-button: rgba(255, 255, 255, 0.08);
+	--brand-gradient-border: color-mix(in srgb, var(--color-brand) 16%, transparent);
+	--brand-gradient-fade-out-color: linear-gradient(to bottom, rgba(24, 30, 31, 0), #171d1e 80%);
 
 	--color-button-bg-selected: var(--color-brand-highlight);
 	--color-button-text-selected: var(--color-brand);
@@ -385,10 +385,10 @@ html {
 	--color-gradient-button-bg: linear-gradient(180deg, #3a3d47 0%, #33363d 100%);
 
 	--loading-bar-gradient: linear-gradient(
-			to right,
-			var(--color-brand) 0%,
-			color-mix(in srgb, var(--color-brand) 68%, white) 100%
-		);
+		to right,
+		var(--color-brand) 0%,
+		color-mix(in srgb, var(--color-brand) 68%, white) 100%
+	);
 
 	--color-platform-fabric: #dbb69b;
 	--color-platform-quilt: #c796f9;

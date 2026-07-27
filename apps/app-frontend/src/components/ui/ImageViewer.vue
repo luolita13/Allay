@@ -2,11 +2,11 @@
 	<Teleport to="body">
 		<div
 			v-if="visible"
+			ref="overlayRef"
 			class="image-viewer-overlay"
+			tabindex="0"
 			@click.self="close"
 			@keydown="onKeydown"
-			tabindex="0"
-			ref="overlayRef"
 		>
 			<div class="image-viewer-content">
 				<img
@@ -19,17 +19,11 @@
 				/>
 
 				<div class="image-viewer-toolbar" @click.stop>
-					<span
-						v-if="currentName"
-						class="image-viewer-name"
-					>{{ currentName }}</span>
+					<span v-if="currentName" class="image-viewer-name">{{ currentName }}</span>
 
 					<div class="image-viewer-actions">
 						<ButtonStyled circular>
-							<button
-								@click="openExternally"
-								:title="'Open in system viewer'"
-							>
+							<button :title="'Open in system viewer'" @click="openExternally">
 								<ExternalIcon aria-hidden="true" />
 							</button>
 						</ButtonStyled>
@@ -39,24 +33,18 @@
 								<ContractIcon v-else aria-hidden="true" />
 							</button>
 						</ButtonStyled>
-						<ButtonStyled
-							v-if="images.length > 1"
-							circular
-						>
-							<button @click="prevImage" :title="'Previous'">
+						<ButtonStyled v-if="images.length > 1" circular>
+							<button :title="'Previous'" @click="prevImage">
 								<LeftArrowIcon aria-hidden="true" />
 							</button>
 						</ButtonStyled>
-						<ButtonStyled
-							v-if="images.length > 1"
-							circular
-						>
-							<button @click="nextImage" :title="'Next'">
+						<ButtonStyled v-if="images.length > 1" circular>
+							<button :title="'Next'" @click="nextImage">
 								<RightArrowIcon aria-hidden="true" />
 							</button>
 						</ButtonStyled>
 						<ButtonStyled circular>
-							<button @click="close" :title="'Close'">
+							<button :title="'Close'" @click="close">
 								<XIcon aria-hidden="true" />
 							</button>
 						</ButtonStyled>
@@ -78,7 +66,7 @@ import {
 } from '@modrinth/assets'
 import { ButtonStyled } from '@modrinth/ui'
 import { readFile } from '@tauri-apps/plugin-fs'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 import { openPath } from '@/helpers/utils.js'
 
@@ -161,19 +149,13 @@ function close() {
 
 function prevImage() {
 	if (props.images.length <= 1) return
-	activeIndex.value =
-		activeIndex.value <= 0
-			? props.images.length - 1
-			: activeIndex.value - 1
+	activeIndex.value = activeIndex.value <= 0 ? props.images.length - 1 : activeIndex.value - 1
 	zoomed.value = false
 }
 
 function nextImage() {
 	if (props.images.length <= 1) return
-	activeIndex.value =
-		activeIndex.value >= props.images.length - 1
-			? 0
-			: activeIndex.value + 1
+	activeIndex.value = activeIndex.value >= props.images.length - 1 ? 0 : activeIndex.value + 1
 	zoomed.value = false
 }
 

@@ -9,7 +9,7 @@ const messages = defineMessages({
 	noCustom: { id: 'app.library.no-custom', defaultMessage: 'No custom instances found' },
 })
 
-const props = defineProps({
+defineProps({
 	instances: {
 		type: Array,
 		required: true,

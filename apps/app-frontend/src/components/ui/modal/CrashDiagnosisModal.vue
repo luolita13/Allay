@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { NewModal as Modal, ButtonStyled } from '@modrinth/ui'
-import { computed, ref, watch } from 'vue'
 import {
 	CheckIcon,
 	ClipboardCopyIcon,
@@ -8,21 +6,28 @@ import {
 	EditIcon,
 	ExternalIcon,
 	FolderOpenIcon,
-	UploadIcon,
-	XIcon,
+	SpinnerIcon,
 } from '@modrinth/assets'
+import { Admonition, ButtonStyled, NewModal as Modal } from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
-import { openPath } from '@/helpers/utils'
-import { diagnoseLatestCrash, diagnoseRawLog, exportCrashReport, applyAutoFix } from '@/helpers/crash_diagnosis'
-import { crash_diagnosed_listener } from '@/helpers/events'
+import { computed, ref, watch } from 'vue'
+
 import type { CrashDiagnosisMatch, CrashDiagnosisResult } from '@/helpers/crash_diagnosis'
+import {
+	applyAutoFix,
+	diagnoseLatestCrash,
+	diagnoseRawLog,
+	exportCrashReport,
+} from '@/helpers/crash_diagnosis'
+import { crash_diagnosed_listener } from '@/helpers/events'
+import { openPath } from '@/helpers/utils'
 
 const props = defineProps<{
 	instanceId?: string
 	instanceName?: string
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
 	(e: 'proceed', action: 'fix' | 'close'): void
 }>()
 
@@ -79,9 +84,7 @@ async function diagnosePasted() {
 async function openCrashReportFile() {
 	const selected = await open({
 		multiple: false,
-		filters: [
-			{ name: 'Logs / Crash reports', extensions: ['txt', 'log', 'gz'] },
-		],
+		filters: [{ name: 'Logs / Crash reports', extensions: ['txt', 'log', 'gz'] }],
 	})
 	if (selected && typeof selected === 'string') {
 		loading.value = true
@@ -106,7 +109,8 @@ async function handleExportReport() {
 		const zipPath = await exportCrashReport(props.instanceId)
 		// Open the folder containing the zip
 		await openPath(zipPath.replace(/[^\\/]+$/, ''))
-		fixMessage.value = 'Crash report exported successfully! The ZIP file has been opened in your file explorer.'
+		fixMessage.value =
+			'Crash report exported successfully! The ZIP file has been opened in your file explorer.'
 	} catch (e) {
 		console.error('Failed to export crash report:', e)
 		errorMessage.value = String(e)
@@ -169,14 +173,12 @@ function sourceLabel(source: string): string {
 async function copyReport() {
 	if (!result.value) return
 	const text = result.value.matched
-		.map(
-			(m) => {
-				let report = `## ${m.title} [${m.rule_id}]\n${m.description}\nFix: ${m.fix}`
-				if (m.fragment) report += `\nFragment: ${m.fragment}`
-				if (m.mod_files?.length) report += `\nMod files: ${m.mod_files.join(', ')}`
-				return report
-			},
-		)
+		.map((m) => {
+			let report = `## ${m.title} [${m.rule_id}]\n${m.description}\nFix: ${m.fix}`
+			if (m.fragment) report += `\nFragment: ${m.fragment}`
+			if (m.mod_files?.length) report += `\nMod files: ${m.mod_files.join(', ')}`
+			return report
+		})
 		.join('\n\n')
 	await navigator.clipboard.writeText(text)
 }
@@ -206,20 +208,11 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 </script>
 
 <template>
-	<Modal
-		ref="modal"
-		:closable="true"
-		:noblur="false"
-		class="crash-diagnosis-modal"
-	>
+	<Modal ref="modal" :closable="true" :noblur="false" class="crash-diagnosis-modal">
 		<template #title>
 			<div class="title-row">
 				<span class="title-text">Minecraft crashed</span>
-				<span
-					v-if="instanceName"
-					class="instance-chip"
-					:title="instanceName"
-				>
+				<span v-if="instanceName" class="instance-chip" :title="instanceName">
 					{{ instanceName }}
 				</span>
 			</div>
@@ -227,24 +220,25 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 
 		<div class="crash-diagnosis-body">
 			<div v-if="loading" class="state-block">
-				<div class="spinner" />
+				<SpinnerIcon class="animate-spin spinner-icon" />
 				<p>Analyzing crash report…</p>
 			</div>
 
-			<div v-else-if="errorMessage" class="state-block error-block">
-				<p class="error-title">Failed to analyze crash report</p>
-				<p class="error-detail">{{ errorMessage }}</p>
-				<ButtonStyled type="transparent">
-					<button @click="errorMessage = null">Dismiss</button>
-				</ButtonStyled>
-			</div>
+			<Admonition
+				v-else-if="errorMessage"
+				type="critical"
+				header="Failed to analyze crash report"
+				dismissible
+				@dismiss="errorMessage = null"
+			>
+				{{ errorMessage }}
+			</Admonition>
 
 			<template v-else-if="result && hasAnyMatch">
 				<p class="lead">
 					We detected <strong>{{ result.matched.length }}</strong>
-					{{ result.matched.length === 1 ? 'issue' : 'issues' }} in the
-					crash report. Review the findings below and follow the
-					suggested fixes.
+					{{ result.matched.length === 1 ? 'issue' : 'issues' }} in the crash report. Review the
+					findings below and follow the suggested fixes.
 				</p>
 
 				<div class="match-list">
@@ -267,11 +261,7 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 						<div v-if="m.mod_files?.length" class="match-mod-files">
 							<span class="mod-files-label">Suspected mod files:</span>
 							<div class="mod-file-list">
-								<code
-									v-for="file in m.mod_files"
-									:key="file"
-									class="mod-file-chip"
-								>
+								<code v-for="file in m.mod_files" :key="file" class="mod-file-chip">
 									{{ file }}
 								</code>
 							</div>
@@ -282,10 +272,7 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 						</div>
 						<div v-if="autoFixLabel(m.auto_fix)" class="match-autofix">
 							<ButtonStyled color="brand" type="outlined">
-								<button
-									@click="handleAutoFix(m.auto_fix)"
-									:disabled="loading"
-								>
+								<button :disabled="loading" @click="handleAutoFix(m.auto_fix)">
 									<DownloadIcon />
 									{{ autoFixLabel(m.auto_fix) }}
 								</button>
@@ -296,11 +283,7 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 
 				<div v-if="hasSources" class="sources-bar">
 					<span class="sources-label">Analyzed sources:</span>
-					<span
-						v-for="src in result.sources"
-						:key="src"
-						class="source-chip"
-					>
+					<span v-for="src in result.sources" :key="src" class="source-chip">
 						{{ sourceLabel(src) }}
 					</span>
 				</div>
@@ -317,17 +300,10 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 							Copy diagnosis
 						</button>
 					</ButtonStyled>
-					<ButtonStyled
-						v-if="instanceId"
-						color="brand"
-						type="outlined"
-					>
-						<button
-							@click="handleExportReport"
-							:disabled="exporting"
-						>
+					<ButtonStyled v-if="instanceId" color="brand" type="outlined">
+						<button :disabled="exporting" @click="handleExportReport">
 							<DownloadIcon v-if="!exporting" />
-							<div v-else class="spinner-small" />
+							<SpinnerIcon v-else class="animate-spin" />
 							{{ exporting ? 'Exporting…' : 'Export report' }}
 						</button>
 					</ButtonStyled>
@@ -348,22 +324,14 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 
 			<div v-else-if="result" class="state-block">
 				<p>
-					No matching diagnosis rules were found for this crash. The
-					launch may have failed for a reason outside our rule set
-					(network issue, antivirus interference, etc.).
+					No matching diagnosis rules were found for this crash. The launch may have failed for a
+					reason outside our rule set (network issue, antivirus interference, etc.).
 				</p>
 				<div class="action-row">
-					<ButtonStyled
-						v-if="instanceId"
-						color="brand"
-						type="outlined"
-					>
-						<button
-							@click="handleExportReport"
-							:disabled="exporting"
-						>
+					<ButtonStyled v-if="instanceId" color="brand" type="outlined">
+						<button :disabled="exporting" @click="handleExportReport">
 							<DownloadIcon v-if="!exporting" />
-							<div v-else class="spinner-small" />
+							<SpinnerIcon v-else class="animate-spin" />
 							{{ exporting ? 'Exporting…' : 'Export report' }}
 						</button>
 					</ButtonStyled>
@@ -393,13 +361,9 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 			</div>
 
 			<div v-if="showPasteBox" class="paste-box">
-				<textarea
-					v-model="pastedLog"
-					placeholder="Paste crash log contents here…"
-					rows="8"
-				/>
+				<textarea v-model="pastedLog" placeholder="Paste crash log contents here…" rows="8" />
 				<ButtonStyled>
-					<button @click="diagnosePasted" :disabled="!pastedLog.trim()">
+					<button :disabled="!pastedLog.trim()" @click="diagnosePasted">
 						<ExternalIcon />
 						Analyze
 					</button>
@@ -451,46 +415,10 @@ const hasSources = computed(() => (result.value?.sources?.length ?? 0) > 0)
 	color: var(--color-text-secondary);
 }
 
-.error-block {
-	color: var(--color-badge-red-bg, #ff5d5d);
-}
-
-.error-title {
-	font-weight: 600;
-	font-size: 1.05rem;
-	margin: 0;
-}
-
-.error-detail {
-	margin: 0;
-	font-size: 0.9rem;
-	opacity: 0.8;
-	max-width: 480px;
-	word-break: break-word;
-}
-
-.spinner {
-	width: 28px;
-	height: 28px;
-	border: 3px solid var(--color-divider);
-	border-top-color: var(--color-brand);
-	border-radius: 50%;
-	animation: crash-spin 0.9s linear infinite;
-}
-
-.spinner-small {
-	width: 16px;
-	height: 16px;
-	border: 2px solid var(--color-divider);
-	border-top-color: var(--color-brand);
-	border-radius: 50%;
-	animation: crash-spin 0.9s linear infinite;
-}
-
-@keyframes crash-spin {
-	to {
-		transform: rotate(360deg);
-	}
+.spinner-icon {
+	width: 1.75rem;
+	height: 1.75rem;
+	color: var(--color-brand);
 }
 
 .lead {

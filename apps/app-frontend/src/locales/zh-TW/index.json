@@ -83,35 +83,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "色彩主題"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "變更啟動器開啟時的頁面。"
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "首頁"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "遊戲庫"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "預設起始頁面"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "在外觀頁面中隱藏玩家上方的名牌。"
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "隱藏名牌"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "在首頁的「繼續遊玩」區塊中顯示最近進入的世界。"
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "繼續遊玩世界"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "當 Minecraft 處理程序啟動時最小化啟動器。"
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "最小化啟動器"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "使用系統內建的視窗外框（需要重啟應用程式）。"
@@ -119,32 +95,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "原生視窗"
   },
-  "app.appearance-settings.select-option": {
-    "message": "選擇選項"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "顯示你在該實例的遊玩時數。"
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "顯示遊玩時數"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "自動跳過低風險操作的確認提示，例如重複安裝模組包、常規內容刪除、批次更新、取消連結模組包以及修復提示。高風險警告仍會顯示。"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "跳過非必要的警告"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "啟用切換側邊欄的功能。"
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "切換側邊欄"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "如果你嘗試安裝非 Modrinth 代管的 Modrinth 封裝檔案 (.mrpack)，我們會在安裝前確保你已了解相關風險。"
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "在安裝未知模組包前發出警告"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraft 驗證伺服器現在可能無法使用。請檢查網際網路連線，然後再試一次。"

@@ -83,35 +83,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Färgtema"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Ändrar sidan som launchern öppnas på."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Hem"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Bibliotek"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Standardlandingssida"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Inaktiverar namnskylten ovanför din spelare på utseende-sidan."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Dölj namnskylt"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Inkluderar de senaste världarna i \"Hoppa tillbaka i världar\" på hemsidan."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Hoppa tillbaka i världar"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimerar launchern när Minecraft startas."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Minimera programstartare"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Använd systemets fönsterram (omstart av app krävs)."
@@ -119,32 +95,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Inbyggda fönsterdekorationer"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Välj ett alternativ"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Visar hur mycket tid du spelat på en instans."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Visa speltid"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "Hoppar över bekräftelser med låg risk, såsom installation av dubbla modpaket, radering av vanligt innehåll, massuppdateringar, avlänkning av modpaket och reparationsmeddelanden. Varningar om farliga händelser visas fortfarande."
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "Hoppa över icke nödvändiga varningar"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Låter dig växla sidofältet."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Växla sidofält"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Om du försöker installera en Modrinth Pack fil (.mrpack) som inte kommer från Modrinth ser vi till att du känner till riskerna innan du installerar den."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Varna mig innan jag installerar okända modpaket"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecrafts autentiseringsservrar kan vara nere just nu. Kontrollera din internetanslutning och försök igen senare."

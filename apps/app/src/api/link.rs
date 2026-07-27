@@ -7,7 +7,7 @@ use crate::api::{Result, TheseusSerializableError};
 use parking_lot::RwLock;
 use tauri::{Emitter, Manager, Runtime};
 use theseus::link::{
-    self, ConnectionInfo, ConnectionQuality, ConnectionWay, FoundWorld, HostModInfo,
+    self, ChatMessage, ConnectionInfo, ConnectionQuality, ConnectionWay, FoundWorld, HostModInfo,
     LobbyState, ModCompatibilityResult, PlayerKind, PlayerProfile, ScaffoldingClient,
     ScaffoldingEvent, ScaffoldingServer,
 };
@@ -467,6 +467,85 @@ pub async fn link_update_mc_port<R: Runtime>(
     Ok(())
 }
 
+/// Send a chat message to the room.
+#[tauri::command]
+pub async fn link_send_chat_message<R: Runtime>(
+    app: tauri::AppHandle<R>,
+    content: String,
+) -> Result<ChatMessage> {
+    if content.is_empty() || content.len() > 500 {
+        return Err(TheseusSerializableError::Theseus(
+            theseus::Error::from(theseus::ErrorKind::InputError(
+                "Message must be 1-500 characters.".to_string(),
+            )),
+        ));
+    }
+
+    let gs = app.state::<LinkGlobalState>();
+
+    // Client: send via scaffolding protocol
+    if let Some(client) = gs.scf_client.lock().await.as_ref() {
+        let stream = client.stream();
+        let msg = client
+            .send_chat_message(stream, content)
+            .await
+            .map_err(|e| {
+                TheseusSerializableError::Theseus(theseus::Error::from(theseus::ErrorKind::OtherError(
+                    e,
+                )))
+            })?;
+        return Ok(msg);
+    }
+
+    // Host: add directly to server state
+    if let Some(server) = gs.scf_server.lock().await.as_ref() {
+        let inner = gs.state.read();
+        let msg = server.add_chat_message(
+            inner.machine_id.clone(),
+            inner.username.clone().unwrap_or_default(),
+            content,
+        );
+        return Ok(msg);
+    }
+
+    Err(TheseusSerializableError::Theseus(
+        theseus::Error::from(theseus::ErrorKind::OtherError("Not connected".to_string())),
+    ))
+}
+
+/// Poll for new chat messages (both host and client).
+#[tauri::command]
+pub async fn link_poll_chat_messages<R: Runtime>(
+    app: tauri::AppHandle<R>,
+    since_ts: u64,
+) -> Result<Vec<ChatMessage>> {
+    let gs = app.state::<LinkGlobalState>();
+
+    // Client: poll via scaffolding protocol
+    if let Some(client) = gs.scf_client.lock().await.as_ref() {
+        let stream = client.stream();
+        let messages = client
+            .poll_chat_messages(stream, since_ts)
+            .await
+            .map_err(|e| {
+                TheseusSerializableError::Theseus(theseus::Error::from(theseus::ErrorKind::OtherError(
+                    e,
+                )))
+            })?;
+        return Ok(messages);
+    }
+
+    // Host: return from server's local history
+    if let Some(server) = gs.scf_server.lock().await.as_ref() {
+        let messages = server.get_chat_messages_since(since_ts);
+        return Ok(messages);
+    }
+
+    Err(TheseusSerializableError::Theseus(
+        theseus::Error::from(theseus::ErrorKind::OtherError("Not connected".to_string())),
+    ))
+}
+
 // ---------------------------------------------------------------------------
 // Tauri plugin
 // ---------------------------------------------------------------------------
@@ -488,6 +567,8 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             link_get_host_mods,
             link_is_minecraft_running,
             link_update_mc_port,
+            link_send_chat_message,
+            link_poll_chat_messages,
         ])
         .build()
 }

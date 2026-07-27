@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import {
-	defineMessages,
-	ProgressBar,
-	useVIntl,
-} from '@modrinth/ui'
+import { defineMessages, ProgressBar, useVIntl } from '@modrinth/ui'
 import { computed, ref } from 'vue'
 
 import { settingsTabs } from '@/helpers/settings-tabs'
 import { injectAppUpdateDownloadProgress } from '@/providers/download-progress'
-import { useTheming } from '@/store/state'
 
-const themeStore = useTheming()
 const { formatMessage } = useVIntl()
 
 const activeTab = ref(0)
@@ -34,9 +28,13 @@ const messages = defineMessages({
 <template>
 	<div class="flex h-full">
 		<!-- Sidebar -->
-		<nav class="settings-sidebar w-72 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1/75 p-4">
+		<nav
+			class="settings-sidebar w-72 flex-shrink-0 overflow-y-auto border-r border-surface-5 bg-surface-1/75 p-4"
+		>
 			<div class="mb-5 pl-1">
-				<h2 class="text-xl font-extrabold text-contrast">{{ formatMessage(messages.settingsTitle) }}</h2>
+				<h2 class="text-xl font-extrabold text-contrast">
+					{{ formatMessage(messages.settingsTitle) }}
+				</h2>
 			</div>
 			<button
 				v-for="(tab, i) in settingsTabs"
@@ -70,7 +68,9 @@ const messages = defineMessages({
 					<component :is="TabContent" />
 					<template #fallback>
 						<div class="flex items-center justify-center py-12">
-							<div class="size-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+							<div
+								class="size-6 animate-spin rounded-full border-2 border-brand border-t-transparent"
+							/>
 						</div>
 					</template>
 				</Suspense>
@@ -78,13 +78,11 @@ const messages = defineMessages({
 
 			<!-- Footer -->
 			<div class="mx-auto mt-12 max-w-2xl">
-					<div v-if="progress > 0 && progress < 1" class="border-t border-surface-5 pt-4">
-						<p class="m-0 mb-2 text-sm text-secondary">
-							Downloading v{{ downloadingVersion }}
-						</p>
-						<ProgressBar :progress="progress" />
-					</div>
+				<div v-if="progress > 0 && progress < 1" class="border-t border-surface-5 pt-4">
+					<p class="m-0 mb-2 text-sm text-secondary">Downloading v{{ downloadingVersion }}</p>
+					<ProgressBar :progress="progress" />
 				</div>
+			</div>
 		</div>
 	</div>
 </template>

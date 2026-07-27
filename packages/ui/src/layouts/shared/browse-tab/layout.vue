@@ -80,6 +80,8 @@ const messages = defineMessages({
 	</template>
 	<SelectedProjectsFloatingBar v-if="ctx.installContext?.value && ctx.variant !== 'web'" />
 
+	<slot name="install-header-after" />
+
 	<NavTabs v-if="ctx.showProjectTypeTabs.value" :links="ctx.selectableProjectTypes.value" />
 
 	<StyledInput

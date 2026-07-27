@@ -22,6 +22,22 @@ const FALLBACK_RELAY_NODES: &[&str] = &[
     "udp://easytier.1kay.net:11010",
 ];
 
+/// Check whether the current Windows process has administrator privileges.
+/// Uses the `net session` command, which only succeeds when elevated.
+#[cfg(windows)]
+fn is_running_as_admin() -> bool {
+    std::process::Command::new("cmd")
+        .args(["/C", "net", "session", ">nul", "2>&1"])
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+#[cfg(not(windows))]
+fn is_running_as_admin() -> bool {
+    false
+}
+
 /// Hostname prefix for the host's EasyTier instance.
 /// Clients use this to identify the host in the peer list.
 const HOST_HOSTNAME_PREFIX: &str = "scaffolding-mc-server-";
@@ -232,14 +248,23 @@ impl LinkManager {
 
     fn start_launcher(&self, cfg: NetworkConfig) -> Result<(), String> {
         let mut launcher = EasyTierLauncher::new();
-        launcher.start(move || {
-            cfg.gen_config()
-        });
+        launcher.start(move || cfg.gen_config());
 
         // Check for immediate errors.
         std::thread::sleep(Duration::from_millis(500));
+
         if let Some(err) = launcher.error_msg() {
-            return Err(format!("EasyTier start error: {err}"));
+            let mut msg = format!("EasyTier start error: {err}");
+            if err.contains("Failed to create adapter") || err.contains("create adapter") {
+                msg.push_str("\n\nOn Windows, creating a virtual network adapter requires the wintun driver and administrator privileges. Please:\n");
+                msg.push_str("1. Make sure you launched Modrinth App as an administrator.\n");
+                msg.push_str("2. Ensure wintun.dll is present next to the app executable.");
+                #[cfg(windows)]
+                if !is_running_as_admin() {
+                    msg.push_str("\n\nCurrent process is NOT running with administrator rights.");
+                }
+            }
+            return Err(msg);
         }
 
         *self.launcher.lock() = Some(launcher);

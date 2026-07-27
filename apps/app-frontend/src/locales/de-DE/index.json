@@ -83,35 +83,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Farbschema"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Ändere die Seite, die beim Öffnen des Launchers angezeigt wird."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Start"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Bibliothek"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Standard-Startseite"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Deaktiviert das Namensschild über deinem Spieler auf der Skin-Seite."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Namensschild ausblenden"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Enthält zuletzt gespielte Welten im Abschnitt „Direkt weiterspielen“ auf der Startseite."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Direkt in Welten weiterspielen"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Den Launcher minimieren, wenn ein Minecraft-Prozess gestartet wird."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Launcher minimieren"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Fensterdekorationen des Systems verwenden (Neustart der App erforderlich)."
@@ -119,32 +95,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Native Dekorationen"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Wähle eine Option"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Zeigt an, wie viel Zeit du damit verbracht hast, eine Instanz zu spielen."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Spielzeit anzeigen"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "Überspringt automatisch Bestätigungen mit geringem Risiko, wie z. B. die doppelte Installation von Modpacks, das Löschen normaler Inhalte, Massenaktualisierungen, das Trennen von Modpacks und Reparaturen. Warnungen bei gefährlichen Aktionen werden weiterhin angezeigt."
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "Unwichtige Warnungen überspringen"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Ermöglicht das Umschalten der Seitenleiste."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Seitenleiste umschalten"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Falls du versuchst, eine Modrinth-Pack-Datei (.mrpack) zu installieren, die nicht auf Modrinth gehostet wird, werden die Risiken vor der Installation bekannt gegeben."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Warne mich, bevor unbekannte Modpacks installiert werden"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Die Authentifizierungsserver von Minecraft sind eventuell momentan nicht erreichbar. Überprüfe deine Internetverbindung und versuche es später erneut."

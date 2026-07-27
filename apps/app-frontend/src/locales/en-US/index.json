@@ -1,4 +1,43 @@
 {
+  "app.about.app-name": {
+    "message": "Modrinth App"
+  },
+  "app.about.crafted-by": {
+    "message": "Crafted By"
+  },
+  "app.about.easter-egg.hall-of-fame-description": {
+    "message": "The creators of this custom build:"
+  },
+  "app.about.easter-egg.hall-of-fame-title": {
+    "message": "Hall of Fame"
+  },
+  "app.about.easter-egg.override-authorized": {
+    "message": "System Override Authorized"
+  },
+  "app.about.edition": {
+    "message": "Community Edition"
+  },
+  "app.about.legal-notice": {
+    "message": "This is a community edition of the Modrinth App. Modrinth and its trademarks are owned by Rinth, Inc."
+  },
+  "app.about.license": {
+    "message": "License"
+  },
+  "app.about.license-value": {
+    "message": "GPL-3.0"
+  },
+  "app.about.platform": {
+    "message": "Platform"
+  },
+  "app.about.report-issue": {
+    "message": "Report an Issue"
+  },
+  "app.about.version": {
+    "message": "Version"
+  },
+  "app.about.view-source": {
+    "message": "View Source"
+  },
   "app.action-bar.downloading-java": {
     "message": "Downloading Java {version}"
   },
@@ -92,98 +131,278 @@
   "app.add-server-modal.warning": {
     "message": "This server may not be compatible with all instances."
   },
+  "app.advanced-instance.advanced-launch-options.title": {
+    "message": "Advanced Launch Options"
+  },
+  "app.advanced-instance.compatibility.title": {
+    "message": "Compatibility"
+  },
+  "app.advanced-instance.disable-jlw.description": {
+    "message": "Disable the theseus.jar launch wrapper. Some features may not work."
+  },
+  "app.advanced-instance.disable-jlw.title": {
+    "message": "Disable Java Launch Wrapper"
+  },
+  "app.advanced-instance.disable-lf.description": {
+    "message": "Disable compatibility fixes for older versions of Minecraft."
+  },
+  "app.advanced-instance.disable-lf.title": {
+    "message": "Disable LegacyFix"
+  },
+  "app.advanced-instance.disable-lwjgl.description": {
+    "message": "Disable the LWJGL Unsafe Agent that patches FFM API performance issues."
+  },
+  "app.advanced-instance.disable-lwjgl.title": {
+    "message": "Disable LWJGL Unsafe Agent"
+  },
+  "app.advanced-instance.env-variables.placeholder": {
+    "message": "Enter environment variables..."
+  },
+  "app.advanced-instance.env-variables.title": {
+    "message": "Environment Variables"
+  },
+  "app.advanced-instance.extra-game-args.hint": {
+    "message": "Appended to the end of the Minecraft launch arguments."
+  },
+  "app.advanced-instance.extra-game-args.placeholder": {
+    "message": "e.g. --demo"
+  },
+  "app.advanced-instance.extra-game-args.title": {
+    "message": "Extra Game Arguments"
+  },
+  "app.advanced-instance.high-perf-gpu.description": {
+    "message": "Request the use of a high-performance discrete GPU for the game process."
+  },
+  "app.advanced-instance.high-perf-gpu.title": {
+    "message": "High-Performance GPU"
+  },
+  "app.advanced-instance.hooks.title": {
+    "message": "Hooks"
+  },
+  "app.advanced-instance.java-arguments.placeholder": {
+    "message": "Enter Java arguments..."
+  },
+  "app.advanced-instance.java-arguments.title": {
+    "message": "Java Arguments"
+  },
+  "app.advanced-instance.post-exit-hook.description": {
+    "message": "Executed after the game closes."
+  },
+  "app.advanced-instance.post-exit-hook.placeholder": {
+    "message": "Enter post-exit command..."
+  },
+  "app.advanced-instance.post-exit-hook.title": {
+    "message": "Post-Exit Hook"
+  },
+  "app.advanced-instance.pre-launch-hook.description": {
+    "message": "Executed before launching the instance."
+  },
+  "app.advanced-instance.pre-launch-hook.placeholder": {
+    "message": "Enter pre-launch command..."
+  },
+  "app.advanced-instance.pre-launch-hook.title": {
+    "message": "Pre-Launch Hook"
+  },
+  "app.advanced-instance.pre-launch-wait": {
+    "message": "Wait for command to complete before launching"
+  },
+  "app.advanced-instance.renderer.d3d12": {
+    "message": "DirectX 12"
+  },
+  "app.advanced-instance.renderer.default": {
+    "message": "Default"
+  },
+  "app.advanced-instance.renderer.description": {
+    "message": "Override the OpenGL renderer. May cause instability."
+  },
+  "app.advanced-instance.renderer.llvmpipe": {
+    "message": "llvmpipe (Software Renderer)"
+  },
+  "app.advanced-instance.renderer.title": {
+    "message": "Renderer"
+  },
+  "app.advanced-instance.renderer.zink": {
+    "message": "Vulkan (Zink)"
+  },
+  "app.advanced-instance.reset-to-default": {
+    "message": "Reset to Default"
+  },
+  "app.advanced-instance.skip-non-essential-warnings.description": {
+    "message": "Automatically skip low-risk confirmation dialogs such as duplicate installs, regular deletions, batch updates, unlinking modpacks, and repair prompts. Dangerous warnings will still be shown."
+  },
+  "app.advanced-instance.skip-non-essential-warnings.title": {
+    "message": "Skip Non-Essential Warnings"
+  },
+  "app.advanced-instance.skip-unknown-pack.description": {
+    "message": "No longer show a risk warning when installing .mrpack files not hosted on Modrinth."
+  },
+  "app.advanced-instance.skip-unknown-pack.title": {
+    "message": "Skip Unknown Pack Warning"
+  },
+  "app.advanced-instance.use-java-exe.description": {
+    "message": "Use java.exe instead of javaw.exe, providing a console window for debugging."
+  },
+  "app.advanced-instance.use-java-exe.title": {
+    "message": "Use java.exe"
+  },
+  "app.advanced-instance.warnings.title": {
+    "message": "Warnings & Confirmations"
+  },
+  "app.advanced-instance.wrapper-hook.description": {
+    "message": "Wrapper command used to launch Minecraft."
+  },
+  "app.advanced-instance.wrapper-hook.placeholder": {
+    "message": "Enter wrapper command..."
+  },
+  "app.advanced-instance.wrapper-hook.title": {
+    "message": "Wrapper Hook"
+  },
+  "app.appearance-settings.accent-color.blue": {
+    "message": "Blue"
+  },
+  "app.appearance-settings.accent-color.custom": {
+    "message": "Custom"
+  },
+  "app.appearance-settings.accent-color.description": {
+    "message": "Choose the color used for buttons, selections, and highlights."
+  },
+  "app.appearance-settings.accent-color.green": {
+    "message": "Green"
+  },
+  "app.appearance-settings.accent-color.orange": {
+    "message": "Orange"
+  },
+  "app.appearance-settings.accent-color.purple": {
+    "message": "Purple"
+  },
+  "app.appearance-settings.accent-color.title": {
+    "message": "Accent Color"
+  },
   "app.appearance-settings.advanced-rendering.description": {
-    "message": "Enables advanced rendering such as blur effects that may cause performance issues without hardware-accelerated rendering."
+    "message": "Enables advanced rendering such as blur effects. May cause performance issues without hardware acceleration."
   },
   "app.appearance-settings.advanced-rendering.title": {
-    "message": "Advanced rendering"
-  },
-  "app.appearance-settings.background-blur.description": {
-    "message": "Adjust the blur amount applied to the background image."
-  },
-  "app.appearance-settings.background-blur.title": {
-    "message": "Background blur"
-  },
-  "app.appearance-settings.background-image.clear-button": {
-    "message": "Clear"
-  },
-  "app.appearance-settings.background-image.description": {
-    "message": "Set a custom background image for the launcher."
-  },
-  "app.appearance-settings.background-image.select-button": {
-    "message": "Select image"
-  },
-  "app.appearance-settings.background-image.title": {
-    "message": "Background image"
+    "message": "Advanced Rendering"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Select your preferred color theme for Modrinth App."
+    "message": "Choose your preferred Modrinth App color theme."
   },
   "app.appearance-settings.color-theme.title": {
-    "message": "Color theme"
+    "message": "Color Theme"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Change the page to which the launcher opens on."
+  "app.appearance-settings.custom-background.blur": {
+    "message": "Background Blur"
   },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Home"
+  "app.appearance-settings.custom-background.blur-description": {
+    "message": "Softens image details to keep launcher content legible."
   },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Library"
+  "app.appearance-settings.custom-background.choose": {
+    "message": "Choose Image"
   },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Default landing page"
+  "app.appearance-settings.custom-background.description": {
+    "message": "Choose a custom image and adjust how it blends with the launcher interface."
+  },
+  "app.appearance-settings.custom-background.empty": {
+    "message": "No custom background selected"
+  },
+  "app.appearance-settings.custom-background.opacity": {
+    "message": "Background Visibility"
+  },
+  "app.appearance-settings.custom-background.opacity-description": {
+    "message": "Controls how strongly the background image shows through the interface."
+  },
+  "app.appearance-settings.custom-background.remove": {
+    "message": "Remove"
+  },
+  "app.appearance-settings.custom-background.replace": {
+    "message": "Replace Image"
+  },
+  "app.appearance-settings.custom-background.title": {
+    "message": "Launcher Background"
   },
   "app.appearance-settings.hide-nametag.description": {
-    "message": "Disables the nametag above your player on the skins page."
+    "message": "Hide the name tag above players on the skins page."
   },
   "app.appearance-settings.hide-nametag.title": {
-    "message": "Hide nametag"
+    "message": "Hide Name Tags"
   },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Includes recent worlds in the \"Jump back in\" section on the Home page."
+  "app.appearance-settings.image-viewer.description": {
+    "message": "Open screenshots and images inside the launcher instead of using the system default image viewer."
   },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Jump back into worlds"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Behavior of the launcher window when a Minecraft process starts."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Launcher visibility"
+  "app.appearance-settings.image-viewer.title": {
+    "message": "In-App Image Viewer"
   },
   "app.appearance-settings.native-decorations.description": {
-    "message": "Use system window frame (app restart required)."
+    "message": "Use the system window borders. (Requires app restart)"
   },
   "app.appearance-settings.native-decorations.title": {
-    "message": "Native decorations"
+    "message": "Native Window Decorations"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Select an option"
+  "app.appearance-settings.settings-as-page.description": {
+    "message": "Display the settings panel as a full page instead of a modal dialog."
   },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Displays how much time you've spent playing an instance."
+  "app.appearance-settings.settings-as-page.title": {
+    "message": "Settings as Page"
   },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Show play time"
+  "app.appearance-settings.skin-click-particles.description": {
+    "message": "Generate pixel particles when clicking on the 3D skin model on the skins page."
   },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "Automatically skips low-risk confirmations like duplicate modpack installs, normal content deletion, bulk updates, unlinking modpacks, and repair prompts. Dangerous warnings will still be shown."
+  "app.appearance-settings.skin-click-particles.title": {
+    "message": "Skin Preview Click Particles"
   },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "Skip non-essential warnings"
+  "app.appearance-settings.skin-head-tracking.description": {
+    "message": "The skin model's head gently follows the mouse cursor as it moves."
+  },
+  "app.appearance-settings.skin-head-tracking.title": {
+    "message": "Skin Preview Head Tracking"
+  },
+  "app.appearance-settings.skin-particle-bg.description": {
+    "message": "Add floating ambient particles behind the 3D skin model to enhance the atmosphere."
+  },
+  "app.appearance-settings.skin-particle-bg.title": {
+    "message": "Skin Preview Particle Background"
+  },
+  "app.appearance-settings.skin-preview-effects.heading": {
+    "message": "Skin Preview Effects"
+  },
+  "app.appearance-settings.theme-pack.activate": {
+    "message": "Activate"
+  },
+  "app.appearance-settings.theme-pack.active": {
+    "message": "Active"
+  },
+  "app.appearance-settings.theme-pack.by-author": {
+    "message": "By: "
+  },
+  "app.appearance-settings.theme-pack.deactivate": {
+    "message": "Deactivate"
+  },
+  "app.appearance-settings.theme-pack.delete": {
+    "message": "Delete"
+  },
+  "app.appearance-settings.theme-pack.description": {
+    "message": "Install reusable theme packs to switch backgrounds, accent colors, and fonts in one click. Theme pack files are zip archives containing a modrinth-theme.json manifest."
+  },
+  "app.appearance-settings.theme-pack.empty": {
+    "message": "No theme packs installed."
+  },
+  "app.appearance-settings.theme-pack.export": {
+    "message": "Export"
+  },
+  "app.appearance-settings.theme-pack.install": {
+    "message": "Install Theme Pack"
+  },
+  "app.appearance-settings.theme-pack.open-folder": {
+    "message": "Open Themes Folder"
+  },
+  "app.appearance-settings.theme-pack.title": {
+    "message": "Theme Packs"
   },
   "app.appearance-settings.toggle-sidebar.description": {
-    "message": "Enables the ability to toggle the sidebar."
+    "message": "Enable manual show/hide toggling of the sidebar."
   },
   "app.appearance-settings.toggle-sidebar.title": {
-    "message": "Toggle sidebar"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "If you attempt to install a Modrinth Pack file (.mrpack) that isn't hosted on Modrinth, we'll make sure you understand the risks before installing it."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Warn me before installing unknown modpacks"
+    "message": "Toggle Sidebar"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraft authentication servers may be down right now. Check your internet connection and try again later."
@@ -248,6 +467,15 @@
   "app.browse.server.installing": {
     "message": "Installing"
   },
+  "app.browse.source.curseforge": {
+    "message": "CurseForge"
+  },
+  "app.browse.source.curseforge-wip": {
+    "message": "CurseForge support is a work in progress"
+  },
+  "app.browse.source.modrinth": {
+    "message": "Modrinth"
+  },
   "app.browse.worlds-modrinth-empty": {
     "message": "Modrinth does not host worlds."
   },
@@ -265,6 +493,9 @@
   },
   "app.create-instance.game-version": {
     "message": "Game version"
+  },
+  "app.create-instance.group.april-fools": {
+    "message": "April Fools"
   },
   "app.create-instance.group.latest": {
     "message": "Latest versions"
@@ -289,6 +520,54 @@
   },
   "app.create-instance.image-filter": {
     "message": "Images"
+  },
+  "app.create-instance.import.add": {
+    "message": "Add"
+  },
+  "app.create-instance.import.add-path": {
+    "message": "Add launcher path"
+  },
+  "app.create-instance.import.browse": {
+    "message": "Browse"
+  },
+  "app.create-instance.import.button": {
+    "message": "Import {count} instance"
+  },
+  "app.create-instance.import.button.plural": {
+    "message": "Import {count} instances"
+  },
+  "app.create-instance.import.clear-selection": {
+    "message": "Clear"
+  },
+  "app.create-instance.import.custom-launcher": {
+    "message": "Custom ({pathName})"
+  },
+  "app.create-instance.import.detecting": {
+    "message": "Detecting launcher instances..."
+  },
+  "app.create-instance.import.importing": {
+    "message": "Importing..."
+  },
+  "app.create-instance.import.instances-available": {
+    "message": "{count} instances"
+  },
+  "app.create-instance.import.launcher-instances": {
+    "message": "Detected launchers"
+  },
+  "app.create-instance.import.no-instances-at-path": {
+    "message": "No importable instances found at the specified path."
+  },
+  "app.create-instance.import.no-launchers": {
+    "message": "No launchers detected. Add a custom path below."
+  },
+  "app.create-instance.import.path-placeholder": {
+    "message": "Path to launcher..."
+  },
+  "app.create-instance.import.search": {
+    "message": "Search instances..."
+  },
+  "app.create-instance.import.success": {
+    "message": "Instance(s) imported successfully"
   },
   "app.create-instance.instance-created": {
     "message": "Instance created"
@@ -344,6 +623,30 @@
   "app.create-instance.selected-game-version": {
     "message": "Selected Minecraft version"
   },
+  "app.create-instance.setup-type.custom.description": {
+    "message": "Start from scratch by picking a loader and game version."
+  },
+  "app.create-instance.setup-type.custom.title": {
+    "message": "Custom setup"
+  },
+  "app.create-instance.setup-type.description": {
+    "message": "An instance is a Minecraft setup with a specific loader, version, and mods."
+  },
+  "app.create-instance.setup-type.import.description": {
+    "message": "Import an instance from Prism, CurseForge, or similar."
+  },
+  "app.create-instance.setup-type.import.title": {
+    "message": "Import instance"
+  },
+  "app.create-instance.setup-type.modpack.description": {
+    "message": "Browse modpacks on Modrinth or import one from a file."
+  },
+  "app.create-instance.setup-type.modpack.title": {
+    "message": "Install modpack"
+  },
+  "app.create-instance.setup-type.title": {
+    "message": "Choose instance type"
+  },
   "app.create-instance.show-all": {
     "message": "Show snapshots and old versions"
   },
@@ -353,8 +656,14 @@
   "app.create-instance.step.config": {
     "message": "Final config"
   },
+  "app.create-instance.step.import": {
+    "message": "Import instances"
+  },
   "app.create-instance.step.loader": {
     "message": "Loader"
+  },
+  "app.create-instance.step.setup-type": {
+    "message": "Setup type"
   },
   "app.create-instance.step.version": {
     "message": "Game version"
@@ -365,62 +674,29 @@
   "app.create-instance.versions": {
     "message": "versions"
   },
-  "app.default-instance.advanced-launch-options.title": {
-    "message": "Advanced launch options"
+  "app.curseforge.manual-downloads.open": {
+    "message": "Open"
   },
-  "app.default-instance.compatibility.title": {
-    "message": "Compatibility"
+  "app.curseforge.manual-downloads.project-file": {
+    "message": "Project {projectId} · File {fileId}"
   },
   "app.default-instance.custom-info.hint": {
-    "message": "Displayed in the game's bottom-left corner and F3 debug screen."
+    "message": "Displayed in the bottom-left of the game and the F3 debug screen."
   },
   "app.default-instance.custom-info.placeholder": {
     "message": "e.g. MyLauncher"
   },
   "app.default-instance.custom-info.title": {
-    "message": "Custom info"
-  },
-  "app.default-instance.disable-jlw.description": {
-    "message": "Disable the theseus.jar launch wrapper. May break some features."
-  },
-  "app.default-instance.disable-jlw.title": {
-    "message": "Disable Java Launch Wrapper"
-  },
-  "app.default-instance.disable-lf.description": {
-    "message": "Disable compatibility fixes for old Minecraft versions."
-  },
-  "app.default-instance.disable-lf.title": {
-    "message": "Disable LegacyFix"
-  },
-  "app.default-instance.disable-lwjgl.description": {
-    "message": "Disable the LWJGL unsafe agent that patches FFM API performance issues."
-  },
-  "app.default-instance.disable-lwjgl.title": {
-    "message": "Disable LWJGL Unsafe Agent"
-  },
-  "app.default-instance.env-variables.placeholder": {
-    "message": "Enter environmental variables..."
-  },
-  "app.default-instance.env-variables.title": {
-    "message": "Environmental variables"
-  },
-  "app.default-instance.extra-game-args.hint": {
-    "message": "Appended to the end of the Minecraft launch arguments."
-  },
-  "app.default-instance.extra-game-args.placeholder": {
-    "message": "e.g. --demo"
-  },
-  "app.default-instance.extra-game-args.title": {
-    "message": "Extra game arguments"
+    "message": "Custom Info"
   },
   "app.default-instance.fullscreen.description": {
-    "message": "Overwrites the options.txt file to start in full screen when launched."
+    "message": "Overrides the options.txt file to run in fullscreen mode at launch."
   },
   "app.default-instance.fullscreen.title": {
     "message": "Fullscreen"
   },
   "app.default-instance.height.description": {
-    "message": "The height of the game window when launched."
+    "message": "The height of the game window at launch."
   },
   "app.default-instance.height.placeholder": {
     "message": "Enter height..."
@@ -428,20 +704,11 @@
   "app.default-instance.height.title": {
     "message": "Height"
   },
-  "app.default-instance.high-perf-gpu.description": {
-    "message": "Request the high-performance GPU for the game process."
-  },
-  "app.default-instance.high-perf-gpu.title": {
-    "message": "High-performance GPU"
-  },
-  "app.default-instance.hooks.title": {
-    "message": "Hooks"
-  },
   "app.default-instance.ip-protocol.description": {
-    "message": "Preferred IP stack for Java networking."
+    "message": "Preferred IP protocol stack for Java networking."
   },
   "app.default-instance.ip-protocol.title": {
-    "message": "IP protocol preference"
+    "message": "IP Protocol Preference"
   },
   "app.default-instance.ip.default": {
     "message": "Default"
@@ -452,23 +719,32 @@
   "app.default-instance.ip.prefer-v6": {
     "message": "Prefer IPv6"
   },
-  "app.default-instance.java-arguments.placeholder": {
-    "message": "Enter java arguments..."
-  },
-  "app.default-instance.java-arguments.title": {
-    "message": "Java arguments"
-  },
   "app.default-instance.launch-options.title": {
-    "message": "Launch options"
+    "message": "Launch Options"
+  },
+  "app.default-instance.launcher-visibility.exit-immediately": {
+    "message": "Exit immediately"
+  },
+  "app.default-instance.launcher-visibility.hide-exit": {
+    "message": "Hide, close on game exit"
+  },
+  "app.default-instance.launcher-visibility.hide-reopen": {
+    "message": "Hide, reopen on exit"
+  },
+  "app.default-instance.launcher-visibility.keep-open": {
+    "message": "Keep Open"
+  },
+  "app.default-instance.launcher-visibility.minimize": {
+    "message": "Minimize"
   },
   "app.default-instance.memory-allocated": {
-    "message": "Memory allocated"
+    "message": "Allocated Memory"
   },
   "app.default-instance.memory-allocation.description": {
-    "message": "Choose how memory is allocated to instances."
+    "message": "Choose how memory is allocated for instances."
   },
   "app.default-instance.memory-allocation.title": {
-    "message": "Memory allocation"
+    "message": "Memory Allocation"
   },
   "app.default-instance.memory-auto-hint": {
     "message": "Memory will be automatically calculated based on system RAM, instance type, and mod count."
@@ -480,34 +756,19 @@
     "message": "Custom"
   },
   "app.default-instance.memory-warning": {
-    "message": "You are allocating more than 75% of your system memory to Minecraft. This may cause instability. Consider using \"Auto\" mode."
+    "message": "You are allocating more than 75% of your system memory to Minecraft. This may cause system instability. Using Auto mode is recommended."
   },
-  "app.default-instance.post-exit-hook.description": {
-    "message": "Ran after the game closes."
+  "app.default-instance.minimize-launcher.description": {
+    "message": "Behavior of the launcher window when the Minecraft process starts."
   },
-  "app.default-instance.post-exit-hook.placeholder": {
-    "message": "Enter post-exit command..."
-  },
-  "app.default-instance.post-exit-hook.title": {
-    "message": "Post-exit hook"
-  },
-  "app.default-instance.pre-launch-hook.description": {
-    "message": "Ran before the instance is launched."
-  },
-  "app.default-instance.pre-launch-hook.placeholder": {
-    "message": "Enter pre-launch command..."
-  },
-  "app.default-instance.pre-launch-hook.title": {
-    "message": "Pre-launch hook"
-  },
-  "app.default-instance.pre-launch-wait": {
-    "message": "Wait for command to finish before launching"
+  "app.default-instance.minimize-launcher.title": {
+    "message": "Launcher Visibility"
   },
   "app.default-instance.priority.above-normal": {
-    "message": "Above normal"
+    "message": "Above Normal"
   },
   "app.default-instance.priority.below-normal": {
-    "message": "Below normal"
+    "message": "Below Normal"
   },
   "app.default-instance.priority.high": {
     "message": "High"
@@ -519,40 +780,13 @@
     "message": "Realtime"
   },
   "app.default-instance.process-priority.description": {
-    "message": "Set the CPU priority of the game process."
+    "message": "Sets the CPU priority for the game process."
   },
   "app.default-instance.process-priority.title": {
-    "message": "Process priority"
-  },
-  "app.default-instance.renderer.d3d12": {
-    "message": "DirectX 12"
-  },
-  "app.default-instance.renderer.default": {
-    "message": "Default"
-  },
-  "app.default-instance.renderer.description": {
-    "message": "Override the OpenGL renderer. May cause instability."
-  },
-  "app.default-instance.renderer.llvmpipe": {
-    "message": "llvmpipe (software)"
-  },
-  "app.default-instance.renderer.title": {
-    "message": "Renderer"
-  },
-  "app.default-instance.renderer.zink": {
-    "message": "Vulkan (Zink)"
-  },
-  "app.default-instance.reset-to-default": {
-    "message": "Reset to default"
-  },
-  "app.default-instance.use-java-exe.description": {
-    "message": "Use java.exe instead of javaw.exe. Provides a console window for debugging."
-  },
-  "app.default-instance.use-java-exe.title": {
-    "message": "Use java.exe"
+    "message": "Process Priority"
   },
   "app.default-instance.width.description": {
-    "message": "The width of the game window when launched."
+    "message": "The width of the game window at launch."
   },
   "app.default-instance.width.placeholder": {
     "message": "Enter width..."
@@ -567,58 +801,238 @@
     "message": "e.g. {name} | Player: {user}"
   },
   "app.default-instance.window-title.title": {
-    "message": "Game window title"
+    "message": "Game Window Title"
   },
-  "app.default-instance.wrapper-hook.description": {
-    "message": "Wrapper command for launching Minecraft."
+  "app.downloads.all-sources": {
+    "message": "All sources"
   },
-  "app.default-instance.wrapper-hook.placeholder": {
-    "message": "Enter wrapper command..."
+  "app.downloads.all-statuses": {
+    "message": "All statuses"
   },
-  "app.default-instance.wrapper-hook.title": {
-    "message": "Wrapper hook"
+  "app.downloads.application": {
+    "message": "Application"
   },
   "app.downloads.cancel": {
     "message": "Cancel"
   },
-  "app.downloads.created": {
-    "message": "Created"
+  "app.downloads.clear-history": {
+    "message": "Clear history"
   },
-  "app.downloads.dismiss": {
-    "message": "Dismiss"
+  "app.downloads.clear-history-title": {
+    "message": "Clear download history?"
   },
-  "app.downloads.error": {
-    "message": "Error"
+  "app.downloads.confirm-clear": {
+    "message": "Completed, failed, interrupted, and canceled records will be permanently deleted."
   },
-  "app.downloads.no-downloads": {
-    "message": "No downloads"
+  "app.downloads.copy-diagnostics": {
+    "message": "Copy diagnostics"
   },
-  "app.downloads.no-downloads-description": {
-    "message": "There are no active or recent downloads."
+  "app.downloads.curseforge-file-install": {
+    "message": "CurseForge file install"
   },
-  "app.downloads.pause": {
-    "message": "Pause"
+  "app.downloads.delete-record": {
+    "message": "Delete record"
+  },
+  "app.downloads.details": {
+    "message": "Details"
+  },
+  "app.downloads.download-eta-hours": {
+    "message": "{hours}h {minutes}m remaining"
+  },
+  "app.downloads.download-eta-minutes": {
+    "message": "{minutes}m remaining"
+  },
+  "app.downloads.download-eta-seconds": {
+    "message": "{seconds}s remaining"
+  },
+  "app.downloads.download-fallbacks": {
+    "message": "{count} fallbacks"
+  },
+  "app.downloads.download-source": {
+    "message": "Source: {source}"
+  },
+  "app.downloads.download-speed": {
+    "message": "Speed: {speed}/s"
+  },
+  "app.downloads.empty-description": {
+    "message": "New downloads and installation progress will appear here."
+  },
+  "app.downloads.empty-title": {
+    "message": "No downloads yet"
+  },
+  "app.downloads.error-details": {
+    "message": "Download failed"
+  },
+  "app.downloads.file-details-description": {
+    "message": "Individual files in this download job"
+  },
+  "app.downloads.hide-details": {
+    "message": "Hide details"
+  },
+  "app.downloads.history": {
+    "message": "History"
+  },
+  "app.downloads.in-progress": {
+    "message": "In progress"
+  },
+  "app.downloads.instance-deleted": {
+    "message": "Instance deleted"
+  },
+  "app.downloads.instance-target": {
+    "message": "Instance: {instance}"
+  },
+  "app.downloads.item-attempt-progress": {
+    "message": "{attempt}/{maxAttempts}"
+  },
+  "app.downloads.item-attempts": {
+    "message": "Attempts"
+  },
+  "app.downloads.item-name": {
+    "message": "File"
+  },
+  "app.downloads.item-progress": {
+    "message": "Downloaded"
+  },
+  "app.downloads.item-status": {
+    "message": "Status"
+  },
+  "app.downloads.item-status.completed": {
+    "message": "Completed"
+  },
+  "app.downloads.item-status.downloading": {
+    "message": "Downloading"
+  },
+  "app.downloads.item-status.skipped": {
+    "message": "Skipped"
+  },
+  "app.downloads.item-status.verifying": {
+    "message": "Verifying"
+  },
+  "app.downloads.item-status.writing": {
+    "message": "Writing"
+  },
+  "app.downloads.job-kind": {
+    "message": "Type"
+  },
+  "app.downloads.kind.create-instance": {
+    "message": "Create instance"
+  },
+  "app.downloads.kind.create-modpack": {
+    "message": "Create modpack instance"
+  },
+  "app.downloads.kind.duplicate-instance": {
+    "message": "Duplicate instance"
+  },
+  "app.downloads.kind.import-instance": {
+    "message": "Import instance"
+  },
+  "app.downloads.kind.install-content": {
+    "message": "Install content"
+  },
+  "app.downloads.kind.install-existing": {
+    "message": "Install to instance"
+  },
+  "app.downloads.kind.install-pack": {
+    "message": "Install modpack to instance"
+  },
+  "app.downloads.local": {
+    "message": "Local"
+  },
+  "app.downloads.manual-download-required": {
+    "message": "CurseForge requires this file to be downloaded manually."
+  },
+  "app.downloads.no-file-details": {
+    "message": "Files will appear here as they are downloaded."
+  },
+  "app.downloads.no-file-details-title": {
+    "message": "No file details"
+  },
+  "app.downloads.no-results-description": {
+    "message": "Try changing your search or filters."
+  },
+  "app.downloads.no-results-title": {
+    "message": "No matching downloads"
+  },
+  "app.downloads.not-available": {
+    "message": "—"
+  },
+  "app.downloads.open-instance": {
+    "message": "Open instance"
+  },
+  "app.downloads.phase.downloading-content": {
+    "message": "Downloading content"
+  },
+  "app.downloads.phase.downloading-minecraft": {
+    "message": "Downloading Minecraft"
+  },
+  "app.downloads.phase.downloading-pack-file": {
+    "message": "Downloading modpack"
+  },
+  "app.downloads.phase.extracting-overrides": {
+    "message": "Extracting overrides"
+  },
+  "app.downloads.phase.finalizing": {
+    "message": "Finalizing"
+  },
+  "app.downloads.phase.preparing-instance": {
+    "message": "Preparing instance"
+  },
+  "app.downloads.phase.preparing-java": {
+    "message": "Preparing Java"
+  },
+  "app.downloads.phase.reading-pack-manifest": {
+    "message": "Reading manifest"
+  },
+  "app.downloads.phase.resolving-loader": {
+    "message": "Resolving loader"
+  },
+  "app.downloads.phase.resolving-minecraft": {
+    "message": "Resolving Minecraft"
+  },
+  "app.downloads.phase.resolving-pack": {
+    "message": "Resolving modpack"
+  },
+  "app.downloads.phase.rolling-back": {
+    "message": "Rolling back changes"
+  },
+  "app.downloads.phase.running-loader-processors": {
+    "message": "Installing loader"
+  },
+  "app.downloads.progress": {
+    "message": "Progress"
   },
   "app.downloads.refresh": {
     "message": "Refresh"
   },
-  "app.downloads.resume": {
-    "message": "Resume"
-  },
   "app.downloads.retry": {
     "message": "Retry"
   },
+  "app.downloads.search": {
+    "message": "Search downloads"
+  },
+  "app.downloads.source.alternate": {
+    "message": "Alternate source"
+  },
+  "app.downloads.source.bmclapi": {
+    "message": "OpenBMCLAPI"
+  },
+  "app.downloads.source.mcim": {
+    "message": "MCIM"
+  },
+  "app.downloads.source.official": {
+    "message": "Official"
+  },
   "app.downloads.status.canceled": {
     "message": "Canceled"
+  },
+  "app.downloads.status.canceling": {
+    "message": "Canceling"
   },
   "app.downloads.status.failed": {
     "message": "Failed"
   },
   "app.downloads.status.interrupted": {
     "message": "Interrupted"
-  },
-  "app.downloads.status.paused": {
-    "message": "Paused"
   },
   "app.downloads.status.queued": {
     "message": "Queued"
@@ -627,28 +1041,19 @@
     "message": "Running"
   },
   "app.downloads.status.succeeded": {
-    "message": "Succeeded"
+    "message": "Completed"
   },
-  "app.downloads.tab.active": {
-    "message": "Active"
+  "app.downloads.status.waiting-for-user": {
+    "message": "Action needed"
   },
-  "app.downloads.tab.active-count": {
-    "message": "Active ({count})"
+  "app.downloads.target-existing-instance": {
+    "message": "Existing instance"
   },
-  "app.downloads.tab.finished": {
-    "message": "Finished"
+  "app.downloads.target-label": {
+    "message": "Target"
   },
-  "app.downloads.tab.finished-count": {
-    "message": "Finished ({count})"
-  },
-  "app.downloads.title": {
-    "message": "Downloads"
-  },
-  "app.downloads.unknown-job": {
-    "message": "Install job"
-  },
-  "app.downloads.updated": {
-    "message": "Updated"
+  "app.downloads.target-new-instance": {
+    "message": "New instance"
   },
   "app.error-modal.cancel-directory-change": {
     "message": "Cancel directory change"
@@ -800,11 +1205,35 @@
   "app.export-modal.version-number-placeholder": {
     "message": "1.0.0"
   },
+  "app.feature-flag-settings.experimental-badge": {
+    "message": "Experimental"
+  },
+  "app.feature-flag-settings.game-link.description": {
+    "message": "Show the Game Link entry in the sidebar, allowing you to create or join LAN games. This feature is experimental and may be unstable."
+  },
+  "app.feature-flag-settings.game-link.label": {
+    "message": "Game Link"
+  },
+  "app.feature-flag-settings.reset-to-default": {
+    "message": "Reset to Default"
+  },
   "app.game-link.breadcrumb": {
     "message": "Game Link"
   },
   "app.game-link.cancel": {
     "message": "Cancel"
+  },
+  "app.game-link.chat.empty": {
+    "message": "No messages yet. Say something!"
+  },
+  "app.game-link.chat.placeholder": {
+    "message": "Type a message..."
+  },
+  "app.game-link.chat.send": {
+    "message": "Send"
+  },
+  "app.game-link.chat.title": {
+    "message": "Room Chat"
   },
   "app.game-link.connection.latency": {
     "message": "Latency"
@@ -947,6 +1376,63 @@
   "app.game-link.refresh": {
     "message": "Refresh"
   },
+  "app.game-link.report.attach-logs": {
+    "message": "Auto-attach session logs"
+  },
+  "app.game-link.report.button": {
+    "message": "Report"
+  },
+  "app.game-link.report.category": {
+    "message": "Category"
+  },
+  "app.game-link.report.category.account-security": {
+    "message": "Account & Security"
+  },
+  "app.game-link.report.category.cheating-fairness": {
+    "message": "Cheating & Fairness"
+  },
+  "app.game-link.report.category.fraud-trading": {
+    "message": "Fraud & Trading"
+  },
+  "app.game-link.report.category.inappropriate-content": {
+    "message": "Inappropriate Content"
+  },
+  "app.game-link.report.category.multiplayer-disruption": {
+    "message": "Multiplayer Disruption"
+  },
+  "app.game-link.report.category.other": {
+    "message": "Other"
+  },
+  "app.game-link.report.category.platform-abuse": {
+    "message": "Platform Abuse"
+  },
+  "app.game-link.report.description": {
+    "message": "Description"
+  },
+  "app.game-link.report.description-hint": {
+    "message": "Describe the issue you encountered"
+  },
+  "app.game-link.report.lobby-code": {
+    "message": "Lobby code"
+  },
+  "app.game-link.report.player": {
+    "message": "Report player (optional)"
+  },
+  "app.game-link.report.player-count": {
+    "message": "Players in room"
+  },
+  "app.game-link.report.session-info": {
+    "message": "Session info"
+  },
+  "app.game-link.report.submit": {
+    "message": "Submit Report"
+  },
+  "app.game-link.report.title": {
+    "message": "Report an Issue"
+  },
+  "app.game-link.report.under-construction": {
+    "message": "This feature is under construction and will be available in a future version."
+  },
   "app.game-link.retry": {
     "message": "Retry"
   },
@@ -1070,53 +1556,86 @@
   "app.grid-display.view-instance": {
     "message": "View instance"
   },
+  "app.home-settings.default-landing-page.description": {
+    "message": "Change the default page shown when the launcher opens."
+  },
+  "app.home-settings.default-landing-page.home": {
+    "message": "Home"
+  },
+  "app.home-settings.default-landing-page.library": {
+    "message": "Library"
+  },
+  "app.home-settings.default-landing-page.select-option": {
+    "message": "Select an option"
+  },
+  "app.home-settings.default-landing-page.title": {
+    "message": "Default Landing Page"
+  },
   "app.home-settings.description": {
-    "message": "Toggle which sections appear on the Home page."
+    "message": "Toggle the various sections displayed on the home page."
   },
   "app.home-settings.discover-modpacks.description": {
-    "message": "Shows popular modpacks from Modrinth."
+    "message": "Show trending modpacks from Modrinth."
   },
   "app.home-settings.discover-modpacks.title": {
-    "message": "Discover a modpack"
+    "message": "Discover Modpacks"
   },
   "app.home-settings.discover-mods.description": {
-    "message": "Shows popular mods from Modrinth."
+    "message": "Show trending mods from Modrinth."
   },
   "app.home-settings.discover-mods.title": {
-    "message": "Discover mods"
+    "message": "Discover Mods"
   },
   "app.home-settings.jump-back-in.description": {
-    "message": "Shows recently played worlds and instances."
+    "message": "Show recently played worlds and instances."
   },
   "app.home-settings.jump-back-in.title": {
-    "message": "Jump back in"
+    "message": "Jump Back In"
   },
   "app.home-settings.random-mods.description": {
-    "message": "Shows a random mod recommendation each time you open Home."
+    "message": "Display a random mod recommendation each time the home page opens."
   },
   "app.home-settings.random-mods.title": {
-    "message": "Random mod spotlight"
+    "message": "Random Mod Recommendations"
   },
   "app.home-settings.recent-screenshots.description": {
-    "message": "Shows recent screenshots from all instances."
+    "message": "Show recent screenshots from all instances."
   },
   "app.home-settings.recent-screenshots.title": {
-    "message": "Recent screenshots"
+    "message": "Recent Screenshots"
+  },
+  "app.home-settings.show-play-time.description": {
+    "message": "Show cumulative play time on instance cards."
+  },
+  "app.home-settings.show-play-time.title": {
+    "message": "Show Play Time"
   },
   "app.home-settings.system-status.description": {
-    "message": "Shows CPU, memory, disk, network usage, and quick launch actions."
+    "message": "Show CPU, memory, disk, and network usage along with quick launch actions."
   },
   "app.home-settings.system-status.title": {
-    "message": "System status"
+    "message": "System Status"
   },
   "app.home-settings.title": {
-    "message": "Home page customization"
+    "message": "Home Page Customization"
   },
   "app.home-settings.update-reminders.description": {
-    "message": "Shows instances with available modpack or mod updates."
+    "message": "Show instances that have available modpack or mod updates."
   },
   "app.home-settings.update-reminders.title": {
-    "message": "Game update reminders"
+    "message": "Game Update Reminders"
+  },
+  "app.home-settings.worlds-in-home.description": {
+    "message": "Include recently played worlds in the Jump Back In section on the home page."
+  },
+  "app.home-settings.worlds-in-home.title": {
+    "message": "Show Worlds on Home"
+  },
+  "app.home-settings.worlds-tab.description": {
+    "message": "Show a standalone Worlds entry in the sidebar."
+  },
+  "app.home-settings.worlds-tab.title": {
+    "message": "Worlds Tab"
   },
   "app.home.discover-modpack": {
     "message": "Discover a modpack"
@@ -1300,6 +1819,9 @@
   },
   "app.instance.create-shortcut": {
     "message": "Create shortcut"
+  },
+  "app.instance.diagnose-crash": {
+    "message": "Diagnose crash"
   },
   "app.instance.disable-selected": {
     "message": "Disable selected"
@@ -1647,7 +2169,7 @@
     "message": "Selected"
   },
   "app.java-settings.java-location": {
-    "message": "Java {version} location"
+    "message": "Java {version} Path"
   },
   "app.language-settings.language": {
     "message": "Language"
@@ -1839,22 +2361,22 @@
     "message": "Discord RPC"
   },
   "app.privacy-settings.discord-rpc.desc": {
-    "message": "Manages the Discord Rich Presence integration. Disabling this will cause 'Modrinth' to no longer show up as a game or app you are using on your Discord profile."
+    "message": "Manages Discord Rich Presence integration. When disabled, \"Modrinth\" will no longer appear as a game or app on your Discord profile."
   },
   "app.privacy-settings.discord-rpc.note": {
-    "message": "Note: This will not prevent any instance-specific Discord Rich Presence integrations, such as those added by mods. (app restart required to take effect)"
+    "message": "Note: This setting does not prevent instance-specific Discord Rich Presence integrations (such as those added by mods). (Requires app restart)"
   },
   "app.privacy-settings.personalized-ads": {
-    "message": "Personalized ads"
+    "message": "Personalized Ads"
   },
   "app.privacy-settings.personalized-ads.desc": {
-    "message": "Modrinth's ad provider, Aditude, shows ads based on your preferences. By disabling this option, you opt out and ads will no longer be shown based on your interests."
+    "message": "Modrinth's ad provider, Aditude, shows ads based on your preferences. When disabled, ads will no longer be based on your interests."
   },
   "app.privacy-settings.telemetry": {
     "message": "Telemetry"
   },
   "app.privacy-settings.telemetry.desc": {
-    "message": "Modrinth collects anonymized analytics and usage data to improve our user experience and customize your experience. By disabling this option, you opt out and your data will no longer be collected."
+    "message": "Modrinth collects anonymous usage analytics and data to improve the user experience and provide personalized services. When disabled, this data will no longer be collected."
   },
   "app.project.follow": {
     "message": "Follow"
@@ -1879,6 +2401,21 @@
   },
   "app.project.share": {
     "message": "Share"
+  },
+  "app.project.translation.failed": {
+    "message": "Translation failed. The original content was kept. Try again."
+  },
+  "app.project.translation.failed-title": {
+    "message": "Translation failed"
+  },
+  "app.project.translation.show-original": {
+    "message": "Show original"
+  },
+  "app.project.translation.translate": {
+    "message": "Translate"
+  },
+  "app.project.translation.translating": {
+    "message": "Translating…"
   },
   "app.project.unfollow": {
     "message": "Unfollow"
@@ -1962,103 +2499,103 @@
     "message": "Swap version"
   },
   "app.resource-management.app-cache.description": {
-    "message": "The Modrinth app stores a cache of data to speed up loading. This can be purged to force the app to reload data. This may slow down the app temporarily."
+    "message": "Modrinth App caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns."
   },
   "app.resource-management.app-cache.title": {
-    "message": "App cache"
+    "message": "App Cache"
   },
   "app.resource-management.app-directory.description": {
-    "message": "The directory where the launcher stores all of its files. Changes will be applied after restarting the launcher."
+    "message": "The directory where the launcher stores all files. Changes take effect after restarting the launcher."
   },
   "app.resource-management.app-directory.title": {
-    "message": "App directory"
+    "message": "App Directory"
   },
-  "app.resource-management.community-source.auto": {
-    "message": "Auto (Recommended)"
+  "app.resource-management.curseforge-source.description": {
+    "message": "CurseForge API requests and file downloads."
   },
-  "app.resource-management.community-source.description": {
-    "message": "Source for Modrinth mod file downloads. Auto: tries Modrinth official first, falls back to MCIMirror on failure. MCIMirror First: tries mirror first, falls back to official. Content browsing always uses Modrinth API."
-  },
-  "app.resource-management.community-source.mcimirror-first": {
-    "message": "MCIMirror First"
-  },
-  "app.resource-management.community-source.modrinth-only": {
-    "message": "Modrinth Official Only"
-  },
-  "app.resource-management.community-source.title": {
-    "message": "Community resource download source"
+  "app.resource-management.curseforge-source.title": {
+    "message": "CurseForge"
   },
   "app.resource-management.db-backups.button": {
-    "message": "Open backups folder"
+    "message": "Open Backup Folder"
   },
   "app.resource-management.db-backups.description": {
-    "message": "Backups of important app data are stored here in case you need to recover them later."
+    "message": "Backups of important app data are stored here for easy recovery later."
   },
   "app.resource-management.db-backups.title": {
-    "message": "App database backups"
+    "message": "App Database Backups"
   },
-  "app.resource-management.game-file-source.auto": {
-    "message": "Auto (Recommended)"
+  "app.resource-management.download-sources.description": {
+    "message": "Auto mode automatically selects between official and mirror sources based on your local network conditions and recent connection quality."
   },
-  "app.resource-management.game-file-source.bmclapi-first": {
-    "message": "BMCLAPI First"
-  },
-  "app.resource-management.game-file-source.description": {
-    "message": "Source for Minecraft game files (client JAR, libraries, assets). Auto: tries Mojang official first, falls back to BMCLAPI on failure. BMCLAPI First: tries mirror first, falls back to official."
-  },
-  "app.resource-management.game-file-source.mojang-only": {
-    "message": "Mojang Official Only"
-  },
-  "app.resource-management.game-file-source.title": {
-    "message": "Game file download source"
-  },
-  "app.resource-management.version-list-source.auto": {
-    "message": "Auto (Recommended)"
-  },
-  "app.resource-management.version-list-source.bmclapi-first": {
-    "message": "BMCLAPI First"
-  },
-  "app.resource-management.version-list-source.description": {
-    "message": "Source for Minecraft version lists and loader metadata (Forge, NeoForge, Fabric, Quilt). Auto: tries official first, falls back to BMCLAPI on failure. BMCLAPI First: tries mirror first, falls back to official."
-  },
-  "app.resource-management.version-list-source.mojang-only": {
-    "message": "Official Only"
-  },
-  "app.resource-management.version-list-source.title": {
-    "message": "Version list source"
+  "app.resource-management.download-sources.title": {
+    "message": "Download Sources"
   },
   "app.resource-management.launcher-logs.button": {
-    "message": "Open logs folder"
+    "message": "Open Logs Folder"
   },
   "app.resource-management.launcher-logs.description": {
-    "message": "Session logs are stored here. If you encounter a bug or crash, please include the latest log file when reporting the issue."
+    "message": "Session logs are stored here. If you encounter a bug or crash, please attach the latest log file when reporting an issue."
   },
   "app.resource-management.launcher-logs.title": {
-    "message": "Launcher logs"
+    "message": "Launcher Logs"
+  },
+  "app.resource-management.max-chunks-per-file.description": {
+    "message": "For files larger than 1 MB, the launcher splits downloads into multiple parallel chunks using HTTP Range requests. More chunks means faster downloads on high-bandwidth connections. (Requires app restart to take effect)"
+  },
+  "app.resource-management.max-chunks-per-file.title": {
+    "message": "Max Chunks per File"
   },
   "app.resource-management.max-concurrent-downloads.description": {
-    "message": "The maximum amount of files the launcher can download at the same time. Set this to a lower value if you have a poor internet connection. (app restart required to take effect)"
+    "message": "Maximum number of files the launcher can download simultaneously. Lower this value on poor network connections. (Requires app restart to take effect)"
   },
   "app.resource-management.max-concurrent-downloads.title": {
-    "message": "Maximum concurrent downloads"
+    "message": "Max Concurrent Downloads"
   },
   "app.resource-management.max-concurrent-writes.description": {
-    "message": "The maximum amount of files the launcher can write to the disk at once. Set this to a lower value if you are frequently getting I/O errors. (app restart required to take effect)"
+    "message": "Maximum number of files the launcher can write to disk simultaneously. Lower this value if you frequently encounter I/O errors. (Requires app restart to take effect)"
   },
   "app.resource-management.max-concurrent-writes.title": {
-    "message": "Maximum concurrent writes"
+    "message": "Max Concurrent Writes"
+  },
+  "app.resource-management.minecraft-file-source.description": {
+    "message": "Game files, assets, libraries, mod loaders, and Java runtimes."
+  },
+  "app.resource-management.minecraft-file-source.title": {
+    "message": "Minecraft Files, Loaders, and Java"
+  },
+  "app.resource-management.minecraft-metadata-source.description": {
+    "message": "Version manifests and metadata for Minecraft and supported mod loaders."
+  },
+  "app.resource-management.minecraft-metadata-source.title": {
+    "message": "Minecraft Metadata"
+  },
+  "app.resource-management.modrinth-source.description": {
+    "message": "Modrinth mod file downloads. Content browsing always uses the Modrinth API."
+  },
+  "app.resource-management.modrinth-source.title": {
+    "message": "Modrinth"
   },
   "app.resource-management.purge-cache.button": {
-    "message": "Purge cache"
+    "message": "Clear Cache"
   },
   "app.resource-management.purge-cache.confirm-description": {
-    "message": "If you proceed, your entire cache will be purged. This may slow down the app temporarily."
+    "message": "If you continue, all caches will be cleared, which may cause the app to temporarily slow down."
   },
   "app.resource-management.purge-cache.confirm-title": {
-    "message": "Are you sure you want to purge the cache?"
+    "message": "Are you sure you want to clear the cache?"
   },
   "app.resource-management.select-app-directory": {
-    "message": "Select a new app directory"
+    "message": "Select new app directory"
+  },
+  "app.resource-management.source.automatic": {
+    "message": "Auto (Recommended)"
+  },
+  "app.resource-management.source.mirror": {
+    "message": "Prefer Mirror Source"
+  },
+  "app.resource-management.source.official": {
+    "message": "Prefer Official Source"
   },
   "app.restarting": {
     "message": "Restarting..."
@@ -2069,17 +2606,29 @@
   "app.settings.downloading": {
     "message": "Downloading v{version}"
   },
+  "app.settings.downloading-version": {
+    "message": "Downloading v{version}"
+  },
+  "app.settings.tabs.about": {
+    "message": "About"
+  },
+  "app.settings.tabs.advanced-instance-options": {
+    "message": "Advanced Instance Options"
+  },
   "app.settings.tabs.appearance": {
     "message": "Appearance"
   },
   "app.settings.tabs.default-instance-options": {
-    "message": "Default instance options"
+    "message": "Default Instance Options"
+  },
+  "app.settings.tabs.experimental-features": {
+    "message": "Experimental Features"
   },
   "app.settings.tabs.home": {
-    "message": "Home page"
+    "message": "Home"
   },
   "app.settings.tabs.java-installations": {
-    "message": "Java installations"
+    "message": "Java Installations"
   },
   "app.settings.tabs.language": {
     "message": "Language"
@@ -2088,7 +2637,10 @@
     "message": "Privacy"
   },
   "app.settings.tabs.resource-management": {
-    "message": "Resource management"
+    "message": "Resource Management"
+  },
+  "app.settings.tabs.translation": {
+    "message": "Translation"
   },
   "app.settings.title": {
     "message": "Settings"
@@ -2275,6 +2827,132 @@
   },
   "app.survey.take": {
     "message": "Take survey"
+  },
+  "app.translation-settings.api-key": {
+    "message": "API Key"
+  },
+  "app.translation-settings.api-key-configured": {
+    "message": "API key is configured. Enter a new value to replace it."
+  },
+  "app.translation-settings.api-key-optional": {
+    "message": "Optional for local or authentication-free endpoints."
+  },
+  "app.translation-settings.auto-translate": {
+    "message": "Auto-Translate Project Pages"
+  },
+  "app.translation-settings.auto-translate-description": {
+    "message": "Start translating immediately when opening a Modrinth project page."
+  },
+  "app.translation-settings.base-url": {
+    "message": "Base URL"
+  },
+  "app.translation-settings.cache": {
+    "message": "Translation Cache"
+  },
+  "app.translation-settings.cache-cleared": {
+    "message": "Translation cache has been cleared."
+  },
+  "app.translation-settings.cache-description": {
+    "message": "Successful translations are cached for seven days to reduce requests."
+  },
+  "app.translation-settings.clear-cache": {
+    "message": "Clear Translation Cache"
+  },
+  "app.translation-settings.clear-key": {
+    "message": "Clear API Key"
+  },
+  "app.translation-settings.description": {
+    "message": "Translate Modrinth project titles, summaries, and descriptions while browsing content."
+  },
+  "app.translation-settings.display-mode": {
+    "message": "Display Mode"
+  },
+  "app.translation-settings.display-mode.bilingual": {
+    "message": "Original & Translation"
+  },
+  "app.translation-settings.display-mode.translation-only": {
+    "message": "Translation Only"
+  },
+  "app.translation-settings.model": {
+    "message": "Model"
+  },
+  "app.translation-settings.openai.configuration": {
+    "message": "OpenAI Compatible Configuration"
+  },
+  "app.translation-settings.operation-failed": {
+    "message": "Translation operation failed. Please check your configuration and try again."
+  },
+  "app.translation-settings.provider": {
+    "message": "Translation Provider"
+  },
+  "app.translation-settings.provider.google": {
+    "message": "Google Translate (Free)"
+  },
+  "app.translation-settings.provider.microsoft": {
+    "message": "Microsoft Translator (Free)"
+  },
+  "app.translation-settings.provider.openai-compatible": {
+    "message": "OpenAI Compatible"
+  },
+  "app.translation-settings.save-key": {
+    "message": "Save API Key"
+  },
+  "app.translation-settings.style": {
+    "message": "Translation Style"
+  },
+  "app.translation-settings.style.background": {
+    "message": "Background"
+  },
+  "app.translation-settings.style.border": {
+    "message": "Left Border"
+  },
+  "app.translation-settings.style.brand": {
+    "message": "Accent Color"
+  },
+  "app.translation-settings.style.default": {
+    "message": "Default"
+  },
+  "app.translation-settings.style.preview": {
+    "message": "Preview"
+  },
+  "app.translation-settings.style.preview-original-text": {
+    "message": "Explore high-quality Minecraft content on Modrinth."
+  },
+  "app.translation-settings.style.preview-text": {
+    "message": "Discover high-quality Minecraft content on Modrinth."
+  },
+  "app.translation-settings.style.weakened": {
+    "message": "Weakened"
+  },
+  "app.translation-settings.target-language": {
+    "message": "Target Language"
+  },
+  "app.translation-settings.target-language.follow-app": {
+    "message": "Follow Launcher Language"
+  },
+  "app.translation-settings.test": {
+    "message": "Test Service"
+  },
+  "app.translation-settings.test-success": {
+    "message": "Connection successful: {translation}"
+  },
+  "app.translation-settings.testing": {
+    "message": "Testing..."
+  },
+  "app.translation-settings.title": {
+    "message": "Auto Translation"
+  },
+  "app.translation.error.authentication": {
+    "message": "The translation service could not authenticate. Please try again later."
+  },
+  "app.translation.error.content-too-long": {
+    "message": "This content is too long for the selected translation service."
+  },
+  "app.translation.error.network": {
+    "message": "Unable to connect to the translation service. Please check your network or proxy settings."
+  },
+  "app.translation.error.rate-limited": {
+    "message": "The translation service is temporarily rate-limited. Please try again later."
   },
   "app.update-popup.body.download-complete": {
     "message": "Modrinth App v{version} has finished downloading. Reload to update now, or automatically when you close Modrinth App."

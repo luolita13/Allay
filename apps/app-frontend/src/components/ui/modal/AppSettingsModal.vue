@@ -14,8 +14,8 @@ import { getVersion } from '@tauri-apps/api/app'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref, watch } from 'vue'
 
-import { settingsTabs } from '@/helpers/settings-tabs'
 import { get, set } from '@/helpers/settings.ts'
+import { settingsTabs } from '@/helpers/settings-tabs'
 import { injectAppUpdateDownloadProgress } from '@/providers/download-progress.ts'
 import { useTheming } from '@/store/state'
 

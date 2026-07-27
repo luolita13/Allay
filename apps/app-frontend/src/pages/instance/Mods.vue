@@ -2,7 +2,7 @@
 	<ReadyTransition :pending="loading">
 		<ContentPageLayout>
 			<template #modals>
-				<ShareModalWrapper
+				<ShareModal
 					ref="shareModal"
 					:share-title="formatMessage(messages.shareTitle)"
 					:share-text="formatMessage(messages.shareText)"
@@ -87,6 +87,7 @@ import {
 	provideAppBackup,
 	provideContentManager,
 	ReadyTransition,
+	ShareModal,
 	useDebugLogger,
 	useVIntl,
 	versionChangesGameVersion,
@@ -99,7 +100,6 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import ExportModal from '@/components/ui/ExportModal.vue'
-import ShareModalWrapper from '@/components/ui/modal/ShareModalWrapper.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_versions, get_version, get_version_many } from '@/helpers/cache.js'
 import {
@@ -279,7 +279,7 @@ const isPackLocked = computed(
 		props.instance?.link?.type === 'server_project_modpack',
 )
 
-const shareModal = ref<InstanceType<typeof ShareModalWrapper> | null>()
+const shareModal = ref<InstanceType<typeof ShareModal> | null>()
 const exportModal = ref(null)
 const contentUpdaterModal = ref<InstanceType<typeof ContentUpdaterModal> | null>()
 const modpackContentModal = ref<InstanceType<typeof ModpackContentModal> | null>()

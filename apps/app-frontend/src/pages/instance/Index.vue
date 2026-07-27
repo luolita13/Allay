@@ -654,9 +654,9 @@ const handlePlayServer = async () => {
 
 const repairInstance = async () => {
 	if (
-		instance.value.install_stage !== 'pack_installed' &&
-		(instance.value.link?.type === 'modrinth_modpack' ||
-			instance.value.link?.type === 'server_project_modpack')
+		instance.value?.install_stage !== 'pack_installed' &&
+		(instance.value?.link?.type === 'modrinth_modpack' ||
+			instance.value?.link?.type === 'server_project_modpack')
 	) {
 		await install_pack_to_existing_instance(instance.value.id, {
 			type: 'fromVersionId',

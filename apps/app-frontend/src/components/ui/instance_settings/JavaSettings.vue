@@ -10,6 +10,7 @@ import {
 } from '@modrinth/assets'
 import {
 	ButtonStyled,
+	Checkbox,
 	Combobox,
 	defineMessages,
 	injectNotificationManager,
@@ -24,8 +25,8 @@ import JavaDetectionModal from '@/components/ui/JavaDetectionModal.vue'
 import useJavaTest from '@/composables/useJavaTest'
 import useMemorySlider from '@/composables/useMemorySlider'
 import { edit, get_optimal_jre_key } from '@/helpers/instance'
-import { get } from '@/helpers/settings.ts'
 import { check_java_for_version, get_minimum_java_version } from '@/helpers/jre.js'
+import { get } from '@/helpers/settings.ts'
 import { injectInstanceSettings } from '@/providers/instance-settings'
 
 import type { AppSettings } from '../../../helpers/types'
@@ -76,16 +77,22 @@ watch(
 // --- Java version compatibility check (constraint system) ---
 // Checks whether the active Java runtime is suitable for the instance's
 // Minecraft version, showing a compatibility badge below the path input.
-const javaCompatibility = ref(null)
+interface JavaCompatibilityResult {
+	satisfies_mandatory: boolean
+	satisfies_suggested: boolean
+	minimum_java_major: number | null
+	violated_mandatory: string[]
+	violated_suggested: string[]
+	summary: string
+}
+const javaCompatibility = ref<JavaCompatibilityResult | null>(null)
 const checkingCompatibility = ref(false)
 
 const instanceGameVersion = computed(() => instance.value?.game_version ?? '')
 const instanceLoader = computed(() => {
 	const loader = instance.value?.loader
 	if (!loader) return null
-	// Loader is stored as an object with 'type' field (e.g. { type: 'forge' })
-	const t = typeof loader === 'object' ? loader?.type : loader
-	return t ? String(t).toLowerCase() : null
+	return String(loader).toLowerCase()
 })
 
 async function refreshCompatibility() {
@@ -97,13 +104,9 @@ async function refreshCompatibility() {
 	}
 	checkingCompatibility.value = true
 	try {
-		const result = await check_java_for_version(
-			gameVersion,
-			path,
-			instanceLoader.value,
-		)
+		const result = await check_java_for_version(gameVersion, path, instanceLoader.value)
 		javaCompatibility.value = result
-	} catch (e) {
+	} catch {
 		// Silently fail - the constraint check is advisory, not blocking
 		javaCompatibility.value = null
 	} finally {
@@ -112,7 +115,11 @@ async function refreshCompatibility() {
 }
 
 // Minimum Java version for this instance's game version (for display)
-const minimumJavaInfo = ref(null)
+interface MinimumJavaInfo {
+	component: string
+	major_version: number
+}
+const minimumJavaInfo = ref<MinimumJavaInfo | null>(null)
 async function refreshMinimumJava() {
 	const gameVersion = instanceGameVersion.value
 	if (!gameVersion) {
@@ -147,6 +154,13 @@ async function handleBrowseJava() {
 
 function handleDetectJava() {
 	javaDetectionModal.value?.show(optimalJava?.parsed_version, { path: javaPath.value })
+}
+
+function handleTestJava() {
+	const version = optimalJava?.parsed_version
+	if (version) {
+		testJavaInstallation(activePath.value, version, true)
+	}
 }
 
 const overrideJavaArgs = ref((instance.value.extra_launch_args?.length ?? 0) > 0)
@@ -316,7 +330,7 @@ const messages = defineMessages({
 						>
 							<button
 								:disabled="!overrideJavaInstall || testingJava"
-								@click="testJavaInstallation(activePath, optimalJava?.parsed_version, true)"
+								@click="handleTestJava"
 								@mouseenter="overrideJavaInstall && (hoveringTest = true)"
 								@mouseleave="hoveringTest = false"
 							>
@@ -350,11 +364,9 @@ const messages = defineMessages({
 						class="compat-badge"
 						:class="{
 							'compat-ok':
-								javaCompatibility.satisfies_mandatory &&
-								javaCompatibility.satisfies_suggested,
+								javaCompatibility.satisfies_mandatory && javaCompatibility.satisfies_suggested,
 							'compat-warn':
-								javaCompatibility.satisfies_mandatory &&
-								!javaCompatibility.satisfies_suggested,
+								javaCompatibility.satisfies_mandatory && !javaCompatibility.satisfies_suggested,
 							'compat-error': !javaCompatibility.satisfies_mandatory,
 						}"
 					>
@@ -368,10 +380,7 @@ const messages = defineMessages({
 						/>
 						<span class="compat-text">{{ javaCompatibility.summary }}</span>
 					</div>
-					<div
-						v-if="minimumJavaInfo && minimumJavaInfo.major_version"
-						class="min-java-hint"
-					>
+					<div v-if="minimumJavaInfo && minimumJavaInfo.major_version" class="min-java-hint">
 						Minimum required: Java {{ minimumJavaInfo.major_version }}
 					</div>
 				</div>

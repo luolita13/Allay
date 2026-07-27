@@ -18,6 +18,8 @@ pub enum VersionType {
     OldAlpha,
     /// Early versions of the game
     OldBeta,
+    /// April Fools joke versions
+    AprilFools,
 }
 
 impl VersionType {
@@ -28,6 +30,7 @@ impl VersionType {
             VersionType::Snapshot => "snapshot",
             VersionType::OldAlpha => "old_alpha",
             VersionType::OldBeta => "old_beta",
+            VersionType::AprilFools => "april_fools",
         }
     }
 }
@@ -77,6 +80,40 @@ pub struct VersionManifest {
 /// The URL to the version manifest
 pub const VERSION_MANIFEST_URL: &str =
     "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+
+/// The URL to the UVMC (Unlisted Versions of Minecraft) manifest
+/// Contains April Fools and other unlisted versions not in Mojang's official manifest
+pub const UVMC_MANIFEST_URL: &str =
+    "https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto/version_manifest.json";
+
+/// Original zkitefly base URL for UVMC version JSON downloads
+pub const UVMC_ORIGINAL_BASE: &str =
+    "https://zkitefly.github.io/unlisted-versions-of-minecraft/";
+
+/// Mirror base URL for UVMC version JSON downloads
+pub const UVMC_MIRROR_BASE: &str =
+    "https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto/";
+
+/// Known April Fools version IDs. Used to classify versions fetched from
+/// Mojang manifest or UVMC as AprilFools type.
+pub const APRIL_FOOLS_VERSION_IDS: &[&str] = &[
+    "2point0_blue", "2point0_red", "2point0_purple",
+    "2.0_blue", "2.0_red", "2.0_purple", "2.0",
+    "15w14a",
+    "1.rv-pre1", "1.RV-Pre1",
+    "3d shareware v1.34", "3D Shareware v1.34",
+    "20w14infinite", "20w14\u{221e}",
+    "22w13oneblockatatime", "22w13oneBlockAtATime",
+    "23w13a_or_b",
+    "24w14potato",
+    "25w14craftmine",
+    "26w14a",
+];
+
+/// Check if a version ID matches a known April Fools version.
+pub fn is_april_fools_version(id: &str) -> bool {
+    APRIL_FOOLS_VERSION_IDS.contains(&id)
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

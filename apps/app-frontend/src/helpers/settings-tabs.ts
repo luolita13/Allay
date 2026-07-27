@@ -12,7 +12,10 @@ import {
 	WrenchIcon,
 } from '@modrinth/assets'
 import { defineMessage } from '@modrinth/ui'
+import type { Component } from 'vue'
 
+import AboutSettings from '@/components/ui/settings/AboutSettings.vue'
+import AdvancedInstanceSettings from '@/components/ui/settings/AdvancedInstanceSettings.vue'
 import AppearanceSettings from '@/components/ui/settings/AppearanceSettings.vue'
 import DefaultInstanceSettings from '@/components/ui/settings/DefaultInstanceSettings.vue'
 import FeatureFlagSettings from '@/components/ui/settings/FeatureFlagSettings.vue'
@@ -21,10 +24,7 @@ import JavaSettings from '@/components/ui/settings/JavaSettings.vue'
 import LanguageSettings from '@/components/ui/settings/LanguageSettings.vue'
 import PrivacySettings from '@/components/ui/settings/PrivacySettings.vue'
 import ResourceManagementSettings from '@/components/ui/settings/ResourceManagementSettings.vue'
-import AdvancedInstanceSettings from '@/components/ui/settings/AdvancedInstanceSettings.vue'
 import TranslationSettings from '@/components/ui/settings/TranslationSettings.vue'
-import AboutSettings from '@/components/ui/settings/AboutSettings.vue'
-import type { Component } from 'vue'
 
 export interface SettingsTab {
 	name: ReturnType<typeof defineMessage>

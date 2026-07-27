@@ -149,6 +149,11 @@ pub fn get_fetch_strategy(url: &str) -> FetchStrategy {
         };
     }
 
+    // Check UVMC version JSON download URLs (zkitefly → alist mirror)
+    if let Some(mirror_url) = rewrite_uvmc(url) {
+        return FetchStrategy::MirrorFirst { mirror_url };
+    }
+
     // No mirror pattern matched - always use official
     FetchStrategy::OfficialOnly
 }
@@ -156,7 +161,8 @@ pub fn get_fetch_strategy(url: &str) -> FetchStrategy {
 /// Rewrite version list / metadata URLs to BMCLAPI mirror.
 /// Returns Some(rewritten_url) if the URL matched, None otherwise.
 ///
-/// This covers the Minecraft version manifest and Modrinth launcher-meta URLs.
+/// This covers the Minecraft version manifest, Modrinth launcher-meta URLs,
+/// and UVMC (Unlisted Versions of Minecraft) URLs.
 /// Loader metadata manifests are Modrinth-specific processed formats and are not
 /// directly available from BMCLAPI, so they are left as official-only.
 fn rewrite_version_list(url: &str) -> Option<String> {
@@ -246,6 +252,20 @@ fn rewrite_community_mirrors(url: &str) -> Option<String> {
         if url.starts_with(from) {
             return Some(url.replacen(from, to, 1));
         }
+    }
+    None
+}
+
+/// Rewrite UVMC (Unlisted Versions of Minecraft) version JSON download URLs
+/// from zkitefly.github.io to the alist mirror for faster downloads.
+/// Returns Some(rewritten_url) if the URL matched, None otherwise.
+fn rewrite_uvmc(url: &str) -> Option<String> {
+    if url.starts_with("https://zkitefly.github.io/unlisted-versions-of-minecraft/") {
+        return Some(url.replacen(
+            "https://zkitefly.github.io/unlisted-versions-of-minecraft/",
+            "https://alist.8mi.tech/d/mirror/unlisted-versions-of-minecraft/Auto/",
+            1,
+        ));
     }
     None
 }

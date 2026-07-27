@@ -56,35 +56,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Màu chủ đề"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Thay đổi trang hiển thị khi khởi chạy launcher."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Trang chủ"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Thư viện"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Trang mặc định"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Tắt hiển thị thẻ tên phía trên người chơi ở trang skin."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Ẩn thẻ tên"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Hiển thị các thế giới gần đây trong mục \"Tiếp tục chơi\" ở Trang chủ."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Tiếp tục chơi"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Thu nhỏ launcher khi game Minecraft bắt đầu chạy."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Thu nhỏ launcher"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Sử dụng khung cửa sổ hệ thống (yêu cầu khởi động lại ứng dụng)."
@@ -92,26 +68,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Giao diện cửa sổ hệ thống"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Chọn một tuỳ chọn"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Hiển thị thời gian bạn đã dành để chơi bằng một cấu hình."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Hiện thời gian chơi"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Bật tính năng ẩn hiển thị thanh menu bên."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Ẩn/hiện thanh bên"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Nếu bạn cố gắng cài đặt tệp Modrinth Pack (.mrpack) không được lưu trữ trên máy chủ Modrinth, chúng tôi sẽ đảm bảo bạn hiểu rõ các rủi ro trước khi cài đặt."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Cảnh báo tôi trước khi cài đặt các modpacks không rõ nguồn gốc"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Máy chủ xác thực của Minecraft có thể đang bị sập. Hãy kiểm tra kết nối Internet của bạn và thử lại sau."

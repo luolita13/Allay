@@ -83,35 +83,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Tema de cores"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Altera a página que o launcher é aberto."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Início"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Biblioteca"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Página inicial padrão"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Desativa o nametag acima do seu jogador na página de Skins."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Ocultar nametag"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Inclui mundos recentes na seção \"Retomar\" na página inicial."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Retomar aos mundos"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimize o launcher assim que algum processo do Minecraft iniciar."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Minimizar launcher"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Usar molduras de janela do sistema (exige reinicialização do aplicativo)."
@@ -119,32 +95,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Decorações nativas"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Selecione uma opção"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Exibe a quantidade de tempo jogado de uma instância."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Exibir tempo jogado"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "Pula automaticamente as confirmações desnecessárias como duplica de instalação de pacotes de mods, exclusão de conteúdo normal, atualizações em massa, desvinculo de pacotes de mods e diálogos de reparo. Os avisos de perigo ainda serão exibidos."
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "Pular avisos desnecessários"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Permite alternar a barra lateral."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Alternar barra lateral"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Se você tentar instalar um arquivo Modrinth Pack (.mrpack) não hospedado no Modrinth, garantiremos que você entenda os riscos antes de instalar."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Avise-me antes de instalar pacotes de mods desconhecidos"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Os servidores de autenticação do Minecraft podem estar indisponíveis no momento. Verifique sua conexão com a rede e tente novamente mais tarde."

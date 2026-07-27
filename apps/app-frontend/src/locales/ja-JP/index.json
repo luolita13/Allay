@@ -104,35 +104,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "テーマ"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "ランチャー起動時に表示するページを変更します"
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "ホーム"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "ライブラリ"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "デフォルトの起動ページ"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "スキンページでプレイヤー上部のネームタグを非表示にします。"
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "ネームタグを非表示にする"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "ホームページの「ジャンプバック」セクションには、最近追加されたワールドが含まれています。"
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "最近のワールドを表示"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minecraftが起動した時、ランチャーを最小化します。"
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "ランチャーを最小化"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "OSデフォルトのウィンドウUIを使用します。（アプリの再起動が必要です）"
@@ -140,50 +116,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "OSのウィンドウUIを使用"
   },
-  "app.appearance-settings.select-option": {
-    "message": "オプションを選択してください"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "インスタンスのプレイ時間を表示します。"
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "プレイ時間を表示"
-  },
-  "app.appearance-settings.background-blur.description": {
-    "message": "背景画像のぼかし具合を調整します。"
-  },
-  "app.appearance-settings.background-blur.title": {
-    "message": "背景のぼかし"
-  },
-  "app.appearance-settings.background-image.clear-button": {
-    "message": "クリア"
-  },
-  "app.appearance-settings.background-image.description": {
-    "message": "ランチャーのカスタム背景画像を設定します。"
-  },
-  "app.appearance-settings.background-image.select-button": {
-    "message": "画像を選択"
-  },
-  "app.appearance-settings.background-image.title": {
-    "message": "背景画像"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "低リスクの確認（重複 Mod パックインストール、通常コンテンツ削除、一括更新、Mod パックリンク解除、修復プロンプト）を自動スキップします。危険な警告は引き続き表示されます。"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "重要でない警告をスキップ"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "サイドバーの表示/非表示を切り替える機能を有効にします。"
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "サイドバーの表示切替を有効化"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Modrinthで配布されていないModrinth Pack（.mrpack）をインストールする場合、事前にリスクについて警告します。"
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "不明なModパックのインストール前に警告する"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraftの認証サーバーは現在停止している可能性があります。インターネット接続を確認し、しばらくしてからもう一度お試しください。"
@@ -365,12 +302,6 @@
   "app.create-instance.versions": {
     "message": "個のバージョン"
   },
-  "app.default-instance.advanced-launch-options.title": {
-    "message": "高度な起動オプション"
-  },
-  "app.default-instance.compatibility.title": {
-    "message": "互換性"
-  },
   "app.default-instance.custom-info.hint": {
     "message": "ゲーム左下と F3 デバッグ画面に表示されます。"
   },
@@ -379,39 +310,6 @@
   },
   "app.default-instance.custom-info.title": {
     "message": "カスタム情報"
-  },
-  "app.default-instance.disable-jlw.description": {
-    "message": "theseus.jar 起動ラッパーを無効にします。一部の機能が動作しなくなる可能性があります。"
-  },
-  "app.default-instance.disable-jlw.title": {
-    "message": "Java 起動ラッパーを無効化"
-  },
-  "app.default-instance.disable-lf.description": {
-    "message": "古い Minecraft の互換性修正を無効にします。"
-  },
-  "app.default-instance.disable-lf.title": {
-    "message": "LegacyFix を無効化"
-  },
-  "app.default-instance.disable-lwjgl.description": {
-    "message": "FFM API パフォーマンス問題を修正する LWJGL unsafe agent を無効にします。"
-  },
-  "app.default-instance.disable-lwjgl.title": {
-    "message": "LWJGL Unsafe Agent を無効化"
-  },
-  "app.default-instance.env-variables.placeholder": {
-    "message": "環境変数を入力…"
-  },
-  "app.default-instance.env-variables.title": {
-    "message": "環境変数"
-  },
-  "app.default-instance.extra-game-args.hint": {
-    "message": "Minecraft 起動引数の末尾に追加されます。"
-  },
-  "app.default-instance.extra-game-args.placeholder": {
-    "message": "例: --demo"
-  },
-  "app.default-instance.extra-game-args.title": {
-    "message": "追加ゲーム引数"
   },
   "app.default-instance.fullscreen.description": {
     "message": "起動時に options.txt を上書きして全画面モードで起動します。"
@@ -428,15 +326,6 @@
   "app.default-instance.height.title": {
     "message": "高さ"
   },
-  "app.default-instance.high-perf-gpu.description": {
-    "message": "ゲームプロセスに高性能 GPU の使用を要求します。"
-  },
-  "app.default-instance.high-perf-gpu.title": {
-    "message": "高性能 GPU"
-  },
-  "app.default-instance.hooks.title": {
-    "message": "フック"
-  },
   "app.default-instance.ip-protocol.description": {
     "message": "Java ネットワークの優先 IP プロトコルスタック。"
   },
@@ -451,12 +340,6 @@
   },
   "app.default-instance.ip.prefer-v6": {
     "message": "IPv6 優先"
-  },
-  "app.default-instance.java-arguments.placeholder": {
-    "message": "Java 引数を入力…"
-  },
-  "app.default-instance.java-arguments.title": {
-    "message": "Java 引数"
   },
   "app.default-instance.launch-options.title": {
     "message": "起動オプション"
@@ -482,27 +365,6 @@
   "app.default-instance.memory-warning": {
     "message": "システムメモリの 75% 以上を Minecraft に割り当てています。不安定になる可能性があります。「自動」モードの使用をお勧めします。"
   },
-  "app.default-instance.post-exit-hook.description": {
-    "message": "ゲーム終了後に実行されます。"
-  },
-  "app.default-instance.post-exit-hook.placeholder": {
-    "message": "終了後コマンドを入力…"
-  },
-  "app.default-instance.post-exit-hook.title": {
-    "message": "終了後フック"
-  },
-  "app.default-instance.pre-launch-hook.description": {
-    "message": "インスタンス起動前に実行されます。"
-  },
-  "app.default-instance.pre-launch-hook.placeholder": {
-    "message": "起動前コマンドを入力…"
-  },
-  "app.default-instance.pre-launch-hook.title": {
-    "message": "起動前フック"
-  },
-  "app.default-instance.pre-launch-wait": {
-    "message": "コマンド完了を待ってから起動"
-  },
   "app.default-instance.priority.above-normal": {
     "message": "通常以上"
   },
@@ -524,33 +386,6 @@
   "app.default-instance.process-priority.title": {
     "message": "プロセス優先度"
   },
-  "app.default-instance.renderer.d3d12": {
-    "message": "DirectX 12"
-  },
-  "app.default-instance.renderer.default": {
-    "message": "デフォルト"
-  },
-  "app.default-instance.renderer.description": {
-    "message": "OpenGL レンダラーを上書きします。不安定になる可能性があります。"
-  },
-  "app.default-instance.renderer.llvmpipe": {
-    "message": "llvmpipe（ソフトウェアレンダリング）"
-  },
-  "app.default-instance.renderer.title": {
-    "message": "レンダラー"
-  },
-  "app.default-instance.renderer.zink": {
-    "message": "Vulkan (Zink)"
-  },
-  "app.default-instance.reset-to-default": {
-    "message": "デフォルトに戻す"
-  },
-  "app.default-instance.use-java-exe.description": {
-    "message": "javaw.exe の代わりに java.exe を使用します。デバッグ用のコンソールウィンドウを提供します。"
-  },
-  "app.default-instance.use-java-exe.title": {
-    "message": "java.exe を使用"
-  },
   "app.default-instance.width.description": {
     "message": "ゲーム起動時のウィンドウの幅。"
   },
@@ -569,53 +404,11 @@
   "app.default-instance.window-title.title": {
     "message": "ゲームウィンドウタイトル"
   },
-  "app.default-instance.wrapper-hook.description": {
-    "message": "Minecraft を起動するためのラッパーコマンド。"
-  },
-  "app.default-instance.wrapper-hook.placeholder": {
-    "message": "ラッパーコマンドを入力…"
-  },
-  "app.default-instance.wrapper-hook.title": {
-    "message": "ラッパーフック"
-  },
   "app.downloads.cancel": {
     "message": "キャンセル"
   },
-  "app.downloads.created": {
-    "message": "作成日時"
-  },
-  "app.downloads.dismiss": {
-    "message": "無視"
-  },
-  "app.downloads.error": {
-    "message": "エラー"
-  },
-  "app.downloads.no-downloads": {
-    "message": "ダウンロードなし"
-  },
-  "app.downloads.no-downloads-description": {
-    "message": "現在進行中のダウンロードはなく、最近のダウンロード履歴もありません。"
-  },
-  "app.downloads.pause": {
-    "message": "一時停止"
-  },
   "app.downloads.refresh": {
     "message": "更新"
-  },
-  "app.downloads.resume": {
-    "message": "再開"
-  },
-  "app.downloads.tab.active": {
-    "message": "ダウンロード中"
-  },
-  "app.downloads.tab.active-count": {
-    "message": "ダウンロード中 ({count})"
-  },
-  "app.downloads.tab.finished": {
-    "message": "完了"
-  },
-  "app.downloads.tab.finished-count": {
-    "message": "完了 ({count})"
   },
   "app.downloads.retry": {
     "message": "再試行"
@@ -629,9 +422,6 @@
   "app.downloads.status.interrupted": {
     "message": "中断"
   },
-  "app.downloads.status.paused": {
-    "message": "一時停止中"
-  },
   "app.downloads.status.queued": {
     "message": "待機中"
   },
@@ -640,15 +430,6 @@
   },
   "app.downloads.status.succeeded": {
     "message": "成功"
-  },
-  "app.downloads.title": {
-    "message": "ダウンロード"
-  },
-  "app.downloads.unknown-job": {
-    "message": "インストールタスク"
-  },
-  "app.downloads.updated": {
-    "message": "更新日時"
   },
   "app.error-modal.cancel-directory-change": {
     "message": "ディレクトリ変更をキャンセル"
@@ -1964,21 +1745,6 @@
   "app.resource-management.app-directory.title": {
     "message": "アプリディレクトリ"
   },
-  "app.resource-management.community-source.auto": {
-    "message": "自動（推奨）"
-  },
-  "app.resource-management.community-source.description": {
-    "message": "Modrinth Mod ファイルのダウンロード元。自動：Modrinth 公式ソースを優先し、失敗時に MCIMirror にフォールバック。MCIMirror 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。コンテンツ閲覧は常に Modrinth API を使用します。"
-  },
-  "app.resource-management.community-source.mcimirror-first": {
-    "message": "MCIMirror 優先"
-  },
-  "app.resource-management.community-source.modrinth-only": {
-    "message": "Modrinth 公式ソースのみ"
-  },
-  "app.resource-management.community-source.title": {
-    "message": "コミュニティリソースのダウンロード元"
-  },
   "app.resource-management.db-backups.button": {
     "message": "バックアップフォルダを開く"
   },
@@ -1996,36 +1762,6 @@
   },
   "app.resource-management.launcher-logs.title": {
     "message": "ランチャーログ"
-  },
-  "app.resource-management.game-file-source.auto": {
-    "message": "自動（推奨）"
-  },
-  "app.resource-management.game-file-source.bmclapi-first": {
-    "message": "BMCLAPI 優先"
-  },
-  "app.resource-management.game-file-source.description": {
-    "message": "Minecraft ゲームファイル（クライアント JAR、ライブラリ、リソース）のダウンロード元。自動：Mojang 公式ソースを優先し、失敗時に BMCLAPI にフォールバック。BMCLAPI 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。"
-  },
-  "app.resource-management.game-file-source.mojang-only": {
-    "message": "Mojang 公式ソースのみ"
-  },
-  "app.resource-management.game-file-source.title": {
-    "message": "ゲームファイルのダウンロード元"
-  },
-  "app.resource-management.version-list-source.auto": {
-    "message": "自動（推奨）"
-  },
-  "app.resource-management.version-list-source.bmclapi-first": {
-    "message": "BMCLAPI 優先"
-  },
-  "app.resource-management.version-list-source.description": {
-    "message": "Minecraft バージョン一覧とローダー メタデータ（Forge、NeoForge、Fabric、Quilt）の取得元。自動：公式ソースを優先し、失敗時に BMCLAPI にフォールバック。BMCLAPI 優先：ミラーソースを優先し、失敗時に公式ソースにフォールバック。"
-  },
-  "app.resource-management.version-list-source.mojang-only": {
-    "message": "公式ソースのみ"
-  },
-  "app.resource-management.version-list-source.title": {
-    "message": "バージョン一覧の取得元"
   },
   "app.resource-management.max-concurrent-downloads.description": {
     "message": "ランチャーが同時にダウンロードするファイルの最大数。ネットワーク接続が悪い場合は低い値に設定してください。（適用にはアプリの再起動が必要です）"

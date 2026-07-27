@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CheckIcon, ModrinthIcon } from '@modrinth/assets'
-import { ButtonStyled, NewModal } from '@modrinth/ui'
+import { ModrinthIcon } from '@modrinth/assets'
+import { ButtonStyled, Checkbox, NewModal } from '@modrinth/ui'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { onMounted, ref } from 'vue'
 
@@ -100,18 +100,12 @@ function openGitHub() {
 			</ButtonStyled>
 
 			<!-- Don't show again -->
-			<button
-				class="mt-4 flex items-center gap-2 text-xs text-tertiary hover:text-secondary transition-colors bg-transparent border-0 cursor-pointer"
-				@click="doNotShowAgain = !doNotShowAgain"
-			>
-				<span
-					class="inline-flex size-3.5 items-center justify-center rounded border transition-colors"
-					:class="doNotShowAgain ? 'bg-brand border-brand' : 'border-tertiary'"
-				>
-					<CheckIcon v-if="doNotShowAgain" class="size-2.5 text-white" />
-				</span>
-				Don't show again
-			</button>
+			<Checkbox
+				v-model="doNotShowAgain"
+				label="Don't show again"
+				label-class="text-xs text-tertiary"
+				class="mt-4"
+			/>
 
 			<!-- Credit -->
 			<div class="mt-6 flex items-center gap-2 text-xs text-tertiary">

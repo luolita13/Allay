@@ -2,8 +2,8 @@
 import { ExternalIcon, ModrinthIcon } from '@modrinth/assets'
 import { defineMessages, useVIntl } from '@modrinth/ui'
 import { getVersion } from '@tauri-apps/api/app'
-import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref } from 'vue'
 
 const { formatMessage } = useVIntl()

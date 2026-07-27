@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { CheckIcon, ExternalIcon, PackageIcon, TrashIcon, UploadIcon } from '@modrinth/assets'
-import { ButtonStyled, defineMessages, useVIntl } from '@modrinth/ui'
+import { Admonition, ButtonStyled, defineMessages, useVIntl } from '@modrinth/ui'
 import { open, save } from '@tauri-apps/plugin-dialog'
 import { computed, onMounted, ref } from 'vue'
+
+import type { InstalledThemePack } from '@/helpers/theme_pack'
 import { exportToZip, getThemesDirPath } from '@/helpers/theme_pack'
 import { openPath } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
-import type { InstalledThemePack } from '@/helpers/theme_pack'
 
 const themeStore = useTheming()
 const { formatMessage } = useVIntl()
@@ -144,7 +145,9 @@ async function openThemesFolder() {
 			</ButtonStyled>
 		</div>
 
-		<div v-if="error" class="error-banner">{{ error }}</div>
+		<Admonition v-if="error" type="critical" dismissible class="mt-3" @dismiss="error = null">
+			{{ error }}
+		</Admonition>
 
 		<div v-if="packs.length === 0" class="empty-state">
 			<PackageIcon class="size-8" />
@@ -180,24 +183,24 @@ async function openThemesFolder() {
 				</div>
 
 				<div class="pack-tags">
-					<span v-if="pack.accent_color" class="pack-tag" :style="{
-						backgroundColor: pack.accent_color,
-						color: '#fff',
-					}">accent</span>
+					<span
+						v-if="pack.accent_color"
+						class="pack-tag"
+						:style="{
+							backgroundColor: pack.accent_color,
+							color: '#fff',
+						}"
+						>accent</span
+					>
 					<span v-if="pack.background_image_path" class="pack-tag">background</span>
 					<span v-if="pack.font_family" class="pack-tag">font</span>
-					<span
-						v-if="pack.css_variables && Object.keys(pack.css_variables).length"
-						class="pack-tag"
-					>+{{ Object.keys(pack.css_variables).length }} vars</span>
+					<span v-if="pack.css_variables && Object.keys(pack.css_variables).length" class="pack-tag"
+						>+{{ Object.keys(pack.css_variables).length }} vars</span
+					>
 				</div>
 
 				<div class="pack-actions">
-					<ButtonStyled
-						v-if="pack.id !== activeId"
-						color="brand"
-						type="outlined"
-					>
+					<ButtonStyled v-if="pack.id !== activeId" color="brand" type="outlined">
 						<button type="button" @click="activate(pack)">
 							{{ formatMessage(messages.activateLabel) }}
 						</button>
@@ -225,17 +228,6 @@ async function openThemesFolder() {
 </template>
 
 <style scoped lang="scss">
-.error-banner {
-	margin-top: 0.75rem;
-	background: var(--color-red-bg, rgba(239, 68, 68, 0.12));
-	border: 1px solid var(--color-red);
-	color: var(--color-red);
-	border-radius: 0.5rem;
-	padding: 0.5rem 0.75rem;
-	font-size: 0.8125rem;
-	word-break: break-word;
-}
-
 .empty-state {
 	display: flex;
 	flex-direction: column;
@@ -264,7 +256,9 @@ async function openThemesFolder() {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-	transition: border-color 0.15s, box-shadow 0.15s;
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s;
 }
 
 .pack-card.active {

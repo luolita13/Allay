@@ -41,7 +41,9 @@
 							<PackIcon />
 						</div>
 						<div class="flex flex-col min-w-0">
-							<span class="font-semibold text-contrast truncate" :title="item.name">{{ item.name }}</span>
+							<span class="font-semibold text-contrast truncate" :title="item.name">{{
+								item.name
+							}}</span>
 							<span class="text-xs text-secondary">{{ formatRelative(item.modified) }}</span>
 						</div>
 					</div>
@@ -81,7 +83,7 @@
 			<template #open_folder><FolderOpenIcon /> {{ formatMessage(messages.openFolder) }}</template>
 		</ContextMenu>
 
-		<ConfirmModalWrapper
+		<ConfirmModal
 			ref="deleteConfirmModal"
 			:title="formatMessage(messages.delete)"
 			:description="formatMessage(messages.confirmDelete, { name: selected?.name ?? '' })"
@@ -100,6 +102,7 @@ import {
 } from '@modrinth/assets'
 import {
 	ButtonStyled,
+	ConfirmModal,
 	defineMessages,
 	EmptyState,
 	injectNotificationManager,
@@ -114,7 +117,6 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import ContextMenu from '@/components/ui/ContextMenu.vue'
-import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
 import { add_project_from_path, get_full_path } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'
 import { openPath } from '@/helpers/utils.js'
@@ -153,6 +155,8 @@ interface ResourceItem {
 	path: string
 	modified: number
 }
+
+type ContentFileProjectType = 'mod' | 'datapack' | 'resourcepack' | 'shaderpack'
 
 const props = defineProps<{
 	instance: GameInstance
@@ -243,7 +247,11 @@ async function addFromFile() {
 		})
 		if (Array.isArray(selected) ? selected.length === 0 : !selected) return
 		const path = Array.isArray(selected) ? selected[0] : (selected as string)
-		await add_project_from_path(instance.value.id, path, props.projectType as any)
+		await add_project_from_path(
+			instance.value.id,
+			path,
+			props.projectType as ContentFileProjectType,
+		)
 		addNotification({ type: 'success', title: formatMessage(messages.added) })
 		await refresh()
 	} catch (err) {

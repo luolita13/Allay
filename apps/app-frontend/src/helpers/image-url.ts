@@ -1,5 +1,5 @@
-import { readFile } from '@tauri-apps/plugin-fs'
 import { convertFileSrc } from '@tauri-apps/api/core'
+import { readFile } from '@tauri-apps/plugin-fs'
 
 const blobUrlCache = new Map<string, string>()
 const fallbackCache = new Set<string>()

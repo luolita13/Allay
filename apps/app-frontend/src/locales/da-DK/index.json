@@ -56,56 +56,17 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Farvetema"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Skift hvilken side launcheren åbner i."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Hjem"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Bibliotek"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Standard startside"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Slår nametagget over din spiller på skins siden fra."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Gem nametag"
   },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Inkluderer de sidste verdener i afsnittet \"Hop tilbage\" på startsiden."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Hop tilbage ind i verdener"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimer launcheren når Minecraft starter."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Minimer launcher"
-  },
-  "app.appearance-settings.select-option": {
-    "message": "Vælg en mulighed"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Vis hvor meget tid du har brugt på at spille en instance."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Vis tid spillet"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Aktivere muligheden for at slå sidepanelet til og fra."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Slå sidepanel til og fra"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Hvis du prøver at installere en Modrinth Pack fil (.mrpack) som ikke er hosted på Modrinth, så skal vi nok sikre os du forstår riskoen før du installere den."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Advar mig før jeg installere en ukendt modpacks"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraft authentication servere kan måske være nede lige nu. Tjek din internet forbindelse og prøv igen senere."

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { listInstalled as getInstalledThemePacks, installFromPath, uninstall as uninstallThemePack } from '@/helpers/theme_pack'
+
 import type { InstalledThemePack } from '@/helpers/theme_pack'
+import { installFromPath, listInstalled as getInstalledThemePacks, uninstall as uninstallThemePack } from '@/helpers/theme_pack'
 
 let systemThemeMq: MediaQueryList | null = null
 

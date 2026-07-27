@@ -83,35 +83,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Tema Rengi"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Launcher açıldığında varsayılan olarak açılacak sayfayı seçin."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Ana Sayfa"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Kütüphane"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Varsayılan karşılama sayfası"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Kostümler sayfasındaki karakterinizin üzerindeki isim etiketini devre dışı bırakır."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "İsim etiketini gizle"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Ana sayfadaki 'Hızlıca Geri Dön' bölümünde son oynanan dünyaları gösterir."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Dünyalara hızlıca geri dön"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minecraft başlatıldığında launcher'i simge durumuna at."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Launcher'i simge durumuna at"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Sistem pencere kenarlıklarını kullan (Yeniden başlatma gerekli)."
@@ -119,32 +95,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Yerel pencere öğeleri"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Bir seçenek seçin"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Bir oyun oturumunda ne kadar zaman geçirdiğinizi gösterir."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Oynama Süresini Göster"
-  },
-  "app.appearance-settings.skip-non-essential-warnings.description": {
-    "message": "Mükerrer mod paketi kurulumları, normal içerik silme, toplu güncellemeler, mod paketi bağlantısını kesme ve onarım uyarıları gibi düşük riskli onayları otomatik olarak atlar. Tehlikeli uyarılar gösterilmeye devam edecektir."
-  },
-  "app.appearance-settings.skip-non-essential-warnings.title": {
-    "message": "Gerekli olmayan uyarıları atla"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Kenar çubuğunu ayarlama özelliğini aktifleştirir."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Kenar çubuğunu ayarla"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Modrinth üzerinde barındırılmayan bir Modrinth Paket dosyasını (.mrpack) yüklemeye çalışırsanız, yükleme öncesinde riskleri anladığınızdan emin oluruz."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Bilinmeyen mod paketlerini indirmeden önce beni uyar"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Minecraft doğrulama sunucuları kapalı olabilir. İnternet bağlantını kontrol et ve daha sonra tekrar dene."

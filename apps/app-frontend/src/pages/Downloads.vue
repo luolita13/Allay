@@ -359,7 +359,6 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 	import { computed, onMounted, ref, watch } from 'vue'
 	import { useRouter } from 'vue-router'
 
-	import { get_many } from '@/helpers/instance'
 	import {
 		download_job_support_details,
 		installJobInstanceId,
@@ -367,6 +366,7 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 		type InstallJobStatus,
 		type InstallPhaseId,
 	} from '@/helpers/install'
+	import { get_many } from '@/helpers/instance'
 	import type { LoadingBar } from '@/helpers/state'
 	import { injectDownloadManager } from '@/providers/download-manager'
 

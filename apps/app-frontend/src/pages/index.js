@@ -4,9 +4,8 @@ import Downloads from './Downloads.vue'
 import GameLink from './GameLink.vue'
 import Index from './Index.vue'
 import Servers from './Servers.vue'
+import Settings from './Settings.vue'
 import Skins from './Skins.vue'
 import Worlds from './Worlds.vue'
-
-import Settings from './Settings.vue'
 
 export { Browse, CreateInstance, Downloads, GameLink, Index, Servers, Settings, Skins, Worlds }

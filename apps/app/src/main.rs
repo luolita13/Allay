@@ -229,6 +229,14 @@ fn main() {
             // Initialize link module state so commands can access it.
             app.manage(api::link::LinkGlobalState::new());
 
+            #[cfg(windows)]
+            {
+                let app_handle = app.handle().clone();
+                if let Err(e) = copy_link_native_dlls(&app_handle) {
+                    tracing::warn!("Failed to copy EasyTier native DLLs: {e}");
+                }
+            }
+
             Ok(())
         });
 
@@ -414,4 +422,44 @@ fn main() {
             panic!("{1}: {:?}", e, "error while running tauri application")
         }
     }
+}
+
+#[cfg(windows)]
+/// Copy EasyTier native DLLs from the Tauri resource directory to the
+/// executable directory so they can be loaded at runtime.
+fn copy_link_native_dlls<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> {
+    use std::{env, fs};
+
+    let exe_dir = env::current_exe()
+        .map_err(|e| format!("failed to get current exe: {e}"))?
+        .parent()
+        .ok_or("current exe has no parent directory")?
+        .to_path_buf();
+
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("failed to get resource dir: {e}"))?;
+
+    for dll in ["wintun.dll", "Packet.dll"] {
+        let src = resource_dir.join(dll);
+        let dest = exe_dir.join(dll);
+
+        if !src.exists() {
+            tracing::debug!("EasyTier DLL not found in resources: {}", src.display());
+            continue;
+        }
+
+        if dest.exists() {
+            tracing::debug!("EasyTier DLL already present: {}", dest.display());
+            continue;
+        }
+
+        fs::copy(&src, &dest).map_err(|e| {
+            format!("failed to copy {} from {} to {}: {e}", dll, src.display(), dest.display())
+        })?;
+        tracing::info!("Copied EasyTier DLL to: {}", dest.display());
+    }
+
+    Ok(())
 }

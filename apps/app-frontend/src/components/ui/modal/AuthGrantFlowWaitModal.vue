@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { LogInIcon, SpinnerIcon } from '@modrinth/assets'
+import { NewModal as Modal } from '@modrinth/ui'
 import { ref } from 'vue'
-
-import ModalWrapper from '@/components/ui/modal/ModalWrapper.vue'
 
 defineProps({
 	onFlowCancel: {
@@ -26,7 +25,7 @@ function hide() {
 defineExpose({ show, hide })
 </script>
 <template>
-	<ModalWrapper ref="modal" @hide="onFlowCancel">
+	<Modal ref="modal" @hide="onFlowCancel">
 		<template #title>
 			<span class="items-center gap-2 text-lg font-extrabold text-contrast">
 				<LogInIcon /> Sign in
@@ -39,5 +38,5 @@ defineExpose({ show, hide })
 		<p class="text-sm text-secondary">
 			Please sign in at the browser window that just opened to continue.
 		</p>
-	</ModalWrapper>
+	</Modal>
 </template>

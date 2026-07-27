@@ -374,6 +374,8 @@ fn main() {
                         "link_get_host_mods",
                         "link_is_minecraft_running",
                         "link_update_mc_port",
+                        "link_send_chat_message",
+                        "link_poll_chat_messages",
                     ])
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,

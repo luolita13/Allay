@@ -1,10 +1,18 @@
 <script setup>
 import { BoxIcon, FolderOpenIcon, FolderSearchIcon, TrashIcon } from '@modrinth/assets'
-import { ButtonStyled, Combobox, defineMessages, injectNotificationManager, Slider, StyledInput, useVIntl } from '@modrinth/ui'
+import {
+	ButtonStyled,
+	Combobox,
+	ConfirmModal,
+	defineMessages,
+	injectNotificationManager,
+	Slider,
+	StyledInput,
+	useVIntl,
+} from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
 import { computed, ref, watch } from 'vue'
 
-import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
 import { purge_cache_types } from '@/helpers/cache.js'
 import { get, set } from '@/helpers/settings.ts'
 import { showAppDbBackupsFolder, showLauncherLogsFolder } from '@/helpers/utils.js'
@@ -288,23 +296,24 @@ async function findLauncherDir() {
 		</div>
 
 		<div class="flex flex-col gap-2.5">
-			<ConfirmModalWrapper
+			<ConfirmModal
 				ref="purgeCacheConfirmModal"
 				:title="formatMessage(messages.purgeCacheConfirmTitle)"
 				:description="formatMessage(messages.purgeCacheConfirmDescription)"
 				:has-to-type="false"
 				:proceed-label="formatMessage(messages.purgeCacheButton)"
-				:show-ad-on-close="false"
 				@proceed="purgeCache"
 			/>
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.appCacheTitle) }}</h2>
 			<p class="m-0 leading-tight text-secondary">
 				{{ formatMessage(messages.appCacheDescription) }}
 			</p>
-			<button id="purge-cache" class="btn min-w-max" @click="handlePurgeCacheClick">
-				<TrashIcon />
-				{{ formatMessage(messages.purgeCacheButton) }}
-			</button>
+			<ButtonStyled>
+				<button id="purge-cache" @click="handlePurgeCacheClick">
+					<TrashIcon />
+					{{ formatMessage(messages.purgeCacheButton) }}
+				</button>
+			</ButtonStyled>
 		</div>
 
 		<hr class="bg-button-border border-none h-[1px]" />
@@ -426,10 +435,12 @@ async function findLauncherDir() {
 		<!-- ===== Maintenance ===== -->
 		<div class="flex flex-col gap-2.5">
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.dbBackupsTitle) }}</h2>
-			<button id="open-db-backups-folder" class="btn min-w-max" @click="openDbBackupsFolder">
-				<FolderOpenIcon />
-				{{ formatMessage(messages.dbBackupsButton) }}
-			</button>
+			<ButtonStyled>
+				<button id="open-db-backups-folder" @click="openDbBackupsFolder">
+					<FolderOpenIcon />
+					{{ formatMessage(messages.dbBackupsButton) }}
+				</button>
+			</ButtonStyled>
 			<p class="m-0 leading-tight text-secondary">
 				{{ formatMessage(messages.dbBackupsDescription) }}
 			</p>
@@ -437,10 +448,12 @@ async function findLauncherDir() {
 
 		<div class="flex flex-col gap-2.5">
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.launcherLogsTitle) }}</h2>
-			<button id="open-launcher-logs-folder" class="btn min-w-max" @click="openLauncherLogsFolder">
-				<FolderOpenIcon />
-				{{ formatMessage(messages.launcherLogsButton) }}
-			</button>
+			<ButtonStyled>
+				<button id="open-launcher-logs-folder" @click="openLauncherLogsFolder">
+					<FolderOpenIcon />
+					{{ formatMessage(messages.launcherLogsButton) }}
+				</button>
+			</ButtonStyled>
 			<p class="m-0 leading-tight text-secondary">
 				{{ formatMessage(messages.launcherLogsDescription) }}
 			</p>

@@ -47,35 +47,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Tema warna"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Tukar laman utama yang dibuka oleh pelancar."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Laman utama"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Pustaka"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Laman pendaratan lalai"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Menyahdayakan tanda nama di atas pemain anda pada halaman kekulit."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Sembunyikan tanda nama"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Sertakan dunia terkini dalam bahagian \"Lompat kembali\" pada Laman Utama."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Lompat kembali ke dalam dunia"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Meminimumkan pelancar apabila proses Minecraft bermula."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Minimumkan pelancar"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Gunakan bingkai tetingkap sistem (aplikasi perlu dimulakan semula)."
@@ -83,20 +59,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Hiasan asli"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Pilih satu pilihan"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Membolehkan keupayaan untuk menogol bar sisi."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Togol bar sisi"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Jika anda cuba memasang fail Modrinth Pack (.mrpack) yang tidak dihoskan pada Modrinth, kami akan memastikan anda memahami risikonya sebelum memasangnya."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Beri saya amaran sebelum memasang pek mod yang tidak diketahui"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Pelayan pengesahan Minecraft mungkin sedang tergendala sekarang. Periksa sambungan internet anda dan cuba lagi kemudian."

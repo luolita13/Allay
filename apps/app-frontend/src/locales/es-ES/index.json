@@ -68,35 +68,11 @@
   "app.appearance-settings.color-theme.title": {
     "message": "Tema de color"
   },
-  "app.appearance-settings.default-landing-page.description": {
-    "message": "Cambia la página en la que el launcher inicia."
-  },
-  "app.appearance-settings.default-landing-page.home": {
-    "message": "Inicio"
-  },
-  "app.appearance-settings.default-landing-page.library": {
-    "message": "Biblioteca"
-  },
-  "app.appearance-settings.default-landing-page.title": {
-    "message": "Página de inicio predeterminada"
-  },
   "app.appearance-settings.hide-nametag.description": {
     "message": "Desactiva la etiqueta arriba de tu personaje en la página de skins."
   },
   "app.appearance-settings.hide-nametag.title": {
     "message": "Ocultar etiqueta de nombre"
-  },
-  "app.appearance-settings.jump-back-into-worlds.description": {
-    "message": "Incluye los mundos recientes en la sección \"Volver a jugar\" de la página de inicio."
-  },
-  "app.appearance-settings.jump-back-into-worlds.title": {
-    "message": "Volver a jugar en tus mundos"
-  },
-  "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimiza el lanzador cuando se inicia un proceso de Minecraft."
-  },
-  "app.appearance-settings.minimize-launcher.title": {
-    "message": "Minimizar lanzador"
   },
   "app.appearance-settings.native-decorations.description": {
     "message": "Usa el marco de ventana del sistema (requiere reiniciar la aplicación)."
@@ -104,26 +80,11 @@
   "app.appearance-settings.native-decorations.title": {
     "message": "Decoraciones nativas"
   },
-  "app.appearance-settings.select-option": {
-    "message": "Selecciona una opción"
-  },
-  "app.appearance-settings.show-play-time.description": {
-    "message": "Muestra cuánto tiempo has estado jugando en una instancia."
-  },
-  "app.appearance-settings.show-play-time.title": {
-    "message": "Mostrar tiempo de juego"
-  },
   "app.appearance-settings.toggle-sidebar.description": {
     "message": "Activa la posibilidad de alternar la barra lateral."
   },
   "app.appearance-settings.toggle-sidebar.title": {
     "message": "Alternar barra lateral"
-  },
-  "app.appearance-settings.unknown-pack-warning.description": {
-    "message": "Si intentas instalar un archivo de paquete de Modrinth (.mrpack) que no esté alojado en Modrinth, debes comprender los riesgos que esto conlleva antes de instalarlo."
-  },
-  "app.appearance-settings.unknown-pack-warning.title": {
-    "message": "Adviérteme antes de instalarme modpacks desconocidos"
   },
   "app.auth-servers.unreachable.body": {
     "message": "Los servidores de autenticación de Minecraft pueden no estar funcionando en este momento. Verifica tu conexión a internet e inténtalo de nuevo más tarde."

@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 
 import { NewInstanceImage } from '@/assets/icons'
 import GridDisplay from '@/components/GridDisplay.vue'
+import type { GameInstance } from '@/helpers/types'
 
 const { formatMessage } = useVIntl()
 const router = useRouter()
@@ -17,8 +18,14 @@ const messages = defineMessages({
 		id: 'app.library.overview.subtitle',
 		defaultMessage: 'Manage and launch your Minecraft instances.',
 	},
-	createNewInstance: { id: 'app.library.create-new-instance', defaultMessage: 'Create new instance' },
-	searchPlaceholder: { id: 'app.library.search.placeholder', defaultMessage: 'Search instances...' },
+	createNewInstance: {
+		id: 'app.library.create-new-instance',
+		defaultMessage: 'Create new instance',
+	},
+	searchPlaceholder: {
+		id: 'app.library.search.placeholder',
+		defaultMessage: 'Search instances...',
+	},
 	allInstances: { id: 'app.library.all-instances', defaultMessage: 'All instances' },
 	jumpBackIn: { id: 'app.library.jump-back-in', defaultMessage: 'Jump back in' },
 	noInstances: { id: 'app.library.no-instances', defaultMessage: 'No instances found' },
@@ -29,7 +36,7 @@ const messages = defineMessages({
 })
 
 const props = defineProps<{
-	instances: any[]
+	instances: GameInstance[]
 }>()
 
 const offline = ref(!navigator.onLine)
@@ -45,15 +52,13 @@ const searchQuery = ref('')
 const filteredInstances = computed(() => {
 	const q = searchQuery.value.trim().toLowerCase()
 	if (!q) return props.instances
-	return props.instances.filter((instance: any) =>
-		instance.name?.toLowerCase().includes(q),
-	)
+	return props.instances.filter((instance) => instance.name?.toLowerCase().includes(q))
 })
 
 const recentInstances = computed(() => {
 	return props.instances
-		.filter((x: any) => x.last_played)
-		.sort((a: any, b: any) => dayjs(b.last_played).diff(dayjs(a.last_played)))
+		.filter((x) => x.last_played)
+		.sort((a, b) => dayjs(b.last_played).diff(dayjs(a.last_played)))
 		.slice(0, 4)
 })
 </script>
@@ -98,10 +103,7 @@ const recentInstances = computed(() => {
 		<!-- All instances -->
 		<section class="all-section">
 			<h2 class="section-title">{{ formatMessage(messages.allInstances) }}</h2>
-			<GridDisplay
-				v-if="filteredInstances.length > 0"
-				:instances="filteredInstances"
-			/>
+			<GridDisplay v-if="filteredInstances.length > 0" :instances="filteredInstances" />
 			<div v-else-if="props.instances.length > 0" class="empty-state">
 				<h3 class="m-0">{{ formatMessage(messages.noSearchResults) }}</h3>
 			</div>
