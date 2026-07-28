@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ExternalIcon, ShieldCheckIcon } from '@modrinth/assets'
+import { ShieldCheckIcon } from '@modrinth/assets'
 import { ButtonStyled, NewModal } from '@modrinth/ui'
-import { openUrl } from '@tauri-apps/plugin-opener'
 import { ref } from 'vue'
 
 // ---------------------------------------------------------------------------
@@ -44,12 +43,6 @@ function declineAgreement() {
 	emit('decline')
 	modal.value?.hide()
 }
-
-function openPrivacyPolicy() {
-	// 门户说明：联机大厅隐私政策外链占位。
-	// 如未来需要替换为实际隐私政策 URL，仅需修改此处。
-	openUrl('https://github.com/MCFAB/PCL-CE/blob/main/PRIVACY.md')
-}
 </script>
 
 <template>
@@ -62,46 +55,54 @@ function openPrivacyPolicy() {
 		:hide-header="true"
 	>
 		<div class="agreement-modal">
-			<!-- Header -->
-			<div class="agreement-header">
-				<div class="agreement-icon-wrapper">
-					<ShieldCheckIcon class="agreement-icon" />
+				<!-- Header -->
+				<div class="agreement-header">
+					<div class="agreement-icon-wrapper">
+						<ShieldCheckIcon class="agreement-icon" />
+					</div>
+					<h2 class="agreement-title">Game Link Terms of Use</h2>
+					<p class="agreement-subtitle">
+						Please read the following terms before using the Game Link feature
+					</p>
 				</div>
-				<h2 class="agreement-title">联机大厅说明与条款</h2>
-				<p class="agreement-subtitle">此处列出了联机大厅使用的相关服务文档及介绍</p>
+
+				<!-- Body -->
+				<div class="agreement-body">
+					<p class="agreement-intro">By using the Game Link feature, you agree to the following terms:</p>
+
+					<ul class="agreement-list">
+						<li>
+							I agree to comply with all applicable laws and regulations and will not use
+							this feature for any unlawful purposes.
+						</li>
+						<li>
+							I assume all risks arising from the use of the Game Link feature and agree
+							that the developers are not liable for any damages.
+						</li>
+						<li>
+							I acknowledge that the launcher may collect processed device identifiers and
+							other information, and may disclose such data to law enforcement when legally
+							required.
+						</li>
+						<li>
+							To protect the privacy of minors, I confirm that I am at least 14 years of
+							age before using this feature.
+						</li>
+					</ul>
+				</div>
+
+				<!-- Actions -->
+				<div class="agreement-actions">
+					<ButtonStyled type="brand">
+						<button class="accept-btn" @click="acceptAgreement">
+							I have read and agree
+						</button>
+					</ButtonStyled>
+					<ButtonStyled type="transparent">
+						<button class="decline-btn" @click="declineAgreement">Decline</button>
+					</ButtonStyled>
+				</div>
 			</div>
-
-			<!-- Body -->
-			<div class="agreement-body">
-				<p class="agreement-intro">使用大厅功能即代表你同意下列条款：</p>
-
-				<ul class="agreement-list">
-					<li>我承诺严格遵守中国大陆相关法律法规，不会将大厅功能用于违法违规用途。</li>
-					<li>我承诺使用大厅功能带来的一切风险自行承担。</li>
-					<li>我已知晓并同意启动器收集经处理的本机识别码与其他信息并在必要时提供给执法部门。</li>
-					<li>为保护未成年人个人信息，使用联机大厅前，我确认我已满十四周岁。</li>
-				</ul>
-
-				<p class="agreement-extra">另外，你还需要同意联机大厅相关隐私政策。</p>
-
-				<!-- Privacy policy link -->
-				<button class="privacy-link" type="button" @click="openPrivacyPolicy">
-					<ExternalIcon class="privacy-link-icon" />
-					<span>联机大厅相关隐私政策</span>
-					<span class="privacy-link-info">了解启动器如何处理您的个人信息</span>
-				</button>
-			</div>
-
-			<!-- Actions -->
-			<div class="agreement-actions">
-				<ButtonStyled type="brand">
-					<button class="accept-btn" @click="acceptAgreement">我已阅读并同意</button>
-				</ButtonStyled>
-				<ButtonStyled type="transparent">
-					<button class="decline-btn" @click="declineAgreement">不同意</button>
-				</ButtonStyled>
-			</div>
-		</div>
 	</NewModal>
 </template>
 
@@ -193,55 +194,6 @@ function openPrivacyPolicy() {
 	font-size: 0.82rem;
 	line-height: 1.55;
 	color: var(--color-text);
-}
-
-.agreement-extra {
-	margin: 0.25rem 0 0;
-	font-size: 0.82rem;
-	line-height: 1.5;
-	color: var(--color-text);
-}
-
-/* ── Privacy link ───────────────────────────── */
-.privacy-link {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	width: 100%;
-	padding: 0.65rem 0.75rem;
-	background: var(--color-brand-bg);
-	border: 1px solid var(--color-brand);
-	border-radius: var(--radius-sm);
-	cursor: pointer;
-	text-align: left;
-	transition:
-		background-color 0.15s,
-		border-color 0.15s;
-	margin-top: 0.25rem;
-}
-
-.privacy-link:hover {
-	background: color-mix(in srgb, var(--color-brand-bg) 70%, var(--color-brand) 10%);
-}
-
-.privacy-link-icon {
-	width: 1rem;
-	height: 1rem;
-	color: var(--color-brand);
-	flex-shrink: 0;
-}
-
-.privacy-link span {
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--color-brand);
-}
-
-.privacy-link-info {
-	margin-left: auto;
-	font-size: 0.72rem;
-	font-weight: 400;
-	color: var(--color-text-secondary);
 }
 
 /* ── Actions ────────────────────────────────── */

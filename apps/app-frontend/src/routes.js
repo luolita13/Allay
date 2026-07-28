@@ -93,6 +93,14 @@ export default new createRouter({
 			},
 		},
 		{
+			path: '/collection/:id',
+			name: 'Collection',
+			component: Pages.Collection,
+			meta: {
+				breadcrumb: [{ name: 'Collection' }],
+			},
+		},
+		{
 			path: '/downloads',
 			name: 'Downloads',
 			component: Pages.Downloads,
@@ -280,10 +288,7 @@ export default new createRouter({
 					component: Instance.Screenshots,
 					meta: {
 						useRootContext: true,
-						breadcrumb: [
-							{ name: '?Instance', link: '/instance/{id}/' },
-							{ name: 'Screenshots' },
-						],
+						breadcrumb: [{ name: '?Instance', link: '/instance/{id}/' }, { name: 'Screenshots' }],
 					},
 				},
 				{
@@ -294,6 +299,15 @@ export default new createRouter({
 						renderMode: 'fixed',
 						useRootContext: true,
 						breadcrumb: [{ name: '?Instance', link: '/instance/{id}/' }, { name: 'Logs' }],
+					},
+				},
+				{
+					path: 'notes',
+					name: 'InstanceNotes',
+					component: Instance.Notes,
+					meta: {
+						useRootContext: true,
+						breadcrumb: [{ name: '?Instance', link: '/instance/{id}/' }, { name: 'Notes' }],
 					},
 				},
 			],

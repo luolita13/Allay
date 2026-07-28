@@ -180,7 +180,10 @@
 							<button disabled>{{ formatMessage(messages.starting) }}</button>
 						</ButtonStyled>
 						<ButtonStyled circular size="large">
-							<button v-tooltip="formatMessage(messages.instanceSettings)" @click="settingsModal?.show()">
+							<button
+								v-tooltip="formatMessage(messages.instanceSettings)"
+								@click="settingsModal?.show()"
+							>
 								<SettingsIcon />
 							</button>
 						</ButtonStyled>
@@ -198,21 +201,34 @@
 										action: () => exportModal?.show(),
 									},
 									{
-								id: 'create-shortcut',
-								action: () => createShortcut(),
-							},
-							{
-								id: 'diagnose-crash',
-								action: () => showCrashDiagnosis(instance.value?.id),
-							},
-						]">
-						<MoreVerticalIcon />
-						<template #share-instance> <UserPlusIcon /> {{ formatMessage(messages.shareInstance) }} </template>
-						<template #host-a-server> <ServerIcon /> {{ formatMessage(messages.createServer) }} </template>
-						<template #open-folder> <FolderOpenIcon /> {{ formatMessage(messages.openFolder) }} </template>
-						<template #export-mrpack> <PackageIcon /> {{ formatMessage(messages.exportModpack) }} </template>
-						<template #create-shortcut> <ExternalIcon /> {{ formatMessage(messages.createShortcut) }} </template>
-						<template #diagnose-crash> <TerminalSquareIcon /> {{ formatMessage(messages.diagnoseCrash) }} </template>
+										id: 'create-shortcut',
+										action: () => createShortcut(),
+									},
+									{
+										id: 'diagnose-crash',
+										action: () => showCrashDiagnosis(instance.value?.id),
+									},
+								]"
+							>
+								<MoreVerticalIcon />
+								<template #share-instance>
+									<UserPlusIcon /> {{ formatMessage(messages.shareInstance) }}
+								</template>
+								<template #host-a-server>
+									<ServerIcon /> {{ formatMessage(messages.createServer) }}
+								</template>
+								<template #open-folder>
+									<FolderOpenIcon /> {{ formatMessage(messages.openFolder) }}
+								</template>
+								<template #export-mrpack>
+									<PackageIcon /> {{ formatMessage(messages.exportModpack) }}
+								</template>
+								<template #create-shortcut>
+									<ExternalIcon /> {{ formatMessage(messages.createShortcut) }}
+								</template>
+								<template #diagnose-crash>
+									<TerminalSquareIcon /> {{ formatMessage(messages.diagnoseCrash) }}
+								</template>
 							</OverflowMenu>
 						</ButtonStyled>
 					</div>
@@ -253,9 +269,13 @@
 			<template #add_content> <PlusIcon /> {{ formatMessage(messages.addContent) }} </template>
 			<template #edit> <EditIcon /> {{ formatMessage(messages.edit) }} </template>
 			<template #copy_path> <ClipboardCopyIcon /> {{ formatMessage(messages.copyPath) }} </template>
-			<template #open_folder> <FolderOpenIcon /> {{ formatMessage(messages.openFolder) }} </template>
+			<template #open_folder>
+				<FolderOpenIcon /> {{ formatMessage(messages.openFolder) }}
+			</template>
 			<template #copy_link> <ClipboardCopyIcon /> {{ formatMessage(messages.copyLink) }} </template>
-			<template #open_link> <GlobeIcon /> {{ formatMessage(messages.openInModrinth) }} <ExternalIcon /> </template>
+			<template #open_link>
+				<GlobeIcon /> {{ formatMessage(messages.openInModrinth) }} <ExternalIcon />
+			</template>
 			<template #copy_names><EditIcon />{{ formatMessage(messages.copyNames) }}</template>
 			<template #copy_slugs><HashIcon />{{ formatMessage(messages.copySlugs) }}</template>
 			<template #copy_links><GlobeIcon />{{ formatMessage(messages.copyLinks) }}</template>
@@ -264,9 +284,13 @@
 			<template #enable><CheckCircleIcon />{{ formatMessage(messages.enableSelected) }}</template>
 			<template #hide_show><EyeIcon />{{ formatMessage(messages.showHideUnselected) }}</template>
 			<template #update_all
-				><UpdatedIcon />{{ formatMessage(selected.length > 0 ? messages.updateSelected : messages.updateAll) }}</template
+				><UpdatedIcon />{{
+					formatMessage(selected.length > 0 ? messages.updateSelected : messages.updateAll)
+				}}</template
 			>
-			<template #filter_update><UpdatedIcon />{{ formatMessage(messages.selectUpdatable) }}</template>
+			<template #filter_update
+				><UpdatedIcon />{{ formatMessage(messages.selectUpdatable) }}</template
+			>
 		</ContextMenu>
 	</div>
 </template>
@@ -287,6 +311,7 @@ import {
 	HomeIcon,
 	ImageIcon,
 	MoreVerticalIcon,
+	NotepadTextIcon,
 	PackageIcon,
 	PlayIcon,
 	PlusIcon,
@@ -353,6 +378,7 @@ const messages = defineMessages({
 	tabWorlds: { id: 'app.instance.tab.worlds', defaultMessage: 'Worlds' },
 	tabScreenshots: { id: 'app.instance.tab.screenshots', defaultMessage: 'Screenshots' },
 	tabLogs: { id: 'app.instance.tab.logs', defaultMessage: 'Logs' },
+	tabNotes: { id: 'app.instance.tab.notes', defaultMessage: 'Notes' },
 	neverPlayed: { id: 'app.instance.never-played', defaultMessage: 'Never played' },
 	linkedTo: { id: 'app.instance.linked-to', defaultMessage: 'Linked to' },
 	installing: { id: 'app.instance.installing', defaultMessage: 'Installing...' },
@@ -369,8 +395,8 @@ const messages = defineMessages({
 	openFolder: { id: 'app.instance.open-folder', defaultMessage: 'Open folder' },
 	exportModpack: { id: 'app.instance.export-modpack', defaultMessage: 'Export modpack' },
 	createShortcut: { id: 'app.instance.create-shortcut', defaultMessage: 'Create shortcut' },
-		diagnoseCrash: { id: 'app.instance.diagnose-crash', defaultMessage: 'Diagnose crash' },
-		addContent: { id: 'app.instance.add-content', defaultMessage: 'Add content' },
+	diagnoseCrash: { id: 'app.instance.diagnose-crash', defaultMessage: 'Diagnose crash' },
+	addContent: { id: 'app.instance.add-content', defaultMessage: 'Add content' },
 	edit: { id: 'app.instance.edit', defaultMessage: 'Edit' },
 	copyPath: { id: 'app.instance.copy-path', defaultMessage: 'Copy path' },
 	copyLink: { id: 'app.instance.copy-link', defaultMessage: 'Copy link' },
@@ -381,7 +407,10 @@ const messages = defineMessages({
 	toggleSelected: { id: 'app.instance.toggle-selected', defaultMessage: 'Toggle selected' },
 	disableSelected: { id: 'app.instance.disable-selected', defaultMessage: 'Disable selected' },
 	enableSelected: { id: 'app.instance.enable-selected', defaultMessage: 'Enable selected' },
-	showHideUnselected: { id: 'app.instance.show-hide-unselected', defaultMessage: 'Show/Hide unselected' },
+	showHideUnselected: {
+		id: 'app.instance.show-hide-unselected',
+		defaultMessage: 'Show/Hide unselected',
+	},
 	updateSelected: { id: 'app.instance.update-selected', defaultMessage: 'Update selected' },
 	updateAll: { id: 'app.instance.update-all', defaultMessage: 'Update all' },
 	selectUpdatable: { id: 'app.instance.select-updatable', defaultMessage: 'Select Updatable' },
@@ -585,6 +614,11 @@ const tabs = computed(() => [
 		label: formatMessage(messages.tabLogs),
 		href: `${basePath.value}/logs`,
 		icon: TerminalSquareIcon,
+	},
+	{
+		label: formatMessage(messages.tabNotes),
+		href: `${basePath.value}/notes`,
+		icon: NotepadTextIcon,
 	},
 ])
 

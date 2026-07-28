@@ -51,6 +51,8 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             instance_kill,
             instance_edit,
             instance_edit_icon,
+            instance_get_notes,
+            instance_set_notes,
             instance_export_mrpack,
             instance_export_zip,
             instance_get_pack_export_candidates,
@@ -775,5 +777,45 @@ pub async fn instance_edit_icon(
     icon_path: Option<&Path>,
 ) -> Result<()> {
     theseus::instance::edit_icon(instance_id, icon_path).await?;
+    Ok(())
+}
+
+/// Get instance notes from the notes.txt file in the instance directory
+#[tauri::command]
+pub async fn instance_get_notes(instance_id: &str) -> Result<Option<String>> {
+    let path = theseus::instance::get_full_path(instance_id).await?;
+    let notes_path = path.join("notes.txt");
+    if notes_path.exists() {
+        let content = tokio::fs::read_to_string(&notes_path).await?;
+        if content.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(content))
+        }
+    } else {
+        Ok(None)
+    }
+}
+
+/// Set instance notes by writing to notes.txt in the instance directory
+#[tauri::command]
+pub async fn instance_set_notes(instance_id: &str, notes: Option<&str>) -> Result<()> {
+    let path = theseus::instance::get_full_path(instance_id).await?;
+    let notes_path = path.join("notes.txt");
+    if let Some(content) = notes {
+        if content.is_empty() {
+            // Delete the file if notes are empty
+            if notes_path.exists() {
+                tokio::fs::remove_file(&notes_path).await?;
+            }
+        } else {
+            tokio::fs::write(&notes_path, content).await?;
+        }
+    } else {
+        // Delete the file if notes are null
+        if notes_path.exists() {
+            tokio::fs::remove_file(&notes_path).await?;
+        }
+    }
     Ok(())
 }

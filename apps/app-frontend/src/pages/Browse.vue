@@ -5,6 +5,9 @@ import {
 	ClipboardCopyIcon,
 	ExternalIcon,
 	GlobeIcon,
+	GridIcon,
+	ImageIcon,
+	ListIcon,
 	PlusIcon,
 	SpinnerIcon,
 } from '@modrinth/assets'
@@ -367,6 +370,16 @@ const {
 })
 
 const offline = ref(!navigator.onLine)
+
+// Display mode: list / grid / gallery
+const DISPLAY_MODES = ['list', 'grid', 'gallery'] as const
+type DisplayMode = (typeof DISPLAY_MODES)[number]
+const browseDisplayMode = ref<DisplayMode>('list')
+
+function cycleBrowseDisplayMode() {
+	const currentIdx = DISPLAY_MODES.indexOf(browseDisplayMode.value)
+	browseDisplayMode.value = DISPLAY_MODES[(currentIdx + 1) % DISPLAY_MODES.length]
+}
 window.addEventListener('offline', () => {
 	debugLog('went offline')
 	offline.value = true
@@ -449,9 +462,13 @@ const messages = defineMessages({
 	serversLabel: { id: 'app.browse.project-type.servers', defaultMessage: 'Servers' },
 	modpacksLabel: { id: 'app.browse.project-type.modpacks', defaultMessage: 'Modpacks' },
 	modsLabel: { id: 'app.browse.project-type.mods', defaultMessage: 'Mods' },
-	resourcePacksLabel: { id: 'app.browse.project-type.resource-packs', defaultMessage: 'Resource Packs' },
+	resourcePacksLabel: {
+		id: 'app.browse.project-type.resource-packs',
+		defaultMessage: 'Resource Packs',
+	},
 	dataPacksLabel: { id: 'app.browse.project-type.data-packs', defaultMessage: 'Data Packs' },
 	shadersLabel: { id: 'app.browse.project-type.shaders', defaultMessage: 'Shaders' },
+	pluginsLabel: { id: 'app.browse.project-type.plugins', defaultMessage: 'Plugins' },
 	worldsLabel: { id: 'app.browse.project-type.worlds', defaultMessage: 'Worlds' },
 	worldsModrinthEmpty: {
 		id: 'app.browse.worlds-modrinth-empty',
@@ -582,13 +599,30 @@ const selectableProjectTypes = computed(() => {
 	}
 
 	return [
-		{ label: formatMessage(messages.modpacksLabel), href: `/browse/modpack${suffix}`, shown: modpacks },
+		{
+			label: formatMessage(messages.modpacksLabel),
+			href: `/browse/modpack${suffix}`,
+			shown: modpacks,
+		},
 		{ label: formatMessage(messages.modsLabel), href: `/browse/mod${suffix}`, shown: mods },
+		{
+			label: formatMessage(messages.pluginsLabel),
+			href: `/browse/plugin${suffix}`,
+			shown: !instance.value,
+		},
 		{ label: formatMessage(messages.resourcePacksLabel), href: `/browse/resourcepack${suffix}` },
-		{ label: formatMessage(messages.dataPacksLabel), href: `/browse/datapack${suffix}`, shown: dataPacks },
+		{
+			label: formatMessage(messages.dataPacksLabel),
+			href: `/browse/datapack${suffix}`,
+			shown: dataPacks,
+		},
 		{ label: formatMessage(messages.shadersLabel), href: `/browse/shader${suffix}` },
 		{ label: formatMessage(messages.worldsLabel), href: `/browse/world${suffix}` },
-		{ label: formatMessage(messages.serversLabel), href: `/browse/server${suffix}`, shown: !instance.value },
+		{
+			label: formatMessage(messages.serversLabel),
+			href: `/browse/server${suffix}`,
+			shown: !instance.value,
+		},
 	]
 })
 
@@ -864,18 +898,13 @@ function getCardActions(
 						const files = await cfGetModFiles(Number(cfModId), gameVersion, cfLoader)
 
 						// Prefer release files (type 1), fall back to any
-						let bestFile = files.find(
-							(f: { release_type: number }) => f.release_type === 1,
-						)
+						let bestFile = files.find((f: { release_type: number }) => f.release_type === 1)
 						if (!bestFile) bestFile = files[0]
 						if (!bestFile) {
 							throw new Error('No compatible files available for this mod')
 						}
 
-						const downloadUrl = await cfGetFileDownloadUrl(
-							Number(cfModId),
-							bestFile.id,
-						)
+						const downloadUrl = await cfGetFileDownloadUrl(Number(cfModId), bestFile.id)
 						await cfInstallFile(
 							instance.value.id,
 							Number(cfModId),
@@ -883,15 +912,11 @@ function getCardActions(
 							bestFile.file_name,
 							downloadUrl,
 							currentProjectType,
-							(projectResult.title ||
-								projectResult.name ||
-								'') as string,
+							(projectResult.title || projectResult.name || '') as string,
 							(projectResult.icon_url as string) || null,
 						)
 
-						onSearchResultInstalled(
-							projectResult.project_id || String(cfModId),
-						)
+						onSearchResultInstalled(projectResult.project_id || String(cfModId))
 					} catch (err) {
 						handleError(err)
 					} finally {
@@ -996,9 +1021,7 @@ async function search(requestParams: string) {
 		let offset = 0
 		let limit = 20
 		try {
-			const searchStr = requestParams.startsWith('?')
-				? requestParams.slice(1)
-				: requestParams
+			const searchStr = requestParams.startsWith('?') ? requestParams.slice(1) : requestParams
 			const urlParams = new URLSearchParams(searchStr)
 			offset = parseInt(urlParams.get('offset') || '0', 10)
 			limit = parseInt(urlParams.get('limit') || '20', 10)
@@ -1233,7 +1256,8 @@ const WorldsModrinthEmpty = defineComponent({
 			h(
 				'div',
 				{
-					class: 'flex flex-col items-center justify-center gap-3 rounded-2xl border border-solid border-surface-5 bg-surface-1 p-8 text-center',
+					class:
+						'flex flex-col items-center justify-center gap-3 rounded-2xl border border-solid border-surface-5 bg-surface-1 p-8 text-center',
 				},
 				[
 					h(GlobeIcon, { class: '!h-10 !w-10 text-secondary' }),
@@ -1300,12 +1324,19 @@ provideBrowseManager({
 	onContextMenu: handleRightClick,
 	offline,
 	lockedFilterMessages,
+	displayMode: browseDisplayMode,
+	cycleDisplayMode: cycleBrowseDisplayMode,
 })
 </script>
 
 <template>
 	<div class="flex flex-col gap-3 p-6">
 		<BrowsePageLayout>
+			<template #display-mode-icon>
+				<GridIcon v-if="browseDisplayMode === 'grid'" />
+				<ImageIcon v-else-if="browseDisplayMode === 'gallery'" />
+				<ListIcon v-else />
+			</template>
 			<template #install-header-after>
 				<!-- Source switcher: Modrinth / CurseForge -->
 				<div

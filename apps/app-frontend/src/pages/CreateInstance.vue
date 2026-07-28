@@ -10,6 +10,7 @@ import {
 	ImageIcon,
 	PackageIcon,
 	SearchIcon,
+	SpinnerIcon,
 	UploadIcon,
 	XIcon,
 } from '@modrinth/assets'
@@ -19,6 +20,7 @@ import {
 	Card,
 	commonMessages,
 	defineMessages,
+	injectFilePicker,
 	injectNotificationManager,
 	StyledInput,
 	Toggle,
@@ -45,7 +47,11 @@ import {
 	get_importable_instances,
 	import_instance,
 } from '@/helpers/import'
-import { install_create_instance } from '@/helpers/install'
+import {
+	install_create_instance,
+	install_create_modpack_instance,
+	wait_for_install_job,
+} from '@/helpers/install'
 import { list } from '@/helpers/instance'
 import { get_game_versions, get_loader_versions } from '@/helpers/metadata'
 import type { InstanceLoader } from '@/helpers/types'
@@ -104,6 +110,26 @@ const messages = defineMessages({
 	importSetupDescription: {
 		id: 'app.create-instance.setup-type.import.description',
 		defaultMessage: 'Import an instance from Prism, CurseForge, or similar.',
+	},
+	importFromFileTitle: {
+		id: 'app.create-instance.import-from-file.title',
+		defaultMessage: 'Import from file',
+	},
+	importFromFileDescription: {
+		id: 'app.create-instance.import-from-file.description',
+		defaultMessage: 'Import a .mrpack modpack file to create a new instance.',
+	},
+	importFromFileButton: {
+		id: 'app.create-instance.import-from-file.button',
+		defaultMessage: 'Select .mrpack file',
+	},
+	importFromFileSuccess: {
+		id: 'app.create-instance.import-from-file.success',
+		defaultMessage: 'Modpack imported successfully!',
+	},
+	importFromFileError: {
+		id: 'app.create-instance.import-from-file.error',
+		defaultMessage: 'Failed to import modpack file',
 	},
 	stepVersion: {
 		id: 'app.create-instance.step.version',
@@ -347,6 +373,8 @@ const importExpandedLaunchers = ref<Set<string>>(new Set())
 const showAddLauncherPath = ref(false)
 const newLauncherPath = ref('')
 const importing = ref(false)
+const importingFromFile = ref(false)
+const filePicker = injectFilePicker()
 
 async function detectLaunchers() {
 	if (importLaunchers.value.length > 0 && !importLoading.value) return
@@ -513,6 +541,30 @@ async function doImport() {
 	}
 }
 // ---- End Import Logic ----
+
+// ---- Import From File Logic ----
+async function importFromFile() {
+	try {
+		const picked = await filePicker.pickModpackFile({ readFile: false })
+		if (!picked?.path) return
+
+		importingFromFile.value = true
+		try {
+			const job = await install_create_modpack_instance({ type: 'fromFile', path: picked.path })
+			await wait_for_install_job(job.job_id)
+			addNotification({ type: 'success', title: formatMessage(messages.importFromFileSuccess) })
+			router.push('/library')
+		} catch (err) {
+			handleError(err as Error)
+			addNotification({ type: 'error', title: formatMessage(messages.importFromFileError) })
+		} finally {
+			importingFromFile.value = false
+		}
+	} catch {
+		// User cancelled file picker
+	}
+}
+// ---- End Import From File Logic ----
 
 // Data
 interface GameVersion {
@@ -1041,6 +1093,13 @@ function versionGroupClass(id: string): string {
 								{{ formatMessage(messages.importSetupDescription) }}
 							</p>
 						</button>
+						<button class="setup-type-button" @click="importFromFile">
+							<UploadIcon class="setup-type-icon" />
+							<h3 class="setup-type-title">{{ formatMessage(messages.importFromFileTitle) }}</h3>
+							<p class="setup-type-desc">
+								{{ formatMessage(messages.importFromFileDescription) }}
+							</p>
+						</button>
 					</div>
 				</div>
 			</Card>
@@ -1048,6 +1107,27 @@ function versionGroupClass(id: string): string {
 
 		<!-- Step 4: Import instances -->
 		<template v-if="step === STEP_IMPORT">
+			<!-- Import from .mrpack file -->
+			<Card class="p-4">
+				<div class="flex items-center gap-4">
+					<div class="flex-1 min-w-0">
+						<h3 class="m-0 text-base font-semibold text-contrast">
+							{{ formatMessage(messages.importFromFileTitle) }}
+						</h3>
+						<p class="m-0 text-sm text-secondary">
+							{{ formatMessage(messages.importFromFileDescription) }}
+						</p>
+					</div>
+					<ButtonStyled color="brand" :disabled="importingFromFile">
+						<button @click="importFromFile">
+							<SpinnerIcon v-if="importingFromFile" class="animate-spin" />
+							<UploadIcon v-else class="size-4" />
+							{{ formatMessage(messages.importFromFileButton) }}
+						</button>
+					</ButtonStyled>
+				</div>
+			</Card>
+
 			<!-- Loading state -->
 			<Card v-if="importLoading" class="p-8 text-center">
 				<div class="text-secondary">{{ formatMessage(messages.detectingLaunchers) }}</div>
@@ -1674,7 +1754,7 @@ function versionGroupClass(id: string): string {
 
 .setup-type-grid {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 1rem;
 }
 

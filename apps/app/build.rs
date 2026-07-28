@@ -234,6 +234,8 @@ fn main() {
                         "instance_export_mrpack",
                         "instance_export_zip",
                         "instance_get_pack_export_candidates",
+                        "instance_get_notes",
+                        "instance_set_notes",
                     ])
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,

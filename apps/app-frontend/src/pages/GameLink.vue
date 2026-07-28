@@ -805,8 +805,8 @@ onUnmounted(() => {
            Allows them to revoke authorization, which disables the feature entirely. -->
 			<div v-if="agreementAccepted" class="agreement-status">
 				<ShieldCheckIcon class="agreement-status-icon" />
-				<span class="agreement-status-text">联机协议：已同意</span>
-				<button class="agreement-revoke-btn" @click="requestRevokeAgreement">停用联机功能</button>
+				<span class="agreement-status-text">Game Link agreement: accepted</span>
+				<button class="agreement-revoke-btn" @click="requestRevokeAgreement">Disable Game Link</button>
 			</div>
 		</div>
 
@@ -1223,21 +1223,21 @@ onUnmounted(() => {
 			:closable="true"
 			:close-on-click-outside="true"
 			:close-on-esc="true"
-			header="撤销授权确认"
+			header="Revoke Agreement"
 			max-width="440px"
 		>
 			<div class="revoke-confirm-body">
 				<CircleAlertIcon class="revoke-confirm-icon" />
-				<p class="revoke-confirm-text">你确定要撤销联机协议授权吗？</p>
-				<p class="revoke-confirm-hint">
-					撤销后，联机功能将被停用，侧边栏入口也会隐藏。如需再次使用，需要重新同意协议。
-				</p>
+				<p class="revoke-confirm-text">Are you sure you want to revoke the Game Link agreement?</p>
+					<p class="revoke-confirm-hint">
+						Revoking will disable the Game Link feature and hide the sidebar entry. You will need to accept the agreement again to re-enable it.
+					</p>
 				<div class="revoke-confirm-actions">
 					<ButtonStyled type="transparent">
-						<button @click="revokeConfirmModal?.hide()">取消</button>
+						<button @click="revokeConfirmModal?.hide()">Cancel</button>
 					</ButtonStyled>
 					<ButtonStyled color="red">
-						<button @click="confirmRevokeAgreement">确认撤销</button>
+						<button @click="confirmRevokeAgreement">Revoke</button>
 					</ButtonStyled>
 				</div>
 			</div>
