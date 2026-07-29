@@ -99,7 +99,7 @@ jobs:
             const fs = require('fs');
             const p = 'apps/app-frontend/package.json';
             const j = JSON.parse(fs.readFileSync(p, 'utf8'));
-            j.version = process.env.VERSION;
+            j.version = '$VERSION';
             fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');
           "
           sed -i "s/^version = \".*\"/version = \"$VERSION\"/" apps/app/Cargo.toml
