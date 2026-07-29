@@ -51,7 +51,7 @@ function openGitHub() {
 				Allay
 			</h2>
 			<p class="m-0 mb-4 text-sm font-semibold tracking-wide text-brand uppercase">
-				Community Custom Edition
+				Custom Build
 			</p>
 
 			<!-- Intro -->

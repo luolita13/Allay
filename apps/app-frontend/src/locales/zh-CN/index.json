@@ -2886,7 +2886,7 @@
     "message": "报告问题"
   },
   "app.about.legal-notice": {
-    "message": "这是 Allay 的社区版本。Modrinth 及其商标归 Rinth, Inc. 所有。"
+    "message": "Allay 是一个定制版 Minecraft 启动器。Modrinth 及其商标归 Rinth, Inc. 所有。"
   },
   "app.about.easter-egg.override-authorized": {
     "message": "系统覆写已授权"

@@ -13,10 +13,6 @@ const messages = defineMessages({
 		id: 'app.about.app-name',
 		defaultMessage: 'Allay',
 	},
-	edition: {
-		id: 'app.about.edition',
-		defaultMessage: 'Community Edition',
-	},
 	craftedBy: {
 		id: 'app.about.crafted-by',
 		defaultMessage: 'Crafted By',
@@ -48,7 +44,7 @@ const messages = defineMessages({
 	legalNotice: {
 		id: 'app.about.legal-notice',
 		defaultMessage:
-			'Allay is an unofficial community edition based on Modrinth open source code. Modrinth and its trademarks are owned by Rinth, Inc.',
+			'Allay is a custom Minecraft launcher. Modrinth and its trademarks are owned by Rinth, Inc.',
 	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',
@@ -125,7 +121,6 @@ function triggerEasterEgg() {
 				<ModrinthIcon class="logo-icon" title="Psst... try clicking me" @click="onLogoClick" />
 			</div>
 			<h1 class="app-name">{{ formatMessage(messages.appName) }}</h1>
-			<div class="edition-badge">{{ formatMessage(messages.edition) }}</div>
 		</div>
 
 		<!-- Override message -->
@@ -297,18 +292,6 @@ function triggerEasterEgg() {
 	font-weight: 800;
 	letter-spacing: -0.03em;
 	color: var(--color-contrast);
-}
-
-.edition-badge {
-	padding: 0.35rem 0.85rem;
-	border-radius: 999px;
-	font-size: 0.7rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--color-brand);
-	background: color-mix(in srgb, var(--color-brand) 12%, transparent);
-	border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
 /* === Metadata === */
