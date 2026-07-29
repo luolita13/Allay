@@ -1,39 +1,41 @@
-# ![Modrinth Monorepo Cover](/.github/assets/monorepo_cover.png)
+# Allay
 
-![Issues](https://img.shields.io/github/issues-raw/Modrinth/code?color=c78aff&label=issues&style=for-the-badge)
-![Pull Requests](https://img.shields.io/github/issues-pr-raw/Modrinth/code?color=c78aff&label=PRs&style=for-the-badge)
-![Contributors](https://img.shields.io/github/contributors/Modrinth/code?color=c78aff&label=contributors&style=for-the-badge)
-![Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/modrinth/code/badge?style=flat&logoColor=white&color=c78aff&style=for-the-badge)
-![Commit Activity](https://img.shields.io/github/commit-activity/m/Modrinth/code?color=c78aff&label=commits&style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/Modrinth/code?color=c78aff&label=last%20commit&style=for-the-badge)
+基于 [Modrinth App](https://github.com/modrinth/code) 的定制版 Minecraft 启动器，增加了多项增强功能。
 
-## Modrinth Monorepo
+![Issues](https://img.shields.io/github/issues-raw/luolita13/Allay?color=c78aff&style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/luolita13/Allay?color=c78aff&style=for-the-badge)
 
-Welcome to the Modrinth Monorepo, the primary codebase for the Modrinth web interface and app. It contains ![Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/modrinth/olympus/badge?logoColor=white&color=black&label=) lines of code and has ![Contributors](https://img.shields.io/github/contributors/Modrinth/code?color=black&label=) contributors!
+## 增强功能
 
-If you're not a developer and you've stumbled upon this repository, you can access the web interface on the [Modrinth website](https://modrinth.com) and download the latest release of the app [here](https://modrinth.com/app).
+- **CurseForge 集成** — 内置搜索、浏览和安装 CurseForge 模组包，无需额外配置 API Key
+- **国内镜像源** — 游戏文件下载支持 BMCLAPI 镜像，社区资源下载支持 MCIMirror CDN，版本列表支持 BMCLAPI
+- **多线程分块下载** — 大文件自动分块并行下载，大幅提升下载速度
+- **联机功能 (Game Link)** — 基于 EasyTier 的局域网穿透联机，支持房间聊天
+- **崩溃诊断** — 游戏崩溃时自动分析日志，匹配 40+ 条诊断规则并给出修复建议
+- **主题包系统** — zip 格式主题包，支持自定义背景图、accent color、CSS 变量、字体
+- **Java 探测增强** — 扩展扫描路径 + SHA-1 缓存 + 注册表扫描，自动识别系统已安装 Java
+- **游戏窗口标题** — 自定义 Minecraft 窗口标题
+- **内容发现增强** — 新增 Plugin 分类浏览、Collections 合集页面、Gallery 浏览模式
+- **实例导出** — 支持 Modrinth (.mrpack) 和 ZIP (.zip) 两种格式
+- **实验性功能面板** — 统一管理所有实验性功能开关（联机、高性能 GPU、世界存档显示等）
 
-## Development
+## 开发
 
-This repository contains two primary packages. For detailed development information, please refer to their respective guides:
+本项目是 Modrinth Monorepo 的 fork，基于 Tauri 2 + Vue 3 (app-frontend) + Rust (theseus/app-lib)。
 
-- [Website frontend](https://docs.modrinth.com/contributing/knossos/)
-- [Desktop app](https://docs.modrinth.com/contributing/theseus/)
+```bash
+# 设置离线 SQLx 模式
+$env:SQLX_OFFLINE='true'
 
-## Contributing
+# 开发模式
+pnpm app:dev
 
-We welcome contributions! Before submitting any contributions, please read our [contributing guidelines](https://docs.modrinth.com/contributing/getting-started/).
+# 构建
+pnpm app:build
+```
 
-If you plan to fork this repository for your own purposes, please review our [copying guidelines](COPYING.md).
+详细开发文档请参考 [上游仓库](https://github.com/modrinth/code) 和 [Modrinth 文档](https://docs.modrinth.com/contributing/theseus/)。
 
-## Security
+## 许可证
 
-If you discover a security vulnerability within our codebase, please follow our [responsible disclosure guidelines](https://modrinth.com/legal/security).
-
-## Support
-
-If you need help with the Modrinth web interface or app, please visit our [support page](https://support.modrinth.com). For general inquiries, you can also join our [Discord server](https://discord.modrinth.com).
-
-## License
-
-All packages in this repository are licensed under their respective licenses. Refer to the LICENSE file in each package for more information.
+本仓库中各包遵循各自的许可证分发。详见各包的 LICENSE 文件。原始代码版权归 Modrinth 团队所有。
