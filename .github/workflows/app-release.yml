@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Protoc
-        uses: ariga/setup-protoc@v1
+        uses: arduino/setup-protoc@v3
 
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
