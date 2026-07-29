@@ -21,6 +21,7 @@
 		"windows": {
 			"nsis": {
 				"installMode": "currentUser",
+				"license": "./nsis/license.txt",
 				"installerHooks": "./nsis/hooks.nsi"
 			}
 		},
