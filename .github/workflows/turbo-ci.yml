@@ -48,7 +48,7 @@ jobs:
           cache: false
 
       - name: Setup Turbo cache
-        uses: rharkor/caching-for-turbo@v2
+        uses: rharkor/caching-for-turbo@56219402aacc0d06b650d898c222996dbc1191ec # v2.3.14
 
       - name: Install dependencies
         run: pnpm install
