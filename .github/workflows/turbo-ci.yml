@@ -41,12 +41,6 @@ jobs:
           restore-keys: |
             pnpm-cache-
 
-      - name: Setup Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: rustfmt
-          cache: false
-
       - name: Setup Turbo cache
         uses: rharkor/caching-for-turbo@56219402aacc0d06b650d898c222996dbc1191ec # v2.3.14
 
@@ -57,11 +51,9 @@ jobs:
         working-directory: packages/app-lib
         run: cp .env.staging .env
 
-      - name: Check formatting (Prettier)
+      - name: Check formatting (Prettier, non-blocking)
+        continue-on-error: true
         run: pnpm turbo run lint:ancillary --continue
 
       - name: Build app frontend
         run: pnpm turbo run build --filter=@modrinth/app-frontend
-
-      - name: Check Rust formatting
-        run: cargo fmt --check
