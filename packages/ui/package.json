@@ -41,7 +41,7 @@
 		"storybook": "^10.1.10",
 		"stripe": "^18.1.1",
 		"tailwindcss": "^3.4.4",
-		"typescript": "^5.4.5",
+		"typescript": "^7.0.2",
 		"vite": "^5.4.6",
 		"vite-svg-loader": "^5.1.0",
 		"vue": "^3.5.13",
