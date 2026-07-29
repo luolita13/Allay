@@ -56,7 +56,7 @@ jobs:
         run: corepack enable
 
       - name: Cache Cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -66,7 +66,7 @@ jobs:
             windows-cargo-registry-
 
       - name: Cache Cargo target
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: code/target
           key: windows-cargo-target-${{ hashFiles('code/**/Cargo.lock') }}
