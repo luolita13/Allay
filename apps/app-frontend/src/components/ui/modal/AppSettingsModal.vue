@@ -108,7 +108,7 @@ const messages = defineMessages({
 						<ModrinthIcon class="w-6 h-6" />
 					</button>
 					<div class="max-w-[220px]">
-					<p class="m-0">Modrinth App {{ version }} (Custom Edition)</p>
+					<p class="m-0">Allay {{ version }} (Custom Edition)</p>
 					<p class="m-0">
 						<span v-if="osPlatform === 'macos'">macOS</span>
 						<span v-else class="capitalize">{{ osPlatform }}</span>

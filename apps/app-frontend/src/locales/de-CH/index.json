@@ -78,7 +78,7 @@
     "message": "Erweitertes Rendering"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Wähle dein bevorzugtes Farbschema für die Modrinth App."
+    "message": "Wähle dein bevorzugtes Farbschema für die Allay."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Farbschema"
@@ -531,7 +531,7 @@
     "message": "Anmelden"
   },
   "app.skins.sign-in.description": {
-    "message": "Bitte melde dich in deinem Minecraft-Konto an, um die Skin-Verwaltungsfunktionen der Modrinth App zu nutzen."
+    "message": "Bitte melde dich in deinem Minecraft-Konto an, um die Skin-Verwaltungsfunktionen der Allay zu nutzen."
   },
   "app.skins.sign-in.rinthbot-alt": {
     "message": "Begeisterter Modrinth-Bot"
@@ -543,13 +543,13 @@
     "message": "Skin-Auswahl"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} wurde heruntergeladen. Lade die App neu um jetzt zu aktualisieren, oder automatisch nach dem schliessen der Modrinth App."
+    "message": "Allay v{version} wurde heruntergeladen. Lade die App neu um jetzt zu aktualisieren, oder automatisch nach dem schliessen der Allay."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} ist verfügbar. Benutze deinen Paketmanager zum aktualisieren, um die neusten Features und Bugfixes zu erhalten!"
+    "message": "Allay v{version} ist verfügbar. Benutze deinen Paketmanager zum aktualisieren, um die neusten Features und Bugfixes zu erhalten!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} ist jetzt verfügbar! Da du in einem begrenzten Netzwerk bist, haben wir es nicht automatisch heruntergeladen."
+    "message": "Allay v{version} ist jetzt verfügbar! Da du in einem begrenzten Netzwerk bist, haben wir es nicht automatisch heruntergeladen."
   },
   "app.update-popup.changelog": {
     "message": "Änderungen"

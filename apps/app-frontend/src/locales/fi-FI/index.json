@@ -78,7 +78,7 @@
     "message": "Edistynyt renderointi"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Valitse haluamasi väriteema Modrinth Appille."
+    "message": "Valitse haluamasi väriteema Allayille."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Väriteema"
@@ -543,13 +543,13 @@
     "message": "Skinivalinta"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App versio {version} on ladattu. Voit käynnistää sovelluksen uudelleen päivittääksesi heti tai antaa päivityksen asentua automaattisesti, kun suljet Modrinth Appin."
+    "message": "Allay versio {version} on ladattu. Voit käynnistää sovelluksen uudelleen päivittääksesi heti tai antaa päivityksen asentua automaattisesti, kun suljet Allayin."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App versio {version} on saatavilla. Käytä paketinhallintasi ja päivitä käyttääksesi uusimpia ominaisuuksia ja korjauksia!"
+    "message": "Allay versio {version} on saatavilla. Käytä paketinhallintasi ja päivitä käyttääksesi uusimpia ominaisuuksia ja korjauksia!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App versio {version} on nyt saatavilla! Koska käytät käytön mukaan laskutettavaa verkkoa, emme ladannut sitä automaattisesti."
+    "message": "Allay versio {version} on nyt saatavilla! Koska käytät käytön mukaan laskutettavaa verkkoa, emme ladannut sitä automaattisesti."
   },
   "app.update-popup.changelog": {
     "message": "Muutosloki"

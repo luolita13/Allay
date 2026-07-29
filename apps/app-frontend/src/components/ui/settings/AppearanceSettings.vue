@@ -72,7 +72,7 @@ const messages = defineMessages({
 	},
 	colorThemeDescription: {
 		id: 'app.appearance-settings.color-theme.description',
-		defaultMessage: 'Choose your preferred Modrinth App color theme.',
+		defaultMessage: 'Choose your preferred Allay color theme.',
 	},
 	accentColorTitle: {
 		id: 'app.appearance-settings.accent-color.title',

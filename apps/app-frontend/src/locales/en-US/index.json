@@ -1,6 +1,6 @@
 {
   "app.about.app-name": {
-    "message": "Modrinth App"
+    "message": "Allay"
   },
   "app.about.crafted-by": {
     "message": "Crafted By"
@@ -18,7 +18,7 @@
     "message": "Community Edition"
   },
   "app.about.legal-notice": {
-    "message": "This is a community edition of the Modrinth App. Modrinth and its trademarks are owned by Rinth, Inc."
+    "message": "This is a community edition of the Allay. Modrinth and its trademarks are owned by Rinth, Inc."
   },
   "app.about.license": {
     "message": "License"
@@ -285,7 +285,7 @@
     "message": "Advanced Rendering"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Choose your preferred Modrinth App color theme."
+    "message": "Choose your preferred Allay color theme."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Color Theme"
@@ -1062,7 +1062,7 @@
     "message": "Change directory permissions"
   },
   "app.error-modal.change-directory-permissions.description": {
-    "message": "It looks like the Modrinth App is unable to write to the directory you selected. Please adjust the permissions of the directory and try again or cancel the directory change."
+    "message": "It looks like the Allay is unable to write to the directory you selected. Please adjust the permissions of the directory and try again or cancel the directory change."
   },
   "app.error-modal.close": {
     "message": "Close"
@@ -1083,19 +1083,19 @@
     "message": "Get support"
   },
   "app.error-modal.hosts-file.description": {
-    "message": "The Modrinth App tried to connect to Microsoft / Xbox / Minecraft services, but the remote server rejected the connection. This may indicate that these services are blocked by the hosts file. Please visit"
+    "message": "The Allay tried to connect to Microsoft / Xbox / Minecraft services, but the remote server rejected the connection. This may indicate that these services are blocked by the hosts file. Please visit"
   },
   "app.error-modal.hosts-file.description-suffix": {
     "message": "for steps on how to fix the issue."
   },
   "app.error-modal.migrate-failed.description": {
-    "message": "The Modrinth App is unable to migrate to the new directory you selected. Please contact support for help or cancel the directory change."
+    "message": "The Allay is unable to migrate to the new directory you selected. Please contact support for help or cancel the directory change."
   },
   "app.error-modal.network-issues": {
     "message": "Network issues"
   },
   "app.error-modal.network-issues.description": {
-    "message": "It looks like there were issues with the Modrinth App connecting to Microsoft's servers. This is often the result of a poor connection, so we recommend trying again to see if it works. If issues continue to persist, follow the steps in"
+    "message": "It looks like there were issues with the Allay connecting to Microsoft's servers. This is often the result of a poor connection, so we recommend trying again to see if it works. If issues continue to persist, follow the steps in"
   },
   "app.error-modal.network-issues.description-suffix": {
     "message": "to troubleshoot."
@@ -1104,7 +1104,7 @@
     "message": "No error message."
   },
   "app.error-modal.no-loader.description": {
-    "message": "The Modrinth App failed to find the loader version for this instance."
+    "message": "The Allay failed to find the loader version for this instance."
   },
   "app.error-modal.no-loader.fix": {
     "message": "To resolve this, you need to repair the instance. Click the button below to do so."
@@ -1131,7 +1131,7 @@
     "message": "To play this instance, you must sign in to a Minecraft account below. If you don't have a Minecraft account, you can purchase the game on the Minecraft website."
   },
   "app.error-modal.state-init.description": {
-    "message": "Modrinth App failed to load correctly. This may be because of a corrupted file, or because the app is missing crucial files."
+    "message": "Allay failed to load correctly. This may be because of a corrupted file, or because the app is missing crucial files."
   },
   "app.error-modal.state-init.fix": {
     "message": "You may be able to fix it through one of the following ways:"
@@ -1161,7 +1161,7 @@
     "message": "No loader selected"
   },
   "app.error-modal.title.state-init": {
-    "message": "Error initializing Modrinth App"
+    "message": "Error initializing Allay"
   },
   "app.error-modal.try-another-account": {
     "message": "Try another Microsoft account"
@@ -1689,7 +1689,7 @@
     "message": "Welcome back!"
   },
   "app.home.welcome-to": {
-    "message": "Welcome to Modrinth App!"
+    "message": "Welcome to Allay!"
   },
   "app.install.phase.downloading_content": {
     "message": "Downloading content"
@@ -2499,7 +2499,7 @@
     "message": "Swap version"
   },
   "app.resource-management.app-cache.description": {
-    "message": "Modrinth App caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns."
+    "message": "Allay caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns."
   },
   "app.resource-management.app-cache.title": {
     "message": "App Cache"
@@ -2814,7 +2814,7 @@
     "message": "Updating app directory..."
   },
   "app.survey.description": {
-    "message": "Would you mind answering a few questions about your experience with Modrinth App?"
+    "message": "Would you mind answering a few questions about your experience with Allay?"
   },
   "app.survey.feedback": {
     "message": "This feedback will go directly to the Modrinth team and help guide future updates!"
@@ -2955,13 +2955,13 @@
     "message": "The translation service is temporarily rate-limited. Please try again later."
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} has finished downloading. Reload to update now, or automatically when you close Modrinth App."
+    "message": "Allay v{version} has finished downloading. Reload to update now, or automatically when you close Allay."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} is available. Use your package manager to update for the latest features and fixes!"
+    "message": "Allay v{version} is available. Use your package manager to update for the latest features and fixes!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} is available now! Since you're on a metered network, we didn't automatically download it."
+    "message": "Allay v{version} is available now! Since you're on a metered network, we didn't automatically download it."
   },
   "app.update-popup.changelog": {
     "message": "Changelog"

@@ -78,7 +78,7 @@
     "message": "Erweitertes Rendering"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Wähle dein bevorzugtes Farbschema für die Modrinth App."
+    "message": "Wähle dein bevorzugtes Farbschema für die Allay."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Farbschema"
@@ -543,13 +543,13 @@
     "message": "Skin-Auswahl"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} wurde heruntergeladen. Neu laden, um jetzt zu aktualisieren, oder automatisch aktualisieren, wenn du die Modrinth App schließt."
+    "message": "Allay v{version} wurde heruntergeladen. Neu laden, um jetzt zu aktualisieren, oder automatisch aktualisieren, wenn du die Allay schließt."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} ist verfügbar. Verwende deinen Paketmanager, um die neuesten Funktionen und Fehlerbehebungen zu installieren!"
+    "message": "Allay v{version} ist verfügbar. Verwende deinen Paketmanager, um die neuesten Funktionen und Fehlerbehebungen zu installieren!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} ist jetzt verfügbar! Da du ein getaktetes Netzwerk nutzt, haben wir den Download nicht automatisch gestartet."
+    "message": "Allay v{version} ist jetzt verfügbar! Da du ein getaktetes Netzwerk nutzt, haben wir den Download nicht automatisch gestartet."
   },
   "app.update-popup.changelog": {
     "message": "Änderungen"

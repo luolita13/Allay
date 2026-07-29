@@ -45,7 +45,7 @@ const messages = defineMessages({
 	},
 	exportButton: { id: 'app.export-modal.export-button', defaultMessage: 'Export' },
 	formatLabel: { id: 'app.export-modal.format-label', defaultMessage: 'Format' },
-	formatMrpack: { id: 'app.export-modal.format.mrpack', defaultMessage: 'Modrinth (.mrpack)' },
+	formatMrpack: { id: 'app.export-modal.format.mrpack', defaultMessage: 'Modpack (.mrpack)' },
 	formatZip: { id: 'app.export-modal.format.zip', defaultMessage: 'ZIP archive (.zip)' },
 })
 

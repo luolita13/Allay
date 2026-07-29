@@ -78,7 +78,7 @@
     "message": "Renderizado avanzado"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Selecciona el tema de color que prefieras para la Modrinth App."
+    "message": "Selecciona el tema de color que prefieras para la Allay."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Color de la interfaz"
@@ -531,7 +531,7 @@
     "message": "Iniciar sesión"
   },
   "app.skins.sign-in.description": {
-    "message": "Por favor, inicia sesión en tu cuenta de Minecraft para poder utilizar las funciones de gestión de skins de la Modrinth App."
+    "message": "Por favor, inicia sesión en tu cuenta de Minecraft para poder utilizar las funciones de gestión de skins de la Allay."
   },
   "app.skins.sign-in.rinthbot-alt": {
     "message": "Modrinth Bot emocionado"
@@ -543,13 +543,13 @@
     "message": "Selector de skin"
   },
   "app.update-popup.body.download-complete": {
-    "message": "La descarga de la Modrinth App v{version} ha finalizado. Actualiza ahora o automáticamente al cerrar la Modrinth App."
+    "message": "La descarga de la Allay v{version} ha finalizado. Actualiza ahora o automáticamente al cerrar la Allay."
   },
   "app.update-popup.body.linux": {
-    "message": "La Modrinth App v{version} está disponible. ¡Usa tu gestor de paquetes para actualizarla y tener las últimas funciones y corrección de errores!"
+    "message": "La Allay v{version} está disponible. ¡Usa tu gestor de paquetes para actualizarla y tener las últimas funciones y corrección de errores!"
   },
   "app.update-popup.body.metered": {
-    "message": "¡La Modrinth App v{version} ya está disponible! Al estar usando una red de datos límitada, no la hemos descargado automáticamente."
+    "message": "¡La Allay v{version} ya está disponible! Al estar usando una red de datos límitada, no la hemos descargado automáticamente."
   },
   "app.update-popup.changelog": {
     "message": "Registro de cambios"

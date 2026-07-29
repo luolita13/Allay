@@ -99,7 +99,7 @@
     "message": "高度なレンダリング"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Modrinth Appでのお好みのテーマを選択してください。"
+    "message": "Allayでのお好みのテーマを選択してください。"
   },
   "app.appearance-settings.color-theme.title": {
     "message": "テーマ"
@@ -438,7 +438,7 @@
     "message": "ディレクトリ権限を変更"
   },
   "app.error-modal.change-directory-permissions.description": {
-    "message": "Modrinth App が選択したディレクトリに書き込めません。ディレクトリ権限を調整して再試行するか、ディレクトリ変更をキャンセルしてください。"
+    "message": "Allay が選択したディレクトリに書き込めません。ディレクトリ権限を調整して再試行するか、ディレクトリ変更をキャンセルしてください。"
   },
   "app.error-modal.close": {
     "message": "閉じる"
@@ -459,19 +459,19 @@
     "message": "サポートを受ける"
   },
   "app.error-modal.hosts-file.description": {
-    "message": "Modrinth App が Microsoft / Xbox / Minecraft サービスに接続しようとしましたが、リモートサーバーが接続を拒否しました。これらのサービスが hosts ファイルでブロックされている可能性があります。"
+    "message": "Allay が Microsoft / Xbox / Minecraft サービスに接続しようとしましたが、リモートサーバーが接続を拒否しました。これらのサービスが hosts ファイルでブロックされている可能性があります。"
   },
   "app.error-modal.hosts-file.description-suffix": {
     "message": "で修正方法を確認してください。"
   },
   "app.error-modal.migrate-failed.description": {
-    "message": "Modrinth App が選択した新しいディレクトリに移行できません。サポートチームに連絡するか、ディレクトリ変更をキャンセルしてください。"
+    "message": "Allay が選択した新しいディレクトリに移行できません。サポートチームに連絡するか、ディレクトリ変更をキャンセルしてください。"
   },
   "app.error-modal.network-issues": {
     "message": "ネットワークの問題"
   },
   "app.error-modal.network-issues.description": {
-    "message": "Modrinth App が Microsoft サーバーへの接続に問題が発生しているようです。通常はネットワーク接続不良が原因です。再試行をお勧めします。問題が続く場合は、"
+    "message": "Allay が Microsoft サーバーへの接続に問題が発生しているようです。通常はネットワーク接続不良が原因です。再試行をお勧めします。問題が続く場合は、"
   },
   "app.error-modal.network-issues.description-suffix": {
     "message": "の手順に従ってトラブルシューティングしてください。"
@@ -480,7 +480,7 @@
     "message": "エラーメッセージはありません。"
   },
   "app.error-modal.no-loader.description": {
-    "message": "Modrinth App がこのインスタンスのローダーバージョンを見つけられません。"
+    "message": "Allay がこのインスタンスのローダーバージョンを見つけられません。"
   },
   "app.error-modal.no-loader.fix": {
     "message": "この問題を解決するには、インスタンスを修復する必要があります。下のボタンをクリックして修復してください。"
@@ -507,7 +507,7 @@
     "message": "このインスタンスをプレイするには、Minecraft アカウントにログインする必要があります。Minecraft アカウントをお持ちでない場合は、Minecraft 公式サイトでゲームを購入できます。"
   },
   "app.error-modal.state-init.description": {
-    "message": "Modrinth App の読み込みに失敗しました。ファイルの破損または重要なファイルの欠落が原因の可能性があります。"
+    "message": "Allay の読み込みに失敗しました。ファイルの破損または重要なファイルの欠落が原因の可能性があります。"
   },
   "app.error-modal.state-init.fix": {
     "message": "以下の方法で修復を試みることができます："
@@ -537,7 +537,7 @@
     "message": "ローダーが選択されていません"
   },
   "app.error-modal.title.state-init": {
-    "message": "Modrinth App 初期化エラー"
+    "message": "Allay 初期化エラー"
   },
   "app.error-modal.try-another-account": {
     "message": "別の Microsoft アカウントを試す"
@@ -744,7 +744,7 @@
     "message": "おかえりなさい！"
   },
   "app.home.welcome-to": {
-    "message": "Modrinth App へようこそ！"
+    "message": "Allay へようこそ！"
   },
   "app.install.phase.downloading_content": {
     "message": "コンテンツをダウンロード中"
@@ -1995,7 +1995,7 @@
     "message": "アプリディレクトリを更新中…"
   },
   "app.survey.description": {
-    "message": "Modrinth App の使用体験についていくつか質問してもよろしいですか？"
+    "message": "Allay の使用体験についていくつか質問してもよろしいですか？"
   },
   "app.survey.feedback": {
     "message": "このフィードバックは Modrinth チームに直接送信され、今後のアップデートの改善に役立てられます！"
@@ -2010,13 +2010,13 @@
     "message": "アンケートに参加"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} のダウンロードが完了しました。今すぐ更新するには再読み込みするか、Modrinth Appを閉じる際に自動更新されます。"
+    "message": "Allay v{version} のダウンロードが完了しました。今すぐ更新するには再読み込みするか、Allayを閉じる際に自動更新されます。"
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} が利用可能です。最新の機能と修正プログラムを入手するには、パッケージマネージャーを使用して更新してください！"
+    "message": "Allay v{version} が利用可能です。最新の機能と修正プログラムを入手するには、パッケージマネージャーを使用して更新してください！"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} が利用可能になりました！お使いのネットワークが従量制のため、自動ダウンロードは行っておりません。"
+    "message": "Allay v{version} が利用可能になりました！お使いのネットワークが従量制のため、自動ダウンロードは行っておりません。"
   },
   "app.update-popup.changelog": {
     "message": "更新履歴"

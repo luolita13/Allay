@@ -225,6 +225,14 @@ pub async fn link_join_lobby<R: Runtime>(
 
     *gs.scf_client.lock().await = Some(scf_client);
 
+    // Detect the initial connection way (P2P direct vs relay). EasyTier may
+    // still be negotiating NAT traversal at this point, so the heartbeat loop
+    // below will refresh it periodically.
+    let (initial_way, route_latency) = {
+        let manager = gs.manager.lock().await;
+        manager.detect_connection_way().await
+    };
+
     // Update state.
     {
         let mut inner = gs.state.write();
@@ -233,12 +241,19 @@ pub async fn link_join_lobby<R: Runtime>(
         inner.username = Some(username);
         inner.is_host = false;
         inner.players = vec![profile];
+        inner.connection_info.way = initial_way;
+        if route_latency > 0 {
+            inner.connection_info.latency_ms = route_latency;
+        }
     }
     let _ = app.emit("link_state_changed", &LobbyState::Connected);
 
     // Spawn event listener for scaffolding client events.
     let app_clone = app.clone();
     tokio::spawn(async move {
+        // Counter used to refresh the P2P/relay status every few heartbeats
+        // instead of on every beat (the RPC round-trip is unnecessary that often).
+        let mut heartbeat_count: u32 = 0;
         while let Some(event) = event_rx.recv().await {
             let gs = app_clone.state::<LinkGlobalState>();
             match event {
@@ -247,6 +262,7 @@ pub async fn link_join_lobby<R: Runtime>(
                     let _ = app_clone.emit("link_players_changed", &players);
                 }
                 ScaffoldingEvent::Heartbeat(latency) => {
+                    heartbeat_count = heartbeat_count.wrapping_add(1);
                     {
                         let mut inner = gs.state.write();
                         inner.connection_info.latency_ms = latency;
@@ -257,6 +273,22 @@ pub async fn link_join_lobby<R: Runtime>(
                         } else {
                             ConnectionQuality::Poor
                         };
+                    }
+                    // Refresh P2P/relay status every 5 heartbeats (~10s).
+                    // NAT traversal can succeed mid-session, flipping relay→P2P.
+                    if heartbeat_count % 5 == 0 {
+                        let (way, _) = {
+                            let manager = gs.manager.lock().await;
+                            manager.detect_connection_way().await
+                        };
+                        let prev = gs.state.read().connection_info.way;
+                        if way != prev {
+                            tracing::info!(
+                                "Connection way changed: {prev:?} -> {way:?}"
+                            );
+                            gs.state.write().connection_info.way = way;
+                            let _ = app_clone.emit("link_connection_way_changed", &way);
+                        }
                     }
                     let _ = app_clone.emit("link_heartbeat", &latency);
                 }

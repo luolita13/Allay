@@ -28,7 +28,7 @@ const { formatMessage } = useVIntl()
 const messages = defineMessages({
   home: { id: 'app.home.title', defaultMessage: 'Home' },
   welcomeBack: { id: 'app.home.welcome-back', defaultMessage: 'Welcome back!' },
-  welcomeTo: { id: 'app.home.welcome-to', defaultMessage: 'Welcome to Modrinth App!' },
+  welcomeTo: { id: 'app.home.welcome-to', defaultMessage: 'Welcome to Allay!' },
   discoverModpack: { id: 'app.home.discover-modpack', defaultMessage: 'Discover a modpack' },
   discoverMods: { id: 'app.home.discover-mods', defaultMessage: 'Discover mods' },
 })

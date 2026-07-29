@@ -48,13 +48,13 @@ const messages = defineMessages({
 	titleNoLoader: { id: 'app.error-modal.title.no-loader', defaultMessage: 'No loader selected' },
 	titleStateInit: {
 		id: 'app.error-modal.title.state-init',
-		defaultMessage: 'Error initializing Modrinth App',
+		defaultMessage: 'Error initializing Allay',
 	},
 	networkIssues: { id: 'app.error-modal.network-issues', defaultMessage: 'Network issues' },
 	networkIssuesDesc: {
 		id: 'app.error-modal.network-issues.description',
 		defaultMessage:
-			"It looks like there were issues with the Modrinth App connecting to Microsoft's servers. This is often the result of a poor connection, so we recommend trying again to see if it works. If issues continue to persist, follow the steps in",
+			"It looks like there were issues with the Allay connecting to Microsoft's servers. This is often the result of a poor connection, so we recommend trying again to see if it works. If issues continue to persist, follow the steps in",
 	},
 	networkIssuesDescSuffix: {
 		id: 'app.error-modal.network-issues.description-suffix',
@@ -63,7 +63,7 @@ const messages = defineMessages({
 	hostsFileDesc: {
 		id: 'app.error-modal.hosts-file.description',
 		defaultMessage:
-			'The Modrinth App tried to connect to Microsoft / Xbox / Minecraft services, but the remote server rejected the connection. This may indicate that these services are blocked by the hosts file. Please visit',
+			'The Allay tried to connect to Microsoft / Xbox / Minecraft services, but the remote server rejected the connection. This may indicate that these services are blocked by the hosts file. Please visit',
 	},
 	hostsFileDescSuffix: {
 		id: 'app.error-modal.hosts-file.description-suffix',
@@ -106,7 +106,7 @@ const messages = defineMessages({
 	changeDirectoryPermissionsDesc: {
 		id: 'app.error-modal.change-directory-permissions.description',
 		defaultMessage:
-			'It looks like the Modrinth App is unable to write to the directory you selected. Please adjust the permissions of the directory and try again or cancel the directory change.',
+			'It looks like the Allay is unable to write to the directory you selected. Please adjust the permissions of the directory and try again or cancel the directory change.',
 	},
 	notEnoughSpace: { id: 'app.error-modal.not-enough-space', defaultMessage: 'Not enough space' },
 	notEnoughSpaceDesc: {
@@ -117,7 +117,7 @@ const messages = defineMessages({
 	migrateFailedDesc: {
 		id: 'app.error-modal.migrate-failed.description',
 		defaultMessage:
-			'The Modrinth App is unable to migrate to the new directory you selected. Please contact support for help or cancel the directory change.',
+			'The Allay is unable to migrate to the new directory you selected. Please contact support for help or cancel the directory change.',
 	},
 	retryDirectoryChange: {
 		id: 'app.error-modal.retry-directory-change',
@@ -139,7 +139,7 @@ const messages = defineMessages({
 	stateInitDesc: {
 		id: 'app.error-modal.state-init.description',
 		defaultMessage:
-			'Modrinth App failed to load correctly. This may be because of a corrupted file, or because the app is missing crucial files.',
+			'Allay failed to load correctly. This may be because of a corrupted file, or because the app is missing crucial files.',
 	},
 	stateInitFix: {
 		id: 'app.error-modal.state-init.fix',
@@ -155,7 +155,7 @@ const messages = defineMessages({
 	},
 	noLoaderDesc: {
 		id: 'app.error-modal.no-loader.description',
-		defaultMessage: 'The Modrinth App failed to find the loader version for this instance.',
+		defaultMessage: 'The Allay failed to find the loader version for this instance.',
 	},
 	noLoaderFix: {
 		id: 'app.error-modal.no-loader.fix',

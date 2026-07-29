@@ -48,7 +48,7 @@ function openGitHub() {
 
 			<!-- Title -->
 			<h2 class="mb-1.5 text-2xl font-bold text-contrast tracking-tight">
-				Modrinth App
+				Allay
 			</h2>
 			<p class="m-0 mb-4 text-sm font-semibold tracking-wide text-brand uppercase">
 				Community Custom Edition

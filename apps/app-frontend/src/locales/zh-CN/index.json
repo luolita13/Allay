@@ -99,7 +99,7 @@
     "message": "高级渲染"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "为 Modrinth App 选择偏好的色彩主题。"
+    "message": "为 Allay 选择偏好的色彩主题。"
   },
   "app.appearance-settings.color-theme.title": {
     "message": "色彩主题"
@@ -666,7 +666,7 @@
     "message": "更改目录权限"
   },
   "app.error-modal.change-directory-permissions.description": {
-    "message": "Modrinth App 无法写入你选择的目录。请调整目录权限后重试，或取消目录更改。"
+    "message": "Allay 无法写入你选择的目录。请调整目录权限后重试，或取消目录更改。"
   },
   "app.error-modal.close": {
     "message": "关闭"
@@ -687,19 +687,19 @@
     "message": "获取支持"
   },
   "app.error-modal.hosts-file.description": {
-    "message": "Modrinth App 尝试连接 Microsoft / Xbox / Minecraft 服务，但远程服务器拒绝了连接。这可能表示这些服务被 hosts 文件屏蔽。请访问"
+    "message": "Allay 尝试连接 Microsoft / Xbox / Minecraft 服务，但远程服务器拒绝了连接。这可能表示这些服务被 hosts 文件屏蔽。请访问"
   },
   "app.error-modal.hosts-file.description-suffix": {
     "message": "了解如何修复此问题。"
   },
   "app.error-modal.migrate-failed.description": {
-    "message": "Modrinth App 无法迁移到你选择的新目录。请联系支持团队获取帮助，或取消目录更改。"
+    "message": "Allay 无法迁移到你选择的新目录。请联系支持团队获取帮助，或取消目录更改。"
   },
   "app.error-modal.network-issues": {
     "message": "网络问题"
   },
   "app.error-modal.network-issues.description": {
-    "message": "Modrinth App 在连接 Microsoft 服务器时似乎遇到了问题。这通常是网络连接不佳导致的，建议重试一次。如果问题持续存在，请按照"
+    "message": "Allay 在连接 Microsoft 服务器时似乎遇到了问题。这通常是网络连接不佳导致的，建议重试一次。如果问题持续存在，请按照"
   },
   "app.error-modal.network-issues.description-suffix": {
     "message": "中的步骤进行排查。"
@@ -708,7 +708,7 @@
     "message": "无错误信息。"
   },
   "app.error-modal.no-loader.description": {
-    "message": "Modrinth App 无法找到此实例的加载器版本。"
+    "message": "Allay 无法找到此实例的加载器版本。"
   },
   "app.error-modal.no-loader.fix": {
     "message": "要解决此问题，你需要修复实例。点击下方按钮进行修复。"
@@ -735,7 +735,7 @@
     "message": "要游玩此实例，你必须先登录一个 Minecraft 账号。如果你没有 Minecraft 账号，可以在 Minecraft 官网购买游戏。"
   },
   "app.error-modal.state-init.description": {
-    "message": "Modrinth App 加载失败。这可能是因为文件损坏或缺少关键文件。"
+    "message": "Allay 加载失败。这可能是因为文件损坏或缺少关键文件。"
   },
   "app.error-modal.state-init.fix": {
     "message": "你可以通过以下方式尝试修复："
@@ -765,7 +765,7 @@
     "message": "未选择加载器"
   },
   "app.error-modal.title.state-init": {
-    "message": "Modrinth App 初始化错误"
+    "message": "Allay 初始化错误"
   },
   "app.error-modal.try-another-account": {
     "message": "尝试其他 Microsoft 账号"
@@ -972,7 +972,7 @@
     "message": "欢迎回来！"
   },
   "app.home.welcome-to": {
-    "message": "欢迎使用 Modrinth App！"
+    "message": "欢迎使用 Allay！"
   },
   "app.install.phase.downloading_content": {
     "message": "正在下载内容"
@@ -2292,7 +2292,7 @@
     "message": "正在更新应用目录……"
   },
   "app.survey.description": {
-    "message": "你介意回答几个关于 Modrinth App 使用体验的问题吗？"
+    "message": "你介意回答几个关于 Allay 使用体验的问题吗？"
   },
   "app.survey.feedback": {
     "message": "这些反馈将直接发送给 Modrinth 团队，帮助我们改进未来的更新！"
@@ -2307,13 +2307,13 @@
     "message": "参与调查"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} 更新已下载完成！立即重启更新，或退出时自动安装。"
+    "message": "Allay v{version} 更新已下载完成！立即重启更新，或退出时自动安装。"
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} 现已发布。请使用你的软件包管理器进行更新，获取最新功能与修复！"
+    "message": "Allay v{version} 现已发布。请使用你的软件包管理器进行更新，获取最新功能与修复！"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} 现已发布！由于你正在使用按流量计费的网络，该更新未自动下载。"
+    "message": "Allay v{version} 现已发布！由于你正在使用按流量计费的网络，该更新未自动下载。"
   },
   "app.update-popup.changelog": {
     "message": "更新日志"
@@ -2859,7 +2859,7 @@
     "message": "支持任何 authlib-injector 兼容服务器。首次启动时将自动下载 authlib-injector。"
   },
   "app.about.app-name": {
-    "message": "Modrinth App"
+    "message": "Allay"
   },
   "app.about.edition": {
     "message": "社区版"
@@ -2886,7 +2886,7 @@
     "message": "报告问题"
   },
   "app.about.legal-notice": {
-    "message": "这是 Modrinth App 的社区版本。Modrinth 及其商标归 Rinth, Inc. 所有。"
+    "message": "这是 Allay 的社区版本。Modrinth 及其商标归 Rinth, Inc. 所有。"
   },
   "app.about.easter-egg.override-authorized": {
     "message": "系统覆写已授权"

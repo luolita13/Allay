@@ -52,7 +52,7 @@ const messages = defineMessages({
 	appCacheDescription: {
 		id: 'app.resource-management.app-cache.description',
 		defaultMessage:
-			'Modrinth App caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns.',
+			'Allay caches data to speed up loading. Clearing the cache forces the app to reload data, which may cause temporary slowdowns.',
 	},
 	downloadSourcesTitle: {
 		id: 'app.resource-management.download-sources.title',

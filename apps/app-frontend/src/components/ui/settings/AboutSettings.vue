@@ -11,7 +11,7 @@ const { formatMessage } = useVIntl()
 const messages = defineMessages({
 	appName: {
 		id: 'app.about.app-name',
-		defaultMessage: 'Modrinth App',
+		defaultMessage: 'Allay',
 	},
 	edition: {
 		id: 'app.about.edition',
@@ -48,7 +48,7 @@ const messages = defineMessages({
 	legalNotice: {
 		id: 'app.about.legal-notice',
 		defaultMessage:
-			'This is a community edition of the Modrinth App. Modrinth and its trademarks are owned by Rinth, Inc.',
+			'Allay is an unofficial community edition based on Modrinth open source code. Modrinth and its trademarks are owned by Rinth, Inc.',
 	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',

@@ -78,7 +78,7 @@
     "message": "Rendu avancé"
   },
   "app.appearance-settings.color-theme.description": {
-    "message": "Sélectionnez votre couleur préférée pour le thème de Modrinth App."
+    "message": "Sélectionnez votre couleur préférée pour le thème de Allay."
   },
   "app.appearance-settings.color-theme.title": {
     "message": "Couleur du thème"
@@ -531,7 +531,7 @@
     "message": "Se connecter"
   },
   "app.skins.sign-in.description": {
-    "message": "Veuillez vous connecter à votre compte Minecraft pour utiliser les fonctionnalités de gestion de skins de Modrinth App."
+    "message": "Veuillez vous connecter à votre compte Minecraft pour utiliser les fonctionnalités de gestion de skins de Allay."
   },
   "app.skins.sign-in.rinthbot-alt": {
     "message": "Bot Modrinth enthousiaste"
@@ -543,13 +543,13 @@
     "message": "Sélecteur de skin"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} a finie d'être téléchargée. Rechargez pour mettre à jour maintenant, ou automatiquement quand vous fermez Modrinth App."
+    "message": "Allay v{version} a finie d'être téléchargée. Rechargez pour mettre à jour maintenant, ou automatiquement quand vous fermez Allay."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} est disponible. Utilisez votre gestionnaire de paquets pour mettre à jour les dernières fonctionnalités et corrections de bogues !"
+    "message": "Allay v{version} est disponible. Utilisez votre gestionnaire de paquets pour mettre à jour les dernières fonctionnalités et corrections de bogues !"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} est disponible maintenant ! Puisque vous êtes sur un réseau métré, nous ne l'avons pas téléchargé automatiquement."
+    "message": "Allay v{version} est disponible maintenant ! Puisque vous êtes sur un réseau métré, nous ne l'avons pas téléchargé automatiquement."
   },
   "app.update-popup.changelog": {
     "message": "Journal des modifications"

@@ -719,6 +719,11 @@ async function setupListeners() {
 		}),
 	)
 	unlisteners.push(
+		await listen<ConnectionWay>('link_connection_way_changed', (event) => {
+			connectionInfo.value.way = event.payload
+		}),
+	)
+	unlisteners.push(
 		await listen('link_server_shutdown', () => {
 			addNotification({
 				type: 'warning',
