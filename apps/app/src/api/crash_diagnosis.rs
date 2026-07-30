@@ -1,6 +1,6 @@
 use crate::api::Result;
 use theseus::prelude::crash_diagnosis::{
-    AutoFixKind, CrashDiagnosisResult, CrashLogSource, CrashSeverity,
+    AutoFixKind, CrashDiagnosisResult, CrashSeverity,
 };
 
 pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
