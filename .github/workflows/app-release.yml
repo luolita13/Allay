@@ -111,6 +111,8 @@ jobs:
 
       - name: Build Tauri App (NSIS installer)
         working-directory: code
+        env:
+          RUSTFLAGS: -A dead_code
         run: pnpm --filter=@modrinth/app run tauri build --verbose --bundles nsis
 
       - name: Upload installer artifact
