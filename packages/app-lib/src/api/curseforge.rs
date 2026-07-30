@@ -153,7 +153,7 @@ struct CfResponse<T> {
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]
-struct CfPagination {
+pub struct CfPagination {
     #[serde(default)]
     index: u32,
     #[serde(default)]

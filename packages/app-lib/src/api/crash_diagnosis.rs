@@ -1513,7 +1513,7 @@ pub async fn export_crash_report(
     if let Some(parent) = settings_dir.parent() {
         let launcher_logs = parent.join("launcher_logs");
         if launcher_logs.exists() {
-            if let Ok(mut entries) = collect_latest_launcher_logs(&launcher_logs, 1) {
+            if let Ok(entries) = collect_latest_launcher_logs(&launcher_logs, 1) {
                 for (_, content) in entries {
                     exported.push(("launcher_session.log".to_string(), content));
                 }

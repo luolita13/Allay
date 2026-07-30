@@ -854,7 +854,7 @@ pub async fn fetch_chunked(
         }
     };
 
-    let download_meta_header = download_meta
+    let _download_meta_header = download_meta
         .map(|m| (DOWNLOAD_META_HEADER.to_string(), m.to_header_value()));
 
     // Build a client with appropriate headers

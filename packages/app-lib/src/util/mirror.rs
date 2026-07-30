@@ -276,6 +276,7 @@ fn rewrite_uvmc(url: &str) -> Option<String> {
 /// This is used for URLs that are not handled by the generic `get_fetch_strategy`
 /// rewrite pipeline, such as Modrinth launcher-meta loader manifests which use a
 /// Modrinth-specific processed format that BMCLAPI does not directly mirror.
+#[allow(dead_code)]
 pub fn resolve_version_list_url(url: &str) -> (String, Option<String>) {
     if let Some(mirror_url) = rewrite_version_list(url) {
         match get_version_list_source() {

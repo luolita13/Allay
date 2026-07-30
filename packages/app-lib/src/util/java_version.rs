@@ -344,7 +344,7 @@ pub fn find_suitable_java<'a>(
     }
 
     // Prefer the smallest major version that also satisfies suggested constraints
-    let mut suggested_ok: Vec<&JavaVersion> = candidates
+    let suggested_ok: Vec<&JavaVersion> = candidates
         .iter()
         .copied()
         .filter(|jv| {

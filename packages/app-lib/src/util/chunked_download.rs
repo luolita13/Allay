@@ -6,7 +6,6 @@
 //! large files (Forge installers, modpacks, etc.).
 
 use bytes::Bytes;
-use eyre::eyre;
 use futures::stream::{self, StreamExt};
 use reqwest::Method;
 use std::future::Future;
@@ -23,9 +22,6 @@ type ChunkedProgressFn = Arc<
 /// Minimum file size (in bytes) to trigger chunked download.
 /// Files smaller than this are downloaded as a single request.
 const MIN_CHUNK_SIZE: u64 = 1 * 1024 * 1024; // 1 MB
-
-/// Default number of chunks per large file.
-pub const DEFAULT_MAX_CHUNKS: usize = 8;
 
 /// Minimum chunk size when splitting a file.
 /// Prevents creating too many tiny ranges.

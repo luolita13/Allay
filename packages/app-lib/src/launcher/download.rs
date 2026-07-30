@@ -167,6 +167,7 @@ impl MinecraftDownloadProgress {
     }
 
     /// Record that a Minecraft file was skipped (already exists on disk).
+    #[allow(dead_code)]
     async fn record_file_skipped(
         &self,
         name: &str,

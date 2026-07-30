@@ -922,7 +922,6 @@ pub async fn launch_minecraft(
     // Apply process priority (Windows)
     #[cfg(target_os = "windows")]
     {
-        use std::os::windows::process::CommandExt;
         let priority = match settings.process_priority {
             ProcessPriority::RealTime => 0x00000100,    // REALTIME_PRIORITY_CLASS
             ProcessPriority::High => 0x00000080,         // HIGH_PRIORITY_CLASS

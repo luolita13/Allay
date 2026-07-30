@@ -173,7 +173,7 @@ pub async fn extract_zip_safe(
     use futures_lite::io::AsyncReadExt;
     use tokio::io::AsyncWriteExt;
 
-    let mut zip = ZipFileReader::new(zip_path)
+    let zip = ZipFileReader::new(zip_path)
         .await
         .map_err(|e| crate::ErrorKind::OtherError(format!("failed to read zip: {e}")))?;
 
@@ -365,7 +365,7 @@ pub async fn install_from_path(zip_path: &Path) -> crate::Result<ThemePackManife
         // returned. Here there is no later step, so we can just close it.
         // `tempfile::TempDir::close` consumes self and removes the dir; but
         // we already moved it. Use `into_path` to detach.
-        let _ = staging.into_path();
+        let _ = staging.keep();
     }
 
     Ok(manifest)
