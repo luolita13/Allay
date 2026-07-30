@@ -36,6 +36,7 @@ jobs:
         with:
           repository: EasyTier/EasyTier
           path: EasyTier
+          ref: 7088c784deb56bd508a164b2c4b602f99c6fedb8
           fetch-depth: 1
 
       - name: Setup Protoc
