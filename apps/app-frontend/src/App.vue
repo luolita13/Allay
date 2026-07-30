@@ -69,7 +69,7 @@ import { $fetch } from 'ofetch'
 import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
-import ModrinthAppLogo from '@/assets/modrinth_app.svg?component'
+import AllayAppLogo from '@/assets/allay_app.svg?component'
 import AccountsCard from '@/components/ui/AccountsCard.vue'
 import AppActionBar from '@/components/ui/AppActionBar.vue'
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
@@ -214,7 +214,7 @@ const { addPopupNotification } = popupNotificationManager
 
 const appVersion = getVersion()
 const tauriApiClient = new TauriModrinthClient({
-	userAgent: async () => `modrinth/theseus/${await appVersion} (support@modrinth.com)`,
+	userAgent: async () => `allay/theseus/${await appVersion}`,
 	labrinthBaseUrl: config.labrinthBaseUrl,
 	archonBaseUrl: config.archonBaseUrl,
 	features: [
@@ -532,6 +532,8 @@ async function setupApp() {
 		}),
 	)
 
+	// Critical announcement fetch disabled - not using Modrinth API
+	/*
 	fetch(`https://api.modrinth.com/appCriticalAnnouncement.json?version=${version}`)
 		.then((response) => response.json())
 		.then((res) => {
@@ -544,6 +546,7 @@ async function setupApp() {
 				`No critical announcement found at https://api.modrinth.com/appCriticalAnnouncement.json?version=${version}`,
 			)
 		})
+	*/
 
 	// News disabled: skip fetching articles
 	// fetch(`https://modrinth.com/news/feed/articles.json`)
@@ -1337,7 +1340,7 @@ async function installUpdate() {
 setAppUpdateActions({
 	download: downloadAvailableUpdate,
 	install: installUpdate,
-	changelog: () => openUrl('https://modrinth.com/news/changelog?filter=app'),
+	changelog: () => openUrl('https://github.com/luolita13/Allay/releases'),
 })
 
 async function openModrinthProjectLinkInApp(parsed) {
@@ -1680,7 +1683,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			</div>
 			<div data-tauri-drag-region class="app-grid-statusbar bg-bg-raised h-[--top-bar-height] flex">
 				<div data-tauri-drag-region class="flex min-w-0 flex-1 overflow-hidden p-3">
-					<ModrinthAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
+					<AllayAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
 					<div data-tauri-drag-region class="flex shrink-0 items-center gap-1 ml-3">
 						<button
 							class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"

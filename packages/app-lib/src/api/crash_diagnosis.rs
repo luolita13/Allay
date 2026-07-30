@@ -770,12 +770,12 @@ pub fn rule_strings(id: &str) -> (&'static str, &'static str, &'static str) {
         "unknown_crash" => (
             "Unknown crash",
             "No matching rule was found for this crash. Please review the raw crash report for details.",
-            "Search the Modrinth help center (support.modrinth.com) or report this on GitHub with the crash log attached.",
+            "Search the help center (support.modrinth.com) or report this on GitHub with the crash log attached.",
         ),
         _ => (
             "Unknown crash",
             "No matching rule was found for this crash. Please review the raw crash report for details.",
-            "Search the Modrinth help center (support.modrinth.com) or report this on GitHub with the crash log attached.",
+            "Search the help center (support.modrinth.com) or report this on GitHub with the crash log attached.",
         ),
     }
 }

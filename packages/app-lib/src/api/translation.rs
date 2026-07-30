@@ -1122,7 +1122,7 @@ pub async fn test_provider(
         context: TranslationContext::default(),
         segments: vec![TranslationSegment {
             id: "connection-test".to_string(),
-            text: "Hello from Modrinth App".to_string(),
+            text: "Hello from Allay".to_string(),
             format: TranslationTextFormat::Plain,
         }],
     };
