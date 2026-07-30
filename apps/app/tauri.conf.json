@@ -25,10 +25,7 @@
 			}
 		},
 		"longDescription": "",
-		"resources": {
-			"../../../EasyTier/easytier/third_party/x86_64/wintun.dll": "wintun.dll",
-			"../../../EasyTier/easytier/third_party/x86_64/Packet.dll": "Packet.dll"
-		},
+		"resources": {},
 		"macOS": {
 			"entitlements": "App.entitlements",
 			"exceptionDomain": "",

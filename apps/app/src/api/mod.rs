@@ -28,7 +28,6 @@ pub mod crash_diagnosis;
 pub mod curseforge;
 pub mod files;
 pub mod friends;
-pub mod link;
 pub mod theme_pack;
 pub mod translation;
 pub mod worlds;

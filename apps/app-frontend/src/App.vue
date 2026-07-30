@@ -380,10 +380,6 @@ const messages = defineMessages({
 		id: 'app.nav.skins',
 		defaultMessage: 'Skin selector',
 	},
-	navGameLink: {
-		id: 'app.nav.game-link',
-		defaultMessage: 'Online Multiplayer',
-	},
 	navLibrary: {
 		id: 'app.nav.library',
 		defaultMessage: 'Library',
@@ -678,11 +674,6 @@ watch(stateInitialized, (ready) => {
 		if (routerToken) {
 			loading.end(routerToken)
 			routerToken = null
-		}
-
-		// Redirect away from experimental GameLink page if the feature flag is disabled
-		if (route.path.startsWith('/gamelink') && !themeStore.getFeatureFlag('game_link')) {
-			router.replace('/')
 		}
 
 		queryClient.prefetchQuery({
@@ -1599,17 +1590,9 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 					<CompassIcon />
 				</NavButton>
 				<NavButton v-tooltip.right="formatMessage(messages.navSkins)" to="/skins">
-					<ChangeSkinIcon />
-				</NavButton>
-				<NavButton
-					v-if="themeStore.getFeatureFlag('game_link')"
-					v-tooltip.right="formatMessage(messages.navGameLink)"
-					to="/gamelink"
-					:is-primary="(r) => r.path === '/gamelink'"
-				>
-					<GlobeIcon />
-				</NavButton>
-				<NavButton
+				<ChangeSkinIcon />
+			</NavButton>
+			<NavButton
 					v-tooltip.right="formatMessage(messages.navLibrary)"
 					to="/library"
 					:is-primary="(r) => r.path === '/library' || r.path === '/library'"

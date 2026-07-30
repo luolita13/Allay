@@ -17,8 +17,6 @@ pub mod install;
 mod launcher;
 mod logger;
 mod state;
-pub mod link;
-
 pub use api::*;
 pub use error::*;
 pub use event::{

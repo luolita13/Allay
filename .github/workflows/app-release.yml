@@ -31,19 +31,6 @@ jobs:
           path: code
           fetch-depth: 0
 
-      - name: Check out EasyTier (sibling repo, required for link feature)
-        uses: actions/checkout@v4
-        with:
-          repository: EasyTier/EasyTier
-          path: EasyTier
-          ref: 7088c784deb56bd508a164b2c4b602f99c6fedb8
-          fetch-depth: 1
-
-      - name: Setup Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
@@ -112,8 +99,6 @@ jobs:
 
       - name: Build Tauri App (NSIS installer)
         working-directory: code
-        env:
-          RUSTFLAGS: -A dead_code
         run: pnpm --filter=@modrinth/app run tauri build --verbose --bundles nsis
 
       - name: Upload installer artifact

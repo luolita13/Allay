@@ -39,8 +39,6 @@ export const DEFAULT_FEATURE_FLAGS = {
 	home_show_system_status: true,
 	home_show_recent_screenshots: true,
 	home_show_random_mods: true,
-	// Experimental features
-	game_link: false,
 }
 
 export const THEME_OPTIONS = ['dark', 'light', 'oled', 'system'] as const

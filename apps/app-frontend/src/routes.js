@@ -116,16 +116,8 @@ export default new createRouter({
 				breadcrumb: [{ name: 'Skin selector' }],
 			},
 		},
-		{
-			path: '/gamelink',
-			name: 'GameLink',
-			component: Pages.GameLink,
-			meta: {
-				breadcrumb: [{ name: 'Game Link' }],
-			},
-		},
-		{
-			path: '/settings',
+	{
+		path: '/settings',
 			name: 'Settings',
 			component: Pages.Settings,
 			meta: {

@@ -2,7 +2,6 @@ import Browse from './Browse.vue'
 import Collection from './collection/Collection.vue'
 import CreateInstance from './CreateInstance.vue'
 import Downloads from './Downloads.vue'
-import GameLink from './GameLink.vue'
 import Index from './Index.vue'
 import Servers from './Servers.vue'
 import Settings from './Settings.vue'
@@ -14,7 +13,6 @@ export {
 	Collection,
 	CreateInstance,
 	Downloads,
-	GameLink,
 	Index,
 	Servers,
 	Settings,

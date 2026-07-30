@@ -16,14 +16,6 @@ const messages = defineMessages({
 		id: 'app.feature-flag-settings.reset-to-default',
 		defaultMessage: 'Reset to Default',
 	},
-	gameLinkLabel: {
-		id: 'app.feature-flag-settings.game-link.label',
-		defaultMessage: 'Game Link',
-	},
-	gameLinkDescription: {
-		id: 'app.feature-flag-settings.game-link.description',
-		defaultMessage: 'Show the Game Link entry in the sidebar, allowing you to create or join LAN games. This feature is experimental and may be unstable.',
-	},
 	experimentalBadge: {
 		id: 'app.feature-flag-settings.experimental-badge',
 		defaultMessage: 'Experimental',
@@ -38,12 +30,6 @@ interface FeatureFlagDefinition {
 }
 
 const FEATURE_FLAGS: FeatureFlagDefinition[] = [
-	{
-		key: 'game_link',
-		label: 'gameLinkLabel',
-		description: 'gameLinkDescription',
-		experimental: true,
-	},
 ]
 
 function setFeatureFlag(key: FeatureFlag, value: boolean) {
