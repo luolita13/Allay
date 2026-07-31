@@ -1,21 +1,21 @@
-# Copying Guidelines
+# 版权指南
 
-All packages in this repository are licensed under their respective licenses. For more information, refer to the LICENSE file in each package.
+本仓库中各包均按其各自的许可证授权。详见各包目录下的 LICENSE 文件。
 
-For detailed information, consult each package's COPYING.md, LICENSE.txt, or LICENSE file, if available.
+## 许可证概况
 
-## Modrinth Branding
+| 包 | 许可证 |
+|---|---|
+| `apps/app` / `apps/app-frontend` | GPL-3.0 |
+| `packages/api-client` | LGPL-3.0 |
+| `packages/async-minecraft-ping` | MIT / Apache-2.0 双许可证 |
 
-The use of Modrinth branding elements, including but not limited to the wrench-in-labyrinth logo, the landing image, and any variations thereof, is strictly prohibited without explicit written permission from Rinth, Inc. This includes trademarks, logos, or other branding elements.
+本项目 Fork 自 [Modrinth App](https://github.com/modrinth/code)，遵循原项目 GPL-3.0 协议。
 
-> All rights reserved. © 2020-2025 Rinth, Inc.
+## Allay 品牌
 
-This includes, but may not be limited to, the following files:
+Allay 名称及悦灵相关品牌元素的所有权利归 Allay 项目所有。未经书面许可，禁止将 Allay 品牌元素用于误导性目的。
 
-- .idea/icon.svg
-- .github/api_cover.png
-- .github/app_cover.png
-- .github/monorepo_cover.png
-- .github/web_cover.png
+## Modrinth 品牌声明
 
-If you fork this repository, you must remove all Modrinth branding assets from your fork.
+本项目已移除所有 Modrinth 品牌元素（包括原版图标、封面图等）。Modrinth 商标及品牌元素归 Rinth, Inc. 所有。

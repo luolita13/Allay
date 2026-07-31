@@ -77,6 +77,7 @@ import ErrorModal from '@/components/ui/ErrorModal.vue'
 import FriendsList from '@/components/ui/friends/FriendsList.vue'
 import AddServerToInstanceModal from '@/components/ui/install_flow/AddServerToInstanceModal.vue'
 import UnknownPackWarningModal from '@/components/ui/install_flow/UnknownPackWarningModal.vue'
+import LicenseModal from '@/components/ui/LicenseModal.vue'
 import MinecraftAuthErrorModal from '@/components/ui/minecraft-auth-error-modal/MinecraftAuthErrorModal.vue'
 import AppSettingsModal from '@/components/ui/modal/AppSettingsModal.vue'
 import AuthGrantFlowWaitModal from '@/components/ui/modal/AuthGrantFlowWaitModal.vue'
@@ -89,7 +90,6 @@ import PrideFundraiserBanner from '@/components/ui/PrideFundraiserBanner.vue'
 import PromotionWrapper from '@/components/ui/PromotionWrapper.vue'
 import QuickInstanceSwitcher from '@/components/ui/QuickInstanceSwitcher.vue'
 import SplashScreen from '@/components/ui/SplashScreen.vue'
-import StartupNoticeModal from '@/components/ui/StartupNoticeModal.vue'
 import WindowControls from '@/components/ui/WindowControls.vue'
 import { useCheckDisableMouseover } from '@/composables/macCssFix.js'
 import { config } from '@/config'
@@ -299,6 +299,8 @@ const isDevEnvironment = ref(false)
 
 const stateInitialized = ref(false)
 
+const showFirstLaunchLicense = ref(false)
+
 const criticalErrorMessage = ref()
 
 const isMaximized = ref(false)
@@ -500,6 +502,11 @@ async function setupApp() {
 	themeStore.devMode = developer_mode
 	themeStore.featureFlags = feature_flags
 	stateInitialized.value = true
+
+	// Check if user has accepted the license on first launch
+	if (localStorage.getItem('allay-license-accepted') !== 'true') {
+		showFirstLaunchLicense.value = true
+	}
 
 	await downloadManager.start()
 
@@ -1683,7 +1690,10 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			</div>
 			<div data-tauri-drag-region class="app-grid-statusbar bg-bg-raised h-[--top-bar-height] flex">
 				<div data-tauri-drag-region class="flex min-w-0 flex-1 overflow-hidden p-3">
-					<AllayAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
+					<div data-tauri-drag-region class="flex items-center gap-2 shrink-0">
+						<AllayAppLogo class="h-full w-auto shrink-0 text-contrast pointer-events-none" />
+						<span class="text-contrast font-semibold text-base leading-none select-none whitespace-nowrap">Allay APP</span>
+					</div>
 					<div data-tauri-drag-region class="flex shrink-0 items-center gap-1 ml-3">
 						<button
 							class="cursor-pointer p-0 m-0 text-contrast border-none outline-none bg-button-bg rounded-full flex items-center justify-center w-6 h-6 hover:brightness-75 transition-all"
@@ -1897,6 +1907,11 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		<ErrorModal ref="errorModal" />
 		<CrashDiagnosisModal ref="crashDiagnosisModal" />
 		<MinecraftAuthErrorModal ref="minecraftAuthErrorModal" />
+		<LicenseModal
+			v-if="showFirstLaunchLicense"
+			:require-accept="true"
+			@accepted="showFirstLaunchLicense = false"
+		/>
 		<ContentInstallModal
 			ref="modInstallModal"
 			:instances="contentInstallInstances"
@@ -1942,7 +1957,6 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		/>
 		<InstallToPlayModal ref="installToPlayModal" />
 		<UpdateToPlayModal ref="updateToPlayModal" />
-		<StartupNoticeModal />
 	</div>
 </template>
 

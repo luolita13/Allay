@@ -5,17 +5,17 @@ import { installFromPath, listInstalled as getInstalledThemePacks, uninstall as 
 
 let systemThemeMq: MediaQueryList | null = null
 
-const LS_KEY_BG_PATH = 'modrinth-app-background-image-path'
-const LS_KEY_BG_BLUR = 'modrinth-app-background-blur'
-const LS_KEY_BG_OPACITY = 'modrinth-app-background-opacity'
-const LS_KEY_ACCENT_COLOR = 'modrinth-app-accent-color'
-const LS_KEY_CUSTOM_ACCENT_COLOR = 'modrinth-app-custom-accent-color'
-const LS_KEY_ACTIVE_THEME_PACK = 'modrinth-app-active-theme-pack'
-const LS_KEY_APP_IMAGE_VIEWER = 'modrinth-app-image-viewer'
-const LS_KEY_SETTINGS_AS_PAGE = 'modrinth-app-settings-as-page'
-const LS_KEY_SKIN_CLICK_PARTICLES = 'modrinth-app-skin-click-particles'
-const LS_KEY_SKIN_HEAD_TRACKING = 'modrinth-app-skin-head-tracking'
-const LS_KEY_SKIN_PARTICLE_BG = 'modrinth-app-skin-particle-bg'
+const LS_KEY_BG_PATH = 'allay-app-background-image-path'
+const LS_KEY_BG_BLUR = 'allay-app-background-blur'
+const LS_KEY_BG_OPACITY = 'allay-app-background-opacity'
+const LS_KEY_ACCENT_COLOR = 'allay-app-accent-color'
+const LS_KEY_CUSTOM_ACCENT_COLOR = 'allay-app-custom-accent-color'
+const LS_KEY_ACTIVE_THEME_PACK = 'allay-app-active-theme-pack'
+const LS_KEY_APP_IMAGE_VIEWER = 'allay-app-image-viewer'
+const LS_KEY_SETTINGS_AS_PAGE = 'allay-app-settings-as-page'
+const LS_KEY_SKIN_CLICK_PARTICLES = 'allay-app-skin-click-particles'
+const LS_KEY_SKIN_HEAD_TRACKING = 'allay-app-skin-head-tracking'
+const LS_KEY_SKIN_PARTICLE_BG = 'allay-app-skin-particle-bg'
 
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
@@ -83,7 +83,7 @@ export type ThemeStore = {
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
 	selectedTheme: 'dark',
-	selectedAccentColor: 'orange',
+	selectedAccentColor: 'blue',
 	customAccentColor: null,
 	advancedRendering: true,
 	hideNametagSkinsPage: false,

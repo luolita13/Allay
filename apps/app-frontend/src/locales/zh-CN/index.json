@@ -1481,6 +1481,36 @@
   "app.library.title": {
     "message": "库"
   },
+  "app.license-modal.title": {
+    "message": "软件协议与开源许可"
+  },
+  "app.license-modal.agree": {
+    "message": "同意并继续"
+  },
+  "app.license-modal.decline": {
+    "message": "拒绝"
+  },
+  "app.license-modal.tab-tos": {
+    "message": "用户协议"
+  },
+  "app.license-modal.tab-privacy": {
+    "message": "隐私政策"
+  },
+  "app.license-modal.tab-license": {
+    "message": "开源许可"
+  },
+  "app.license-modal.tos-content": {
+    "message": "Allay 用户协议\n\n本软件是一款免费开源的 Minecraft 启动器，依照 GPL-3.0 协议授权。\n\n1. 合法使用\n   您须拥有合法的 Minecraft Java 版账号方可使用本软件。本软件不提供任何游戏文件、账号或正版验证绕过功能。\n\n2. 非官方声明\n   本软件与 Mojang Studios、Microsoft 或 Modrinth 无任何关联。所有商标均为其各自所有者的财产。\n\n3. 免责声明\n   本软件按\"原样\"提供，不作任何明示或暗示的保证。开发者不对因使用或无法使用本软件而产生的任何直接或间接损失承担责任，包括但不限于数据丢失、账号封禁或设备损坏。\n\n4. 开源协议\n   本项目整体以 GPL-3.0 协议授权。您可以自由使用、修改和分发本软件，但须遵守 GPL-3.0 的条款。部分子包使用 LGPL-3.0 或 MIT/Apache-2.0 协议（详见\"开源许可\"标签页）。\n\n继续使用即表示您已阅读并同意本协议。"
+  },
+  "app.license-modal.privacy-content": {
+    "message": "Allay 隐私政策\n\n最后更新：2026年7月31日\n\n我们重视您的隐私。本隐私政策说明了 Allay 如何收集和使用信息。\n\n1. 我们收集的信息\n   为改进软件和服务，我们可能收集以下匿名遥测数据：\n   • 应用版本和操作系统信息\n   • 启动器功能使用统计（如启动次数、设置偏好）\n   • 错误报告和崩溃日志（不包含个人信息）\n   • 网络请求的匿名性能指标\n\n2. 我们不收集的信息\n   • 您的 Minecraft 账号信息（邮箱、密码、UUID）\n   • 您的 IP 地址或个人身份信息\n   • 您的本地文件路径或游戏存档内容\n\n3. 信息的使用方式\n   收集的数据仅用于：\n   • 改进软件稳定性和修复 Bug\n   • 了解功能使用情况以优化用户体验\n   • 统计活跃用户数量\n\n4. 数据共享\n   我们不会向第三方出售、出租或分享您的数据。所有遥测数据以匿名聚合形式存储。\n\n5. 您的选择\n   您可以在\"设置 → 隐私设置\"中随时关闭遥测功能。\n\n6. 数据安全\n   我们采取合理的技术措施保护数据传输和存储安全。\n\n如有隐私相关问题，请通过项目 GitHub 仓库联系。"
+  },
+  "app.license-modal.notice": {
+    "message": "Allay 基于开源软件 Modrinth App 修改，依照 GNU General Public License v3.0 (GPL-3.0) 分发。部分包使用其他许可证（详见下方）。"
+  },
+  "app.license-modal.package-licenses": {
+    "message": "各包许可证：packages/api-client — LGPL-3.0；packages/async-minecraft-ping — MIT / Apache-2.0 双许可证。"
+  },
   "app.minecraft-auth.contact-support": {
     "message": "联系支持"
   },
@@ -1625,26 +1655,11 @@
   "app.privacy-settings.disabled-in-build": {
     "message": "此构建中已禁用"
   },
-  "app.privacy-settings.discord-rpc": {
-    "message": "Discord RPC"
-  },
-  "app.privacy-settings.discord-rpc.desc": {
-    "message": "管理 Discord  rich presence 集成。禁用后，你的 Discord 个人资料中将不再显示正在使用 Modrinth。"
-  },
-  "app.privacy-settings.discord-rpc.note": {
-    "message": "注意：这不会阻止实例特定的 Discord Rich Presence 集成（例如由模组添加的集成）。（需要重启应用才能生效）"
-  },
-  "app.privacy-settings.personalized-ads": {
-    "message": "个性化广告"
-  },
-  "app.privacy-settings.personalized-ads.desc": {
-    "message": "Modrinth 的广告提供商 Aditude 会根据你的偏好展示广告。禁用此选项后，你将退出个性化广告，广告不再基于你的兴趣展示。"
-  },
   "app.privacy-settings.telemetry": {
     "message": "遥测"
   },
   "app.privacy-settings.telemetry.desc": {
-    "message": "Modrinth 会收集匿名的分析和使用数据，以改善用户体验并定制你的体验。禁用此选项后，你将退出数据收集，你的数据将不再被收集。"
+    "message": "Allay 会收集匿名的分析和使用数据，以改善用户体验并定制你的体验。禁用此选项后，你将退出数据收集，你的数据将不再被收集。"
   },
   "app.project.follow": {
     "message": "关注"
@@ -2056,6 +2071,54 @@
   },
   "app.update.complete-toast.title": {
     "message": "版本 {version} 已成功安装！"
+  },
+  "app.updates.current-version": {
+    "message": "当前版本"
+  },
+  "app.updates.latest-version": {
+    "message": "最新版本"
+  },
+  "app.updates.check-for-updates": {
+    "message": "检查更新"
+  },
+  "app.updates.checking": {
+    "message": "正在检查更新……"
+  },
+  "app.updates.up-to-date": {
+    "message": "已是最新版本。"
+  },
+  "app.updates.update-available": {
+    "message": "版本 {version} 可用。"
+  },
+  "app.updates.check-failed": {
+    "message": "检查更新失败。"
+  },
+  "app.updates.updates-disabled": {
+    "message": "更新仅在正式发布版本中提供。"
+  },
+  "app.updates.update-now": {
+    "message": "下载并安装"
+  },
+  "app.updates.release-notes": {
+    "message": "更新日志"
+  },
+  "app.updates.loading-changelog": {
+    "message": "正在加载更新日志……"
+  },
+  "app.updates.changelog-error": {
+    "message": "加载更新日志失败。"
+  },
+  "app.updates.changelog-error-detail": {
+    "message": "原因：{error}"
+  },
+  "app.updates.view-on-github": {
+    "message": "在 GitHub 上查看"
+  },
+  "app.updates.published-on": {
+    "message": "发布于 {date}"
+  },
+  "app.updates.prerelease": {
+    "message": "预发布版"
   },
   "app.url-confirm.install": {
     "message": "安装"
@@ -2598,7 +2661,7 @@
     "message": "许可证"
   },
   "app.about.license-value": {
-    "message": "GPL-3.0"
+    "message": "查看许可证"
   },
   "app.about.view-source": {
     "message": "查看源代码"
@@ -2626,6 +2689,9 @@
   },
   "app.settings.tabs.experimental-features": {
     "message": "实验性功能"
+  },
+  "app.settings.tabs.updates": {
+    "message": "更新"
   },
   "app.settings.tabs.about": {
     "message": "关于"

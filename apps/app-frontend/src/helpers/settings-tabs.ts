@@ -7,6 +7,7 @@ import {
 	InfoIcon,
 	LanguagesIcon,
 	PaintbrushIcon,
+	RefreshCwIcon,
 	ShieldIcon,
 	ToggleRightIcon,
 	WrenchIcon,
@@ -25,6 +26,7 @@ import LanguageSettings from '@/components/ui/settings/LanguageSettings.vue'
 import PrivacySettings from '@/components/ui/settings/PrivacySettings.vue'
 import ResourceManagementSettings from '@/components/ui/settings/ResourceManagementSettings.vue'
 import TranslationSettings from '@/components/ui/settings/TranslationSettings.vue'
+import UpdateSettings from '@/components/ui/settings/UpdateSettings.vue'
 
 export interface SettingsTab {
 	name: ReturnType<typeof defineMessage>
@@ -113,6 +115,14 @@ export const settingsTabs: SettingsTab[] = [
 		}),
 		icon: ToggleRightIcon,
 		content: FeatureFlagSettings,
+	},
+	{
+		name: defineMessage({
+			id: 'app.settings.tabs.updates',
+			defaultMessage: 'Updates',
+		}),
+		icon: RefreshCwIcon,
+		content: UpdateSettings,
 	},
 	{
 		name: defineMessage({

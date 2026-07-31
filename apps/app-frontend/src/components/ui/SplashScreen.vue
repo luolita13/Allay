@@ -2,14 +2,8 @@
 	<Transition name="splash-fade" @after-leave="onAfterLeave">
 		<div v-if="!doneLoading" class="splash-screen dark">
 			<div class="app-logo-wrapper" data-tauri-drag-region>
-				<svg
-					class="app-logo"
-					viewBox="0 0 800 175"
-					xmlns="http://www.w3.org/2000/svg"
-					color="var(--color-contrast)"
-				>
-					<text x="400" y="132" font-family="Arial, sans-serif" font-size="110" font-weight="bold" fill="currentColor" letter-spacing="10" text-anchor="middle">ALLAY</text>
-				</svg>
+				<AllayAppLogo class="app-logo" />
+				<h1 class="splash-title">Allay APP</h1>
 				<ProgressBar class="loading-bar" :progress="Math.min(loadingProgress, 100)" />
 				<span v-if="message">{{ message }}</span>
 			</div>
@@ -26,6 +20,7 @@ import { ref, watch } from 'vue'
 
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 import { loading_listener } from '@/helpers/events.js'
+import AllayAppLogo from '@/assets/allay_app.svg?component'
 
 const doneLoading = ref(false)
 const loadingProgress = ref(0)
@@ -124,8 +119,22 @@ loading_listener(async (e) => {
 }
 
 .app-logo {
-	height: 2.25rem;
+	height: 4.5rem;
 	width: fit-content;
+}
+
+.splash-title {
+	font-size: 2rem;
+	font-weight: 700;
+	color: var(--color-text, #e0e5ec);
+	margin: 0;
+	letter-spacing: 0.05em;
+}
+
+.splash-subtitle {
+	font-size: 1.25rem;
+	font-weight: 300;
+	color: var(--color-brand, #3b82f6);
 }
 
 .loading-bar {
@@ -137,7 +146,7 @@ loading_listener(async (e) => {
 	height: 100vh;
 	width: 100vw;
 	background:
-		linear-gradient(180deg, rgba(66, 131, 92, 0.275) 0%, rgba(17, 35, 43, 0.5) 97.29%),
+		linear-gradient(180deg, rgba(37, 99, 235, 0.275) 0%, rgba(12, 35, 64, 0.5) 97.29%),
 		linear-gradient(0deg, rgba(22, 24, 28, 0.64), rgba(22, 24, 28, 0.64));
 	z-index: 9997;
 }

@@ -49,11 +49,14 @@
 				{
 					"url": "http://*.taila228c5.ts.net/*"
 				},
-				{
-					"url": "https://*.taila228c5.ts.net/*"
-				}
-			]
+		{
+			"url": "https://*.taila228c5.ts.net/*"
 		},
+		{
+			"url": "https://api.github.com/*"
+		}
+	]
+},
 		"dialog:allow-save",
 		"fs:allow-read-dir",
 		"fs:allow-read-file",

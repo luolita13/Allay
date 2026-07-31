@@ -24,7 +24,7 @@
     "message": "License"
   },
   "app.about.license-value": {
-    "message": "GPL-3.0"
+    "message": "View License"
   },
   "app.about.platform": {
     "message": "Platform"
@@ -1928,6 +1928,36 @@
   "app.library.title": {
     "message": "Library"
   },
+  "app.license-modal.title": {
+    "message": "Agreement & License"
+  },
+  "app.license-modal.agree": {
+    "message": "Agree & Continue"
+  },
+  "app.license-modal.decline": {
+    "message": "Decline"
+  },
+  "app.license-modal.tab-tos": {
+    "message": "Terms of Use"
+  },
+  "app.license-modal.tab-privacy": {
+    "message": "Privacy Policy"
+  },
+  "app.license-modal.tab-license": {
+    "message": "Open Source"
+  },
+  "app.license-modal.tos-content": {
+    "message": "Allay Terms of Service\n\nThis software is a free and open-source Minecraft launcher, licensed under GPL-3.0.\n\n1. Legal Use\n   You must own a legitimate Minecraft: Java Edition account to use this software. This software does not provide any game files, accounts, or authentication bypass mechanisms.\n\n2. Third-Party Disclaimer\n   This software is not affiliated with Mojang Studios, Microsoft, or Modrinth. All trademarks are the property of their respective owners.\n\n3. Disclaimer of Warranty\n   This software is provided \"AS IS\", without warranty of any kind, express or implied. The developers shall not be liable for any direct or indirect damages arising from the use or inability to use this software, including but not limited to data loss, account bans, or hardware damage.\n\n4. Open Source\n   This project as a whole is licensed under GPL-3.0. You are free to use, modify, and distribute this software, provided you comply with the terms of GPL-3.0. Some sub-packages use LGPL-3.0 or MIT/Apache-2.0 (see \"Open Source\" tab).\n\nBy continuing, you acknowledge that you have read and agree to these terms."
+  },
+  "app.license-modal.privacy-content": {
+    "message": "Allay Privacy Policy\n\nLast updated: July 31, 2026\n\nWe value your privacy. This policy explains how Allay collects and uses information.\n\n1. Information We Collect\n   To improve the software and services, we may collect the following anonymous telemetry data:\n   • App version and operating system information\n   • Launcher feature usage statistics (e.g., launch count, settings preferences)\n   • Error reports and crash logs (no personal information)\n   • Anonymous network performance metrics\n\n2. Information We Do NOT Collect\n   • Your Minecraft account information (email, password, UUID)\n   • Your IP address or personally identifiable information\n   • Your local file paths or game save contents\n\n3. How We Use Information\n   Collected data is used solely for:\n   • Improving software stability and fixing bugs\n   • Understanding feature usage to optimize user experience\n   • Counting active users\n\n4. Data Sharing\n   We do not sell, rent, or share your data with third parties. All telemetry data is stored in anonymous aggregate form.\n\n5. Your Choices\n   You can disable telemetry at any time in Settings → Privacy Settings.\n\n6. Data Security\n   We employ reasonable technical measures to protect data transmission and storage.\n\nFor privacy-related inquiries, please contact us via the project's GitHub repository."
+  },
+  "app.license-modal.notice": {
+    "message": "Allay is based on the open-source software Modrinth App and is distributed under the GNU General Public License v3.0 (GPL-3.0). Some packages use other licenses (details below)."
+  },
+  "app.license-modal.package-licenses": {
+    "message": "Package licenses: packages/api-client — LGPL-3.0; packages/async-minecraft-ping — MIT / Apache-2.0 dual license."
+  },
   "app.minecraft-auth.contact-support": {
     "message": "Contact support"
   },
@@ -2072,26 +2102,11 @@
   "app.privacy-settings.disabled-in-build": {
     "message": "Disabled in this build"
   },
-  "app.privacy-settings.discord-rpc": {
-    "message": "Discord RPC"
-  },
-  "app.privacy-settings.discord-rpc.desc": {
-    "message": "Manages Discord Rich Presence integration. When disabled, \"Modrinth\" will no longer appear as a game or app on your Discord profile."
-  },
-  "app.privacy-settings.discord-rpc.note": {
-    "message": "Note: This setting does not prevent instance-specific Discord Rich Presence integrations (such as those added by mods). (Requires app restart)"
-  },
-  "app.privacy-settings.personalized-ads": {
-    "message": "Personalized Ads"
-  },
-  "app.privacy-settings.personalized-ads.desc": {
-    "message": "Modrinth's ad provider, Aditude, shows ads based on your preferences. When disabled, ads will no longer be based on your interests."
-  },
   "app.privacy-settings.telemetry": {
     "message": "Telemetry"
   },
   "app.privacy-settings.telemetry.desc": {
-    "message": "Modrinth collects anonymous usage analytics and data to improve the user experience and provide personalized services. When disabled, this data will no longer be collected."
+    "message": "Allay collects anonymous usage analytics and data to improve the user experience and provide personalized services. When disabled, this data will no longer be collected."
   },
   "app.project.follow": {
     "message": "Follow"
@@ -2356,6 +2371,9 @@
   },
   "app.settings.tabs.translation": {
     "message": "Translation"
+  },
+  "app.settings.tabs.updates": {
+    "message": "Updates"
   },
   "app.settings.title": {
     "message": "Settings"
@@ -2698,6 +2716,54 @@
   },
   "app.update.complete-toast.title": {
     "message": "Version {version} was successfully installed!"
+  },
+  "app.updates.current-version": {
+    "message": "Current version"
+  },
+  "app.updates.latest-version": {
+    "message": "Latest version"
+  },
+  "app.updates.check-for-updates": {
+    "message": "Check for updates"
+  },
+  "app.updates.checking": {
+    "message": "Checking for updates\u2026"
+  },
+  "app.updates.up-to-date": {
+    "message": "You are on the latest version."
+  },
+  "app.updates.update-available": {
+    "message": "Version {version} is available."
+  },
+  "app.updates.check-failed": {
+    "message": "Failed to check for updates."
+  },
+  "app.updates.updates-disabled": {
+    "message": "Updates are only available in release builds."
+  },
+  "app.updates.update-now": {
+    "message": "Download & install"
+  },
+  "app.updates.release-notes": {
+    "message": "Release notes"
+  },
+  "app.updates.loading-changelog": {
+    "message": "Loading release notes\u2026"
+  },
+  "app.updates.changelog-error": {
+    "message": "Failed to load release notes."
+  },
+  "app.updates.changelog-error-detail": {
+    "message": "Reason: {error}"
+  },
+  "app.updates.view-on-github": {
+    "message": "View on GitHub"
+  },
+  "app.updates.published-on": {
+    "message": "Published on {date}"
+  },
+  "app.updates.prerelease": {
+    "message": "Pre-release"
   },
   "app.url-confirm.install": {
     "message": "Install"

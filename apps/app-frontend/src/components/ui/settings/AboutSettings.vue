@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ExternalIcon, ModrinthIcon } from '@modrinth/assets'
+import { ExternalIcon } from '@modrinth/assets'
 import { defineMessages, useVIntl } from '@modrinth/ui'
 import { getVersion } from '@tauri-apps/api/app'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref } from 'vue'
+import AllayAppLogo from '@/assets/allay_app.svg?component'
+import LicenseModal from '@/components/ui/LicenseModal.vue'
 
 const { formatMessage } = useVIntl()
 
@@ -41,11 +43,6 @@ const messages = defineMessages({
 		id: 'app.about.report-issue',
 		defaultMessage: 'Report an Issue',
 	},
-	legalNotice: {
-		id: 'app.about.legal-notice',
-		defaultMessage:
-			'Allay is a custom Minecraft launcher. Modrinth and its trademarks are owned by Rinth, Inc.',
-	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',
 		defaultMessage: 'System Override Authorized',
@@ -79,10 +76,16 @@ const highScores = [
 	{ rank: '4TH', name: 'YOU', score: '000000', note: 'The Player' },
 ]
 
+const showLicense = ref(false)
+
 function onLogoClick() {
 	clickCount.value++
 	console.log('[About Easter Egg] logo click:', clickCount.value)
 	triggerEasterEgg()
+}
+
+function onLicenseClick() {
+	showLicense.value = true
 }
 
 function onVersionClick() {
@@ -102,7 +105,6 @@ function triggerEasterEgg() {
 		showHallOfFame.value = true
 	}
 }
-
 </script>
 
 <template>
@@ -111,15 +113,14 @@ function triggerEasterEgg() {
 	>
 		<!-- Hero -->
 		<div class="hero">
-			<div
-				class="logo-glow"
+			<AllayAppLogo
+				class="allay-logo"
 				:class="{
 					'egg-spin': clickCount >= 5 && clickCount < 15,
-					'egg-pulse': clickCount >= 5,
 				}"
-			>
-				<ModrinthIcon class="logo-icon" title="Psst... try clicking me" @click="onLogoClick" />
-			</div>
+				title="Psst... try clicking me"
+				@click="onLogoClick"
+			/>
 			<h1 class="app-name">{{ formatMessage(messages.appName) }}</h1>
 		</div>
 
@@ -145,7 +146,9 @@ function triggerEasterEgg() {
 			</div>
 			<div class="meta-row">
 				<dt>{{ formatMessage(messages.license) }}</dt>
-				<dd>{{ formatMessage(messages.licenseValue) }}</dd>
+				<dd class="license-clickable" role="button" tabindex="0" @click="onLicenseClick" @keydown.enter="onLicenseClick">
+					{{ formatMessage(messages.licenseValue) }}
+				</dd>
 			</div>
 		</dl>
 
@@ -180,11 +183,11 @@ function triggerEasterEgg() {
 
 		<!-- Links -->
 		<div class="actions">
-			<button class="action-link" @click="openUrl('https://github.com/luolita13/code')">
+			<button class="action-link" @click="openUrl('https://github.com/luolita13/Allay')">
 				<ExternalIcon class="size-4" />
 				<span>{{ formatMessage(messages.viewSource) }}</span>
 			</button>
-			<button class="action-link" @click="openUrl('https://github.com/luolita13/code/issues')">
+			<button class="action-link" @click="openUrl('https://github.com/luolita13/Allay/issues')">
 				<ExternalIcon class="size-4" />
 				<span>{{ formatMessage(messages.reportIssue) }}</span>
 			</button>
@@ -198,9 +201,10 @@ function triggerEasterEgg() {
 					github.com/luolita13
 				</button>
 			</p>
-			<p class="legal">{{ formatMessage(messages.legalNotice) }}</p>
 	</div>
 </div>
+
+	<LicenseModal v-if="showLicense" @close="showLicense = false" />
 </template>
 
 <style scoped>
@@ -224,66 +228,21 @@ function triggerEasterEgg() {
 	gap: 1rem;
 }
 
-.logo-glow {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+.allay-logo {
 	width: 6rem;
-	height: 6rem;
-	border-radius: 50%;
-	background: radial-gradient(
-		circle at 30% 30%,
-		color-mix(in srgb, var(--color-brand) 70%, white),
-		var(--color-brand) 45%,
-		transparent 72%
-	);
+	height: auto;
+	filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+	cursor: pointer;
+	user-select: none;
 }
 
-.logo-glow.egg-spin {
+.allay-logo.egg-spin {
 	animation: spin-pulse 2s ease-in-out infinite;
-}
-
-.logo-glow.egg-pulse::after {
-	content: '';
-	position: absolute;
-	inset: -30%;
-	border-radius: 50%;
-	background: radial-gradient(circle, var(--color-brand) 0%, transparent 60%);
-	opacity: 0.3;
-	filter: blur(12px);
-	animation: neon-pulse 1.2s ease-in-out infinite;
-	z-index: -1;
 }
 
 @keyframes spin-pulse {
 	0%, 100% { transform: rotate(0deg) scale(1); }
 	50% { transform: rotate(180deg) scale(1.08); }
-}
-
-@keyframes neon-pulse {
-	0%, 100% { opacity: 0.2; transform: scale(0.95); }
-	50% { opacity: 0.45; transform: scale(1.05); }
-}
-
-.logo-glow::before {
-	content: '';
-	position: absolute;
-	inset: -20%;
-	border-radius: 50%;
-	background: radial-gradient(circle, var(--color-brand) 0%, transparent 65%);
-	opacity: 0.18;
-	filter: blur(18px);
-	z-index: -1;
-}
-
-.logo-icon {
-	width: 3rem;
-	height: 3rem;
-	color: white;
-	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
-	cursor: pointer;
-	user-select: none;
 }
 
 .app-name {
@@ -340,6 +299,20 @@ function triggerEasterEgg() {
 
 .version-value:hover {
 	background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.license-clickable {
+	cursor: pointer;
+	padding: 0.2rem 0.5rem;
+	border-radius: 0.5rem;
+	color: var(--color-brand) !important;
+	font-weight: 600 !important;
+	transition: background 0.15s ease;
+}
+
+.license-clickable:hover {
+	background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+	text-decoration: underline;
 }
 
 .meta-sub {
@@ -549,14 +522,6 @@ function triggerEasterEgg() {
 
 .github-handle:hover {
 	text-decoration: underline;
-}
-
-.legal {
-	margin: 0;
-	font-size: 0.7rem;
-	line-height: 1.6;
-	color: var(--color-tertiary);
-	max-width: 22rem;
 }
 
 /* === Transitions === */

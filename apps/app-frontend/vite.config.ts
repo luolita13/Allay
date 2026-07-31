@@ -52,6 +52,20 @@ export default defineConfig({
 		],
 	},
 	plugins: [
+		{
+			name: 'license-loader',
+			resolveId(id) {
+				if (id === '../../LICENSE' || id.endsWith('/LICENSE')) {
+					return '\0license-file'
+				}
+			},
+			load(id) {
+				if (id === '\0license-file') {
+					const content = readFileSync(resolve(projectRootDir, 'LICENSE'), 'utf-8')
+					return `export default ${JSON.stringify(content)}`
+				}
+			},
+		},
 		vue(),
 		svgLoader({
 			svgoConfig: {

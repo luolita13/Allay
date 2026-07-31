@@ -336,7 +336,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             show_ads_window,
             record_ads_click,
             open_link,
-            get_ads_personalization,
         ])
         .build()
 }
@@ -669,8 +668,3 @@ pub async fn open_link<R: Runtime>(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn get_ads_personalization() -> crate::api::Result<bool> {
-    let res = settings::get().await?;
-    Ok(res.personalized_ads)
-}

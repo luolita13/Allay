@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-	ModrinthIcon,
 	SettingsIcon,
 } from '@modrinth/assets'
 import {
@@ -18,6 +17,7 @@ import { get, set } from '@/helpers/settings.ts'
 import { settingsTabs } from '@/helpers/settings-tabs'
 import { injectAppUpdateDownloadProgress } from '@/providers/download-progress.ts'
 import { useTheming } from '@/store/state'
+import AllayAppLogo from '@/assets/allay_app.svg?component'
 
 const themeStore = useTheming()
 
@@ -105,16 +105,16 @@ const messages = defineMessages({
 						}"
 						@click="devModeCount"
 					>
-						<ModrinthIcon class="w-6 h-6" />
+						<AllayAppLogo class="w-6 h-6" />
 					</button>
 					<div class="max-w-[220px]">
-					<p class="m-0">Allay {{ version }} (Custom Edition)</p>
-					<p class="m-0">
-						<span v-if="osPlatform === 'macos'">macOS</span>
-						<span v-else class="capitalize">{{ osPlatform }}</span>
-						{{ osVersion }}
-					</p>
-				</div>
+						<p class="m-0">Allay {{ version }} (Custom Edition)</p>
+						<p class="m-0">
+							<span v-if="osPlatform === 'macos'">macOS</span>
+							<span v-else class="capitalize">{{ osPlatform }}</span>
+							{{ osVersion }}
+						</p>
+					</div>
 				</div>
 			</div>
 		</template>

@@ -47,7 +47,6 @@ export type AppSettings = {
 
 	telemetry: boolean
 	discord_rpc: boolean
-	personalized_ads: boolean
 
 	onboarded: boolean
 
