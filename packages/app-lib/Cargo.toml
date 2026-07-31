@@ -72,8 +72,7 @@ reqwest = { workspace = true, features = [
   "rustls-tls-webpki-roots",
   "stream",
 ] }
-reqwest-middleware = { workspace = true }
-reqwest-retry = { workspace = true }
+bytehaul = { workspace = true }
 rgb = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_ini = { workspace = true }
