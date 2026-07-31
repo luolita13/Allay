@@ -21,10 +21,10 @@
     "message": "Allay is a custom Minecraft launcher. Modrinth and its trademarks are owned by Rinth, Inc."
   },
   "app.about.license": {
-    "message": "License"
+    "message": "Agreement & License"
   },
   "app.about.license-value": {
-    "message": "View License"
+    "message": "View Agreement & License"
   },
   "app.about.platform": {
     "message": "Platform"

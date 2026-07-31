@@ -2658,10 +2658,10 @@
     "message": "平台"
   },
   "app.about.license": {
-    "message": "许可证"
+    "message": "协议与许可证"
   },
   "app.about.license-value": {
-    "message": "查看许可证"
+    "message": "查看协议与许可证"
   },
   "app.about.view-source": {
     "message": "查看源代码"
