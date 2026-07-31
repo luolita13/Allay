@@ -1,6 +1,7 @@
 {
 	"bundle": {
-		"createUpdaterArtifacts": "v1Compatible"
+		"createUpdaterArtifacts": "v1Compatible",
+		"targets": "nsis"
 	},
 	"build": {
 		"features": ["updater"]
