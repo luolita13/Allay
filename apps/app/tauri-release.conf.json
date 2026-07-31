@@ -12,7 +12,7 @@
 	},
 	"plugins": {
 		"updater": {
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdENEJFMERFNTI0NUVBQUMKUldTczZrVlMzdUJMZmNVSGczdUJVeFpVazBjbmpLYllaRUxJV1pseTNSa2hncTd2VHAvLzh6UXcK",
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ3MjJCNjg1NkI4RkEzRTUKUldUbG80OXJoYllpMTFONG1aMDdYcldxSkNpazBXV3RyZ3kycmh3a21hZmJBSmFPb1ZFNGdEclkK",
 			"endpoints": ["https://github.com/luolita13/Allay/releases/latest/download/latest.json"],
 			"windows": {
 				"installMode": "quiet"
