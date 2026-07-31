@@ -239,7 +239,6 @@ async fn fetch_minecraft_file(
         None,
         &st.fetch_semaphore,
         &st.pool,
-        st.max_chunks_per_file,
         Some(progress_fn),
     )
     .await?;

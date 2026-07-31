@@ -1005,10 +1005,7 @@ async fn run_request(
             );
 
             // Download the file bytes using fetch_chunked for mirror support
-            // and parallel chunked download on large files. CurseForge does
-            // not expose SHA1 hashes in its API, so we pass None for sha1.
-            let settings = crate::state::Settings::get(&state.pool).await?;
-            let max_chunks = settings.max_chunks_per_file;
+            // and retry middleware on transient network errors.
             let bytes = crate::util::fetch::fetch_chunked(
                 &download_url,
                 None,
@@ -1016,7 +1013,6 @@ async fn run_request(
                 None,
                 &state.fetch_semaphore,
                 &state.pool,
-                max_chunks,
                 None,
             )
             .await?;

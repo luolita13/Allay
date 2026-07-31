@@ -1,6 +1,5 @@
 //! Functions for fetching information from the Internet
 use super::io::{self, IOError};
-use super::chunked_download;
 use crate::ErrorKind;
 use crate::event::LoadingBarId;
 use crate::event::emit::emit_loading;
@@ -214,6 +213,20 @@ pub static INSECURE_REQWEST_CLIENT: LazyLock<reqwest::Client> =
         reqwest_client_builder()
             .build()
             .expect("client configuration should be valid")
+    });
+
+pub static REQWEST_CLIENT_WITH_RETRY: LazyLock<reqwest_middleware::ClientWithMiddleware> =
+    LazyLock::new(|| {
+        let retry_policy = reqwest_retry::policies::ExponentialBackoff::builder()
+            .build_with_max_retries(3);
+        let client = reqwest_client_builder()
+            .build()
+            .expect("client configuration should be valid");
+        reqwest_middleware::ClientBuilder::new(client)
+            .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(
+                retry_policy,
+            ))
+            .build()
     });
 
 pub static REQWEST_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
@@ -824,12 +837,10 @@ pub async fn write_cached_icon(
     Ok(path)
 }
 
-/// Downloads a file using parallel chunked (HTTP Range) requests when beneficial.
-///
-/// This wraps the chunked_download module, integrating it with the mirror/fallback system
-/// and the fetch semaphore. For large files (>1MB), the server is first probed with a HEAD
-/// request to check Range support; if supported, the file is split into parallel chunks.
-/// Falls back to a standard single-request download otherwise.
+/// Downloads a file with HTTP retry middleware, mirror fallback, and optional SHA-1 validation.
+/// Uses `ExponentialBackoff` (3 retries) via `reqwest-retry` to handle transient network errors.
+/// No longer does parallel chunked download — the retry middleware and HTTP/2 multiplexing
+/// provide more robust performance.
 #[tracing::instrument(skip(semaphore, progress))]
 pub async fn fetch_chunked(
     url: &str,
@@ -838,39 +849,38 @@ pub async fn fetch_chunked(
     uri_path: Option<&'static str>,
     semaphore: &FetchSemaphore,
     exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
-    max_chunks: usize,
     progress: Option<Arc<dyn Fn(u64, u64) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send + 'static>> + Send + Sync>>,
 ) -> crate::Result<Bytes> {
     let _permit = semaphore.0.acquire().await?;
 
     let strategy = super::mirror::get_fetch_strategy(url);
     let (primary_url, fallback_url) = match &strategy {
-        super::mirror::FetchStrategy::OfficialOnly => (url.to_string(), None),
+        super::mirror::FetchStrategy::OfficialOnly => (url, None),
         super::mirror::FetchStrategy::MirrorFirst { mirror_url } => {
-            (mirror_url.clone(), Some(url.to_string()))
+            (mirror_url.as_str(), Some(url))
         }
         super::mirror::FetchStrategy::OfficialFirstWithFallback { mirror_url } => {
-            (url.to_string(), Some(mirror_url.clone()))
+            (url, Some(mirror_url.as_str()))
         }
     };
 
     let _download_meta_header = download_meta
         .map(|m| (DOWNLOAD_META_HEADER.to_string(), m.to_header_value()));
 
-    // Build a client with appropriate headers
-    let client = &INSECURE_REQWEST_CLIENT;
+    let creds = if url.starts_with("https://cdn.modrinth.com")
+        || url.starts_with(env!("MODRINTH_API_URL"))
+        || url.starts_with(env!("MODRINTH_API_URL_V3"))
+    {
+        crate::state::ModrinthCredentials::get_active(exec).await?
+    } else {
+        None
+    };
 
-    // Wrap the external progress callback to match the chunked_download signature
-    let chunked_progress: Option<Arc<dyn Fn(u64, u64) -> Pin<Box<dyn Future<Output = crate::Result<()>> + Send>> + Send + Sync>> = progress;
+    let client = &*REQWEST_CLIENT_WITH_RETRY;
 
-    // Phase 1: Try primary URL with chunked download
-    match chunked_download::download_chunked(
-        client,
-        &primary_url,
-        url,
-        sha1,
-        max_chunks,
-        chunked_progress.clone(),
+    // Try primary URL
+    match fetch_retry_inner(
+        client, primary_url, url, sha1, &_download_meta_header, &creds, progress.as_deref(),
     )
     .await
     {
@@ -878,23 +888,17 @@ pub async fn fetch_chunked(
         Err(primary_err) => {
             if let Some(fallback) = &fallback_url {
                 tracing::info!(
-                    "Chunked primary URL failed for {url}, trying fallback: {fallback}"
+                    "Primary URL failed for {url}, trying fallback: {fallback}"
                 );
-                // Phase 2: Try fallback URL
-                match chunked_download::download_chunked(
-                    client,
-                    fallback,
-                    url,
-                    sha1,
-                    max_chunks,
-                    chunked_progress,
+                match fetch_retry_inner(
+                    client, fallback, url, sha1, &_download_meta_header, &creds, progress.as_deref(),
                 )
                 .await
                 {
                     Ok(bytes) => return Ok(bytes),
                     Err(fallback_err) => {
                         tracing::warn!(
-                            "Both primary and fallback chunked URLs failed for {url}"
+                            "Both primary and fallback URLs failed for {url}"
                         );
                         return Err(fallback_err);
                     }
@@ -903,6 +907,88 @@ pub async fn fetch_chunked(
             Err(primary_err)
         }
     }
+}
+
+async fn fetch_retry_inner(
+    client: &reqwest_middleware::ClientWithMiddleware,
+    fetch_url: &str,
+    auth_url: &str,
+    sha1: Option<&str>,
+    download_meta_header: &Option<(String, String)>,
+    creds: &Option<crate::state::ModrinthCredentials>,
+    progress: Option<&FetchProgressFn>,
+) -> crate::Result<Bytes> {
+    let mut req = reqwest::Request::new(reqwest::Method::GET, fetch_url.parse()?);
+
+    if let Some(creds) = creds {
+        if let Ok(value) = creds.session.parse() {
+            req.headers_mut().insert("Authorization", value);
+        }
+    }
+
+    if let Some((name, value)) = download_meta_header {
+        if let Ok(header_name) = reqwest::header::HeaderName::from_bytes(name.as_bytes()) {
+            if let Ok(header_value) = value.parse() {
+                req.headers_mut().insert(header_name, header_value);
+            }
+        }
+    }
+
+    let resp = client.execute(req).await.map_err(|e| {
+        ErrorKind::OtherError(e.to_string())
+    })?;
+
+    if !resp.status().is_success() {
+        let backup_error = resp.error_for_status_ref().unwrap_err();
+        if let Ok(error) = resp.json().await {
+            return Err(ErrorKind::LabrinthError(error).into());
+        }
+        return Err(backup_error.into());
+    }
+
+    let bytes: eyre::Result<Bytes> = if let Some(progress) = progress {
+        let length = resp.content_length();
+        if let Some(total_size) = length {
+            use futures::StreamExt;
+            let mut stream = resp.bytes_stream();
+            let mut bytes = Vec::new();
+            let mut downloaded = 0_u64;
+
+            while let Some(item) = stream.next().await {
+                let chunk = item.wrap_err_with(|| {
+                    eyre!("failed to read response body from {auth_url}")
+                })?;
+                downloaded += chunk.len() as u64;
+                bytes.extend_from_slice(&chunk);
+                progress(downloaded, total_size).await?;
+            }
+
+            Ok(Bytes::from(bytes))
+        } else {
+            resp.bytes().await.wrap_err_with(|| {
+                eyre!("failed to read response body from {auth_url}")
+            })
+        }
+    } else {
+        resp.bytes().await.wrap_err_with(|| {
+            eyre!("failed to read response body from {auth_url}")
+        })
+    };
+
+    let bytes = bytes?;
+
+    if let Some(sha1) = sha1 {
+        let hash = sha1_async(bytes.clone()).await?;
+        if hash != sha1 {
+            return Err(ErrorKind::HashError(
+                String::from(auth_url),
+                hash,
+            )
+            .into());
+        }
+    }
+
+    Ok(bytes)
 }
 
 pub async fn sha1_async(bytes: Bytes) -> crate::Result<String> {

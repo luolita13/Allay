@@ -1,5 +1,4 @@
 //! Theseus utility functions
-pub mod chunked_download;
 pub mod fetch;
 pub mod io;
 pub mod java_version;
