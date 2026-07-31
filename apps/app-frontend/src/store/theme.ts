@@ -10,6 +10,8 @@ const LS_KEY_BG_BLUR = 'allay-app-background-blur'
 const LS_KEY_BG_OPACITY = 'allay-app-background-opacity'
 const LS_KEY_ACCENT_COLOR = 'allay-app-accent-color'
 const LS_KEY_CUSTOM_ACCENT_COLOR = 'allay-app-custom-accent-color'
+
+let accentColorRafId: number | null = null
 const LS_KEY_ACTIVE_THEME_PACK = 'allay-app-active-theme-pack'
 const LS_KEY_APP_IMAGE_VIEWER = 'allay-app-image-viewer'
 const LS_KEY_SETTINGS_AS_PAGE = 'allay-app-settings-as-page'
@@ -193,24 +195,33 @@ export const useTheming = defineStore('themeStore', {
 		},
 		setCustomAccentColor(hex: string) {
 			this.customAccentColor = hex
-			localStorage.setItem(LS_KEY_CUSTOM_ACCENT_COLOR, hex)
 
-			const html = document.documentElement
-			// Remove preset accent classes
-			for (const accentColor of ACCENT_COLOR_OPTIONS) {
-				html.classList.remove(`accent-${accentColor}`)
+			// Debounce expensive DOM + localStorage writes to next animation frame
+			// to avoid frame drops during real-time color picker scrubbing.
+			if (accentColorRafId !== null) {
+				cancelAnimationFrame(accentColorRafId)
 			}
+			accentColorRafId = requestAnimationFrame(() => {
+				accentColorRafId = null
+				localStorage.setItem(LS_KEY_CUSTOM_ACCENT_COLOR, hex)
 
-			// Apply custom color via inline CSS variables
-			html.style.setProperty('--color-brand', hex)
-			html.style.setProperty(
-				'--color-brand-highlight',
-				`color-mix(in srgb, ${hex} 70%, white)`,
-			)
-			html.style.setProperty(
-				'--color-brand-shadow',
-				`color-mix(in srgb, ${hex} 68%, transparent)`,
-			)
+				const html = document.documentElement
+				// Remove preset accent classes
+				for (const accentColor of ACCENT_COLOR_OPTIONS) {
+					html.classList.remove(`accent-${accentColor}`)
+				}
+
+				// Apply custom color via inline CSS variables
+				html.style.setProperty('--color-brand', hex)
+				html.style.setProperty(
+					'--color-brand-highlight',
+					`color-mix(in srgb, ${hex} 70%, white)`,
+				)
+				html.style.setProperty(
+					'--color-brand-shadow',
+					`color-mix(in srgb, ${hex} 68%, transparent)`,
+				)
+			})
 		},
 		setThemeClass() {
 			const html = document.getElementsByTagName('html')[0]

@@ -22,7 +22,7 @@
 						:class="{
 							'bg-red': item.type === 'error',
 							'bg-orange': item.type === 'warning',
-							'bg-green': item.type === 'success',
+							'bg-brand': item.type === 'success',
 							'bg-blue': !item.type || !['error', 'warning', 'success'].includes(item.type),
 						}"
 					></div>
@@ -34,7 +34,7 @@
 							:class="{
 								'text-red': item.type === 'error',
 								'text-orange': item.type === 'warning',
-								'text-green': item.type === 'success',
+								'text-brand': item.type === 'success',
 								'text-blue': !item.type || !['error', 'warning', 'success'].includes(item.type),
 							}"
 						>

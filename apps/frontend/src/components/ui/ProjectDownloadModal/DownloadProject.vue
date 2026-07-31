@@ -22,7 +22,7 @@
 					class="flex w-full items-center justify-between gap-2 px-4 py-2"
 					:class="{
 						'text-brand-red opacity-40': isGameVersionUnavailable(item.value),
-						'text-green': isSelected,
+						'text-brand': isSelected,
 						'!opacity-100': isSelected,
 						'text-primary': !isGameVersionUnavailable(item.value) && !isSelected,
 					}"
@@ -64,7 +64,7 @@
 					class="flex w-full items-center justify-between gap-2 px-4 py-2"
 					:class="{
 						'text-brand-red opacity-40': isPlatformUnavailable(item.value),
-						'text-green': isSelected,
+						'text-brand': isSelected,
 						'!opacity-100': isSelected,
 						'text-primary': !isPlatformUnavailable(item.value) && !isSelected,
 					}"

@@ -284,10 +284,10 @@ watch(
 				:key="accentColor.value"
 				type="button"
 				role="radio"
-				:aria-checked="themeStore.selectedAccentColor === accentColor.value"
+				:aria-checked="themeStore.selectedAccentColor === accentColor.value && !themeStore.customAccentColor"
 				class="flex min-w-0 items-center gap-2 rounded-xl border border-solid px-3 py-2.5 font-semibold transition-all active:scale-[0.97]"
 				:class="
-					themeStore.selectedAccentColor === accentColor.value
+					themeStore.selectedAccentColor === accentColor.value && !themeStore.customAccentColor
 						? 'border-brand bg-brand-highlight text-brand'
 						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
 				"

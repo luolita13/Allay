@@ -70,17 +70,6 @@ const props = withDefaults(
 	},
 )
 
-const FROG = [
-	'\x1B[32m     _    _ \x1B[37m',
-	'\x1B[32m    (o)--(o)      \x1B[37m',
-	'\x1B[32m   /.______.\\\x1B[37m',
-	'\x1B[32m   \\________/     \x1B[37m',
-	'\x1B[32m  ./        \\.    \x1B[37m',
-	'\x1B[32m ( .        , )\x1B[37m',
-	'\x1B[32m  \\ \\_\\\\ //_/ /\x1B[37m',
-	'\x1B[32m   ~~  ~~  ~~\x1B[37m',
-]
-
 const EMPTY_STATE_BUBBLES: Record<string, string[]> = {
 	server: [
 		'   __________________________________________________',
@@ -136,7 +125,7 @@ function writeEmptyState() {
 	terminal.value.reset()
 	const bubble = EMPTY_STATE_BUBBLES[props.emptyStateType]
 	if (bubble) {
-		for (const line of [...bubble, ...FROG]) {
+		for (const line of bubble) {
 			terminal.value.writeln(line)
 		}
 	}

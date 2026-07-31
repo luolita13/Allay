@@ -221,15 +221,16 @@ fn rewrite_bmclapi(url: &str) -> Option<String> {
 /// Rewrite community-modded CDN URLs to the appropriate mirror.
 /// Returns Some(rewritten_url) if the URL matched, None otherwise.
 ///
-/// This function handles two classes of rewrites:
+/// This function handles three classes of rewrites:
 /// 1. **Mod file downloads** (Modrinth CDN, CurseForge CDN) → MCIMirror
 /// 2. **Maven loader libraries** (launcher-meta.modrinth.com/maven/) → BMCLAPI
+/// 3. **Loader metadata** (launcher-meta.modrinth.com/ non-maven paths) → MCIMirror
 ///
-/// Note: Only CDN download URLs are mirrored by default here. Modrinth API
-/// URLs are NOT mirrored because the mirror API may return incomplete/
-/// incompatible data structures. CurseForge API mirroring is handled in
-/// `crate::api::curseforge` because those requests require the `x-api-key`
-/// header and need the full official URL for the fallback path.
+/// Note: Only CDN/download URLs are mirrored here. Modrinth API URLs are NOT
+/// mirrored because the mirror API may return incomplete/incompatible data.
+/// CurseForge API mirroring is handled in `crate::api::curseforge` because
+/// those requests require the `x-api-key` header and need the full official
+/// URL for the fallback path.
 fn rewrite_community_mirrors(url: &str) -> Option<String> {
     const REPLACEMENTS: &[(&str, &str)] = &[
         // Modrinth CDN (mod file downloads) → MCIMirror
@@ -246,6 +247,13 @@ fn rewrite_community_mirrors(url: &str) -> Option<String> {
         // Auto-mode had no fallback URL and any download failure on the
         // Modrinth CDN would propagate as a hard error.
         ("https://launcher-meta.modrinth.com/maven/", "https://bmclapi2.bangbang93.com/maven/"),
+        // Modrinth launcher-meta non-maven content (loader manifests,
+        // version profiles, etc.) → MCIMirror.
+        // BMCLAPI does not mirror Modrinth's processed manifest format
+        // (fabric/v0/manifest.json, etc.), but MCIMirror mirrors the full
+        // launcher-meta subdomain. This rule MUST come after the maven rule
+        // above so that maven JARs still go through BMCLAPI.
+        ("https://launcher-meta.modrinth.com/", "https://mod.mcimirror.top/"),
     ];
 
     for (from, to) in REPLACEMENTS {
@@ -342,15 +350,21 @@ mod tests {
             rewrite_community_mirrors("https://launcher-meta.modrinth.com/maven/net/fabricmc/fabric-loader/0.14.21/fabric-loader-0.14.21.jar"),
             Some("https://bmclapi2.bangbang93.com/maven/net/fabricmc/fabric-loader/0.14.21/fabric-loader-0.14.21.jar".to_string())
         );
-        // Other launcher-meta paths (manifests, etc.) should NOT be mirrored here
-        // because BMCLAPI does not serve Modrinth's processed manifest format.
+        // Other launcher-meta paths (manifests, etc.) now go through MCIMirror
         assert_eq!(
             rewrite_community_mirrors("https://launcher-meta.modrinth.com/fabric/v0/manifest.json"),
-            None
+            Some("https://mod.mcimirror.top/fabric/v0/manifest.json".to_string())
         );
         assert_eq!(
+            rewrite_community_mirrors("https://launcher-meta.modrinth.com/forge/v0/versions/loader-1.20.1-profile.json"),
+            Some("https://mod.mcimirror.top/forge/v0/versions/loader-1.20.1-profile.json".to_string())
+        );
+        // Minecraft manifests are caught by rewrite_community_mirrors' generic
+        // launcher-meta rule, but get_fetch_strategy checks rewrite_version_list
+        // first, so they're still handled via version_list_source at runtime.
+        assert_eq!(
             rewrite_community_mirrors("https://launcher-meta.modrinth.com/minecraft/v0/manifest.json"),
-            None
+            Some("https://mod.mcimirror.top/minecraft/v0/manifest.json".to_string())
         );
     }
 
@@ -424,6 +438,23 @@ mod tests {
         match get_fetch_strategy("https://example.com/file") {
             FetchStrategy::OfficialOnly => {}
             other => panic!("Non-matching URLs should be OfficialOnly, got {other:?}"),
+        }
+
+        // --- Loader metadata mirrors (launcher-meta → MCIMirror) ---------------
+        update_mirror_settings(1, 0, 1, 1); // community_source = Mirror
+        match get_fetch_strategy("https://launcher-meta.modrinth.com/fabric/v0/manifest.json") {
+            FetchStrategy::MirrorFirst { mirror_url } => {
+                assert!(mirror_url.contains("mod.mcimirror.top"));
+            }
+            other => panic!("Expected MirrorFirst for loader metadata, got {other:?}"),
+        }
+
+        update_mirror_settings(1, 1, 1, 1); // community_source = Auto
+        match get_fetch_strategy("https://launcher-meta.modrinth.com/fabric/v0/manifest.json") {
+            FetchStrategy::OfficialFirstWithFallback { mirror_url } => {
+                assert!(mirror_url.contains("mod.mcimirror.top"));
+            }
+            other => panic!("Expected OfficialFirstWithFallback for loader metadata, got {other:?}"),
         }
 
         // --- Official mode: no mirror fallback ----------------------------------

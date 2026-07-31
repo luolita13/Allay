@@ -94,8 +94,9 @@ async function onDecline() {
 </script>
 
 <template>
-	<Transition name="modal">
-		<div class="license-overlay" @click.self="!requireAccept && onDecline()">
+	<Teleport to="body">
+		<Transition name="modal">
+			<div class="license-overlay" @click.self="!requireAccept && onDecline()">
 			<div class="license-modal">
 				<h2 class="license-title">{{ formatMessage(messages.title) }}</h2>
 
@@ -128,6 +129,7 @@ async function onDecline() {
 			</div>
 		</div>
 	</Transition>
+	</Teleport>
 </template>
 
 <style lang="scss" scoped>
