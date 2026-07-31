@@ -77,7 +77,7 @@
 			"mobile": []
 		},
 		"updater": {
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwRUJGMzhERDM4QjhFNzcKUldSM2pvdlRqZlByb0VLOXNVb3UzbjNMdWhXaHFqY3ZwVy9kem9TUjFDY3liTVJveXVIQlBWeDAK",
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFDM0Y1RjkyREJGMzc5MwpSV1NUTjc4dCtmWERBZnhFSzhRMk9pY1IreVpHOEt1SjF5RzJKTE9hTzc5VGNZUmJrRVQxZDNpLwo=",
 			"endpoints": ["https://github.com/luolita13/Allay/releases/latest/download/latest.json"],
 			"installMode": "quiet"
 		}
