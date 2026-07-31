@@ -891,6 +891,7 @@ pub async fn fetch_chunked(
 /// Lazily-initialized bytehaul `Downloader` shared across all downloads.
 static BYTEHAUL_DOWNLOADER: LazyLock<bytehaul::Downloader> = LazyLock::new(|| {
     bytehaul::Downloader::builder()
+        .log_level(bytehaul::LogLevel::Warn)
         .build()
         .expect("bytehaul downloader should build successfully")
 });
@@ -909,7 +910,12 @@ async fn fetch_bytes_bytehaul(
     let mut spec = bytehaul::DownloadSpec::new(url)
         .output_path(&output_path_str)
         .max_connections(8)
-        .resume(false); // no resume for one-shot downloads
+        .piece_size(4 * 1024 * 1024)       // 4 MiB pieces
+        .min_split_size(5 * 1024 * 1024)   // only split files > 5 MiB
+        .retry_policy(3, std::time::Duration::from_secs(1), std::time::Duration::from_secs(30))
+        .max_retry_elapsed(std::time::Duration::from_secs(120))
+        .connect_timeout(std::time::Duration::from_secs(10))
+        .resume(false);
 
     // Set SHA-1 checksum if provided — bytehaul validates post-download
     if let Some(hash) = sha1 {
@@ -939,11 +945,7 @@ async fn fetch_bytes_bytehaul(
         ErrorKind::OtherError(format!("failed to read downloaded file: {e}"))
     })?;
 
-    // If SHA-1 wasn't set in bytehaul (None case), validate it ourselves
-    if sha1.is_none() {
-        // No SHA-1 validation needed
-    }
-    // (bytehaul already validated SHA-1 when set)
+    // (bytehaul already validated SHA-1 when a checksum was set above)
 
     // TempDir is dropped here, cleaning up the temp file
     drop(tmp_dir);
