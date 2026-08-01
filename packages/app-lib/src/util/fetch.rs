@@ -231,7 +231,7 @@ pub type FetchProgressFn = dyn Fn(
     + Send
     + Sync;
 
-#[tracing::instrument(skip(semaphore))]
+#[tracing::instrument(skip(semaphore, exec))]
 pub async fn fetch(
     url: &str,
     sha1: Option<&str>,
@@ -255,7 +255,7 @@ pub async fn fetch(
     .await
 }
 
-#[tracing::instrument(skip(semaphore))]
+#[tracing::instrument(skip(semaphore, exec, client))]
 pub async fn fetch_with_client(
     url: &str,
     sha1: Option<&str>,
@@ -281,7 +281,7 @@ pub async fn fetch_with_client(
     .await
 }
 
-#[tracing::instrument(skip(json_body, semaphore))]
+#[tracing::instrument(skip(json_body, semaphore, exec))]
 pub async fn fetch_json<T>(
     method: Method,
     url: &str,
@@ -305,7 +305,7 @@ where
 
 /// Downloads a file with retry and checksum functionality, and a specific
 /// [`reqwest::Client`].
-#[tracing::instrument(skip(json_body, semaphore))]
+#[tracing::instrument(skip(json_body, semaphore, exec))]
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_advanced(
     method: Method,
@@ -335,7 +335,7 @@ pub async fn fetch_advanced(
     .await
 }
 
-#[tracing::instrument(skip(json_body, semaphore, progress))]
+#[tracing::instrument(skip(json_body, semaphore, exec, progress))]
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_advanced_with_progress(
     method: Method,
@@ -368,7 +368,7 @@ pub async fn fetch_advanced_with_progress(
 }
 
 /// Downloads a file with retry and checksum functionality
-#[tracing::instrument(skip(json_body, semaphore))]
+#[tracing::instrument(skip(json_body, semaphore, exec, client))]
 #[allow(clippy::too_many_arguments)]
 pub async fn fetch_advanced_with_client(
     method: Method,
@@ -400,7 +400,7 @@ pub async fn fetch_advanced_with_client(
     .await
 }
 
-#[tracing::instrument(skip(json_body, semaphore, client, progress))]
+#[tracing::instrument(skip(json_body, semaphore, exec, client, progress))]
 #[allow(clippy::too_many_arguments)]
 async fn fetch_advanced_with_client_and_progress(
     method: Method,
@@ -469,7 +469,13 @@ async fn fetch_advanced_with_client_and_progress(
         Ok(bytes) => return Ok(bytes),
         Err(primary_err) => {
             if let Some(fallback) = fallback_url {
-                tracing::info!(
+                // Skip fallback if it's the same as the primary URL (no point
+                // retrying the exact same URL — the real retry already happened
+                // inside fetch_with_url's FETCH_ATTEMPTS loop).
+                if fallback == primary_url {
+                    return Err(primary_err);
+                }
+                tracing::debug!(
                     "Primary URL failed for {url}, trying fallback: {fallback}"
                 );
                 // Phase 2: Try fallback URL. Keep the progress callback so the
@@ -494,7 +500,7 @@ async fn fetch_advanced_with_client_and_progress(
                     Ok(bytes) => return Ok(bytes),
                     Err(fallback_err) => {
                         // Both failed - return the more recent error
-                        tracing::warn!(
+                        tracing::debug!(
                             "Both primary and fallback URLs failed for {url}"
                         );
                         return Err(fallback_err);
@@ -674,7 +680,7 @@ async fn fetch_with_url(
 }
 
 /// Downloads a file from specified mirrors
-#[tracing::instrument(skip(semaphore))]
+#[tracing::instrument(skip(semaphore, exec))]
 pub async fn fetch_mirrors(
     mirrors: &[&str],
     sha1: Option<&str>,
@@ -715,7 +721,7 @@ pub async fn fetch_mirrors(
 }
 
 /// Posts a JSON to a URL
-#[tracing::instrument(skip(json_body, semaphore))]
+#[tracing::instrument(skip(json_body, semaphore, exec))]
 pub async fn post_json(
     url: &str,
     json_body: serde_json::Value,
@@ -830,7 +836,7 @@ pub async fn write_cached_icon(
 /// The file is downloaded to a temporary file, read into `Bytes`, and the
 /// temp file is cleaned up. Mirror fallback is handled by trying the primary
 /// URL first, then the fallback URL on failure.
-#[tracing::instrument(skip(semaphore, progress))]
+#[tracing::instrument(skip(semaphore, exec, progress))]
 pub async fn fetch_chunked(
     url: &str,
     sha1: Option<&str>,
@@ -870,13 +876,16 @@ pub async fn fetch_chunked(
         Ok(bytes) => return Ok(bytes),
         Err(primary_err) => {
             if let Some(fallback) = fallback_url {
-                tracing::info!(
+                if fallback == primary_url {
+                    return Err(primary_err);
+                }
+                tracing::debug!(
                     "Primary URL failed for {url}, trying fallback: {fallback}"
                 );
                 match fetch_bytes_bytehaul(&fallback, sha1, progress).await {
                     Ok(bytes) => return Ok(bytes),
                     Err(fallback_err) => {
-                        tracing::warn!(
+                        tracing::debug!(
                             "Both primary and fallback URLs failed for {url}"
                         );
                         return Err(fallback_err);
@@ -924,15 +933,27 @@ async fn fetch_bytes_bytehaul(
 
     let handle = BYTEHAUL_DOWNLOADER.download(spec);
 
-    // Spawn progress watcher if callback is provided
+    // Spawn progress watcher if callback is provided.
+    // Throttle updates to at most once per 250ms to avoid CPU spikes from
+    // high-frequency progress notifications on fast connections.
     if let Some(progress_fn) = &progress {
         let mut rx = handle.subscribe_progress();
         let progress_fn = progress_fn.clone();
         tokio::spawn(async move {
+            let mut last_emit = std::time::Instant::now();
+            let throttle = std::time::Duration::from_millis(250);
             while rx.changed().await.is_ok() {
+                let now = std::time::Instant::now();
+                if now.duration_since(last_emit) < throttle {
+                    continue;
+                }
+                last_emit = now;
                 let snap = rx.borrow().clone();
                 let _ = progress_fn(snap.downloaded, snap.total_size.unwrap_or(0)).await;
             }
+            // Emit final snapshot so the progress bar reaches 100%
+            let snap = rx.borrow().clone();
+            let _ = progress_fn(snap.downloaded, snap.total_size.unwrap_or(0)).await;
         });
     }
 
