@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { ExternalIcon } from '@modrinth/assets'
-import { defineMessages, useVIntl } from '@modrinth/ui'
+import { ClipboardCopyIcon, ExternalIcon } from '@modrinth/assets'
+import {
+	ButtonStyled,
+	defineMessages,
+	injectNotificationManager,
+	useVIntl,
+} from '@modrinth/ui'
 import { getVersion } from '@tauri-apps/api/app'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref } from 'vue'
+import { app_support_details } from '@/helpers/install'
 import AllayAppLogo from '@/assets/allay_app.svg?component'
 import LicenseModal from '@/components/ui/LicenseModal.vue'
 
 const { formatMessage } = useVIntl()
+const { handleError } = injectNotificationManager()
 
 const messages = defineMessages({
 	appName: {
@@ -43,6 +50,14 @@ const messages = defineMessages({
 		id: 'app.about.report-issue',
 		defaultMessage: 'Report an Issue',
 	},
+	copyAppDiagnostics: {
+		id: 'app.about.copy-diagnostics',
+		defaultMessage: 'Copy diagnostics',
+	},
+	copyDiagnosticsSuccess: {
+		id: 'app.about.copy-diagnostics.success',
+		defaultMessage: 'Diagnostics copied to clipboard',
+	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',
 		defaultMessage: 'System Override Authorized',
@@ -67,6 +82,7 @@ const platformLabel =
 const clickCount = ref(0)
 const showOverrideMessage = ref(false)
 const showHallOfFame = ref(false)
+const copyingDiagnostics = ref(false)
 
 // Arcade-style high score table — replaces the AI-ish card grid
 const highScores = [
@@ -103,6 +119,19 @@ function triggerEasterEgg() {
 	}
 	if (clickCount.value === 15) {
 		showHallOfFame.value = true
+	}
+}
+
+async function copyAppDiagnostics() {
+	if (copyingDiagnostics.value) return
+	copyingDiagnostics.value = true
+	try {
+		const text = await app_support_details()
+		await navigator.clipboard.writeText(text)
+	} catch (error) {
+		handleError(error)
+	} finally {
+		copyingDiagnostics.value = false
 	}
 }
 </script>
@@ -192,6 +221,14 @@ function triggerEasterEgg() {
 				<span>{{ formatMessage(messages.reportIssue) }}</span>
 			</button>
 		</div>
+
+		<!-- Diagnostics -->
+		<ButtonStyled color="brand" size="large" :disabled="copyingDiagnostics">
+			<button class="copy-diagnostics-btn" @click="copyAppDiagnostics">
+				<ClipboardCopyIcon :class="{ 'animate-spin': copyingDiagnostics }" />
+				{{ formatMessage(messages.copyAppDiagnostics) }}
+			</button>
+		</ButtonStyled>
 
 		<!-- Footer -->
 		<div class="footer">
@@ -495,6 +532,14 @@ function triggerEasterEgg() {
 	color: var(--color-contrast);
 	border-color: var(--color-brand);
 	transform: translateY(-1px);
+}
+
+.copy-diagnostics-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 16rem;
+	justify-content: center;
 }
 
 .footer {

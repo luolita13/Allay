@@ -18,6 +18,7 @@ const LS_KEY_SETTINGS_AS_PAGE = 'allay-app-settings-as-page'
 const LS_KEY_SKIN_CLICK_PARTICLES = 'allay-app-skin-click-particles'
 const LS_KEY_SKIN_HEAD_TRACKING = 'allay-app-skin-head-tracking'
 const LS_KEY_SKIN_PARTICLE_BG = 'allay-app-skin-particle-bg'
+const LS_KEY_LICENSE_MASCOT = 'allay-app-license-mascot'
 
 export const DEFAULT_FEATURE_FLAGS = {
 	project_background: false,
@@ -45,8 +46,10 @@ export const DEFAULT_FEATURE_FLAGS = {
 
 export const THEME_OPTIONS = ['dark', 'light', 'oled', 'system'] as const
 export const ACCENT_COLOR_OPTIONS = ['orange', 'green', 'blue', 'purple'] as const
+export const LICENSE_MASCOT_OPTIONS = ['sunna', 'sunna2', 'none'] as const
 
 export type AccentColor = (typeof ACCENT_COLOR_OPTIONS)[number]
+export type LicenseMascot = (typeof LICENSE_MASCOT_OPTIONS)[number]
 
 export type FeatureFlag = keyof typeof DEFAULT_FEATURE_FLAGS
 export type FeatureFlags = Record<FeatureFlag, boolean>
@@ -81,6 +84,9 @@ export type ThemeStore = {
 	skinClickParticles: boolean
 	skinHeadTracking: boolean
 	skinParticleBackground: boolean
+
+	// License modal mascot image
+	licenseMascot: LicenseMascot
 }
 
 export const DEFAULT_THEME_STORE: ThemeStore = {
@@ -106,6 +112,7 @@ export const DEFAULT_THEME_STORE: ThemeStore = {
 	skinClickParticles: true,
 	skinHeadTracking: true,
 	skinParticleBackground: false,
+	licenseMascot: 'sunna',
 }
 
 export const useTheming = defineStore('themeStore', {
@@ -157,6 +164,10 @@ export const useTheming = defineStore('themeStore', {
 		const savedSkinParticleBg = localStorage.getItem(LS_KEY_SKIN_PARTICLE_BG)
 		if (savedSkinParticleBg !== null) {
 			stored.skinParticleBackground = savedSkinParticleBg === 'true'
+		}
+		const savedLicenseMascot = localStorage.getItem(LS_KEY_LICENSE_MASCOT) as LicenseMascot | null
+		if (savedLicenseMascot && LICENSE_MASCOT_OPTIONS.includes(savedLicenseMascot)) {
+			stored.licenseMascot = savedLicenseMascot
 		}
 		return stored
 	},
@@ -285,6 +296,10 @@ export const useTheming = defineStore('themeStore', {
 		setSkinParticleBackground(value: boolean) {
 			this.skinParticleBackground = value
 			localStorage.setItem(LS_KEY_SKIN_PARTICLE_BG, String(value))
+		},
+		setLicenseMascot(value: LicenseMascot) {
+			this.licenseMascot = value
+			localStorage.setItem(LS_KEY_LICENSE_MASCOT, value)
 		},
 
 		// ---- Theme pack system ----

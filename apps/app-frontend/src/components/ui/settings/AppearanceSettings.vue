@@ -4,11 +4,16 @@ import { ButtonStyled, defineMessages, Slider, ThemeSelector, Toggle, useVIntl }
 import { open } from '@tauri-apps/plugin-dialog'
 import { computed, ref, useTemplateRef, watch } from 'vue'
 
+import sunnaPng from '@/assets/sunna.png'
+import sunna2Webp from '@/assets/sunna2.webp'
+
 import { createObjectUrlFromPath } from '@/helpers/image-url'
 import { get, set } from '@/helpers/settings.ts'
 import { getOS } from '@/helpers/utils'
 import { useTheming } from '@/store/state'
 import type { AccentColor, ColorTheme } from '@/store/theme.ts'
+import { LICENSE_MASCOT_OPTIONS } from '@/store/theme.ts'
+import type { LicenseMascot } from '@/store/theme.ts'
 // Temporarily disabled — theme pack feature is a work in progress
 // import ThemePackManager from '@/components/ui/settings/ThemePackManager.vue'
 
@@ -222,6 +227,26 @@ const messages = defineMessages({
 		id: 'app.appearance-settings.skin-preview-effects.heading',
 		defaultMessage: 'Skin Preview Effects',
 	},
+	licenseMascotTitle: {
+		id: 'app.appearance-settings.license-mascot.title',
+		defaultMessage: 'License Character',
+	},
+	licenseMascotDescription: {
+		id: 'app.appearance-settings.license-mascot.description',
+		defaultMessage: 'Choose which character to display in the license agreement dialog. Set to None to hide it.',
+	},
+	licenseMascotSunna: {
+		id: 'app.appearance-settings.license-mascot.sunna',
+		defaultMessage: 'Sunna',
+	},
+	licenseMascotSunna2: {
+		id: 'app.appearance-settings.license-mascot.sunna2',
+		defaultMessage: 'Sunna 2',
+	},
+	licenseMascotNone: {
+		id: 'app.appearance-settings.license-mascot.none',
+		defaultMessage: 'Hide',
+	},
 })
 
 const accentColorOptions: Array<{ value: AccentColor; color: string; label: string }> = [
@@ -237,6 +262,12 @@ const accentColorOptions: Array<{ value: AccentColor; color: string; label: stri
 		color: 'var(--color-purple)',
 		label: formatMessage(messages.accentColorPurple),
 	},
+]
+
+const mascotOptions: Array<{ value: LicenseMascot; label: string; img?: string }> = [
+	{ value: 'sunna', label: formatMessage(messages.licenseMascotSunna), img: sunnaPng },
+	{ value: 'sunna2', label: formatMessage(messages.licenseMascotSunna2), img: sunna2Webp },
+	{ value: 'none', label: formatMessage(messages.licenseMascotNone) },
 ]
 
 const os = ref(await getOS())
@@ -339,6 +370,50 @@ watch(
 						(e: Event) => themeStore.setCustomAccentColor((e.target as HTMLInputElement).value)
 					"
 					@click.stop
+				/>
+			</button>
+		</div>
+	</div>
+
+	<div class="mt-6">
+		<h2 class="m-0 text-lg font-semibold text-contrast">
+			{{ formatMessage(messages.licenseMascotTitle) }}
+		</h2>
+		<p class="m-0 mt-1">{{ formatMessage(messages.licenseMascotDescription) }}</p>
+
+		<div
+			class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-3"
+			role="radiogroup"
+			:aria-label="formatMessage(messages.licenseMascotTitle)"
+		>
+			<button
+				v-for="mascot in mascotOptions"
+				:key="mascot.value"
+				type="button"
+				role="radio"
+				:aria-checked="themeStore.licenseMascot === mascot.value"
+				class="flex flex-col items-center gap-2 rounded-xl border border-solid px-3 py-3 font-semibold transition-all active:scale-[0.97]"
+				:class="
+					themeStore.licenseMascot === mascot.value
+						? 'border-brand bg-brand-highlight text-brand'
+						: 'border-divider bg-button-bg text-secondary hover:border-surface-5 hover:text-contrast'
+				"
+				@click="themeStore.setLicenseMascot(mascot.value)"
+			>
+				<img
+					v-if="mascot.img"
+					:src="mascot.img"
+					:alt="mascot.label"
+					class="h-16 w-16 rounded-lg object-contain"
+				/>
+				<span
+					v-else
+					class="flex h-16 w-16 items-center justify-center rounded-lg bg-surface-3 text-3xl"
+				>&#8208;</span>
+				<span class="truncate text-sm">{{ mascot.label }}</span>
+				<CheckIcon
+					v-if="themeStore.licenseMascot === mascot.value"
+					class="size-4 shrink-0"
 				/>
 			</button>
 		</div>

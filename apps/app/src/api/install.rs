@@ -36,6 +36,7 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             download_job_delete,
             download_history_clear,
             download_job_support_details,
+            app_support_details,
         ])
         .build()
 }
@@ -294,4 +295,9 @@ pub async fn download_history_clear() -> Result<u64> {
 #[tauri::command]
 pub async fn download_job_support_details(job_id: Uuid) -> Result<String> {
     install_job_support_details(job_id).await
+}
+
+#[tauri::command]
+pub async fn app_support_details() -> Result<String> {
+    Ok(theseus::install::app_support_details().await?)
 }

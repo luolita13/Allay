@@ -109,7 +109,15 @@ const messages = defineMessages({
 	},
 	importSetupDescription: {
 		id: 'app.create-instance.setup-type.import.description',
-		defaultMessage: 'Import an instance from Prism, CurseForge, or similar.',
+		defaultMessage: 'Import from a .mrpack file or from other launchers like Prism, CurseForge, etc.',
+	},
+	importFromLaunchersTitle: {
+		id: 'app.create-instance.import-from-launchers.title',
+		defaultMessage: 'Import from other launchers',
+	},
+	importFromLaunchersDescription: {
+		id: 'app.create-instance.import-from-launchers.description',
+		defaultMessage: 'Detect and import instances from Prism Launcher, MultiMC, ATLauncher, CurseForge, or GDLauncher.',
 	},
 	importFromFileTitle: {
 		id: 'app.create-instance.import-from-file.title',
@@ -1071,34 +1079,42 @@ function versionGroupClass(id: string): string {
 					<p class="m-0 text-secondary">
 						{{ formatMessage(messages.setupTypeDescription) }}
 					</p>
-					<div class="setup-type-grid">
-						<button class="setup-type-button" @click="selectSetupType('custom')">
-							<BoxesIcon class="setup-type-icon" />
-							<h3 class="setup-type-title">{{ formatMessage(messages.customSetupTitle) }}</h3>
-							<p class="setup-type-desc">
-								{{ formatMessage(messages.customSetupDescription) }}
-							</p>
+					<div class="flex flex-col gap-3">
+						<button class="setup-type-row" @click="selectSetupType('custom')">
+							<div class="setup-type-icon-wrap">
+								<BoxesIcon class="setup-type-icon" />
+							</div>
+							<div class="setup-type-text">
+								<h3 class="setup-type-title">{{ formatMessage(messages.customSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.customSetupDescription) }}
+								</p>
+							</div>
+							<ChevronRightIcon class="setup-type-arrow" />
 						</button>
-						<button class="setup-type-button" @click="selectSetupType('modpack')">
-							<PackageIcon class="setup-type-icon" />
-							<h3 class="setup-type-title">{{ formatMessage(messages.modpackSetupTitle) }}</h3>
-							<p class="setup-type-desc">
-								{{ formatMessage(messages.modpackSetupDescription) }}
-							</p>
+						<button class="setup-type-row" @click="selectSetupType('modpack')">
+							<div class="setup-type-icon-wrap">
+								<PackageIcon class="setup-type-icon" />
+							</div>
+							<div class="setup-type-text">
+								<h3 class="setup-type-title">{{ formatMessage(messages.modpackSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.modpackSetupDescription) }}
+								</p>
+							</div>
+							<ChevronRightIcon class="setup-type-arrow" />
 						</button>
-						<button class="setup-type-button" @click="selectSetupType('import')">
-							<BoxImportIcon class="setup-type-icon" />
-							<h3 class="setup-type-title">{{ formatMessage(messages.importSetupTitle) }}</h3>
-							<p class="setup-type-desc">
-								{{ formatMessage(messages.importSetupDescription) }}
-							</p>
-						</button>
-						<button class="setup-type-button" @click="importFromFile">
-							<UploadIcon class="setup-type-icon" />
-							<h3 class="setup-type-title">{{ formatMessage(messages.importFromFileTitle) }}</h3>
-							<p class="setup-type-desc">
-								{{ formatMessage(messages.importFromFileDescription) }}
-							</p>
+						<button class="setup-type-row" @click="selectSetupType('import')">
+							<div class="setup-type-icon-wrap">
+								<BoxImportIcon class="setup-type-icon" />
+							</div>
+							<div class="setup-type-text">
+								<h3 class="setup-type-title">{{ formatMessage(messages.importSetupTitle) }}</h3>
+								<p class="setup-type-desc">
+									{{ formatMessage(messages.importSetupDescription) }}
+								</p>
+							</div>
+							<ChevronRightIcon class="setup-type-arrow" />
 						</button>
 					</div>
 				</div>
@@ -1107,13 +1123,18 @@ function versionGroupClass(id: string): string {
 
 		<!-- Step 4: Import instances -->
 		<template v-if="step === STEP_IMPORT">
-			<!-- Import from .mrpack file -->
-			<Card class="p-4">
+			<!-- Section: Import from file (.mrpack) -->
+			<div class="flex flex-col gap-1 mb-4">
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.importFromFileTitle) }}
+				</h2>
+				<p class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.importFromFileDescription) }}
+				</p>
+			</div>
+			<Card class="p-4 mb-6">
 				<div class="flex items-center gap-4">
 					<div class="flex-1 min-w-0">
-						<h3 class="m-0 text-base font-semibold text-contrast">
-							{{ formatMessage(messages.importFromFileTitle) }}
-						</h3>
 						<p class="m-0 text-sm text-secondary">
 							{{ formatMessage(messages.importFromFileDescription) }}
 						</p>
@@ -1127,6 +1148,16 @@ function versionGroupClass(id: string): string {
 					</ButtonStyled>
 				</div>
 			</Card>
+
+			<!-- Section: Import from launchers -->
+			<div class="flex flex-col gap-1 mb-4">
+				<h2 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.importFromLaunchersTitle) }}
+				</h2>
+				<p class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.importFromLaunchersDescription) }}
+				</p>
+			</div>
 
 			<!-- Loading state -->
 			<Card v-if="importLoading" class="p-8 text-center">
@@ -1752,20 +1783,11 @@ function versionGroupClass(id: string): string {
 	image-rendering: pixelated;
 }
 
-.setup-type-grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 1rem;
-}
-
-.setup-type-button {
+.setup-type-row {
 	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: flex-start;
-	text-align: left;
-	gap: 0.5rem;
-	padding: 1.5rem;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem 1.25rem;
 	background: var(--color-button-bg);
 	border: 1px solid var(--color-surface-5);
 	border-radius: 0.75rem;
@@ -1773,41 +1795,69 @@ function versionGroupClass(id: string): string {
 	color: var(--color-contrast);
 	cursor: pointer;
 	transition:
-		scale 0.125s ease-in-out,
-		background-color 0.25s ease-in-out,
-		border-color 0.25s ease-in-out;
-	height: 100%;
-	min-height: 10rem;
+		background-color 0.15s ease-in-out,
+		border-color 0.15s ease-in-out,
+		scale 0.1s ease-in-out;
+	text-align: left;
+	width: 100%;
 }
 
-.setup-type-button:hover {
+.setup-type-row:hover {
 	background: var(--color-surface-3);
 	border-color: var(--color-brand);
 }
 
-.setup-type-button:active {
-	scale: 0.98;
+.setup-type-row:active {
+	scale: 0.99;
+}
+
+.setup-type-icon-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.625rem;
+	background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+	color: var(--color-brand);
 }
 
 .setup-type-icon {
-	width: 2.5rem;
-	height: 2.5rem;
-	color: var(--color-brand);
-	margin-bottom: 0.5rem;
-	flex-shrink: 0;
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+.setup-type-text {
+	flex: 1;
+	min-width: 0;
 }
 
 .setup-type-title {
 	margin: 0;
-	font-size: 1rem;
+	font-size: 0.9375rem;
 	font-weight: 700;
 }
 
 .setup-type-desc {
-	margin: 0;
-	font-size: 0.875rem;
+	margin: 0.125rem 0 0;
+	font-size: 0.8125rem;
 	color: var(--color-secondary);
 	line-height: 1.4;
+}
+
+.setup-type-arrow {
+	width: 1.25rem;
+	height: 1.25rem;
+	flex-shrink: 0;
+	color: var(--color-secondary);
+	opacity: 0.5;
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.setup-type-row:hover .setup-type-arrow {
+	opacity: 1;
+	transform: translateX(2px);
 }
 
 // Import instance styles
@@ -1853,11 +1903,5 @@ function versionGroupClass(id: string): string {
 	accent-color: var(--color-brand);
 	flex-shrink: 0;
 	cursor: pointer;
-}
-
-@media (max-width: 768px) {
-	.setup-type-grid {
-		grid-template-columns: 1fr;
-	}
 }
 </style>

@@ -1,10 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ButtonStyled, defineMessages, useVIntl } from '@modrinth/ui'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import fullGpl3License from '../../LICENSE'
+import sunnaPng from '@/assets/sunna.png'
+import sunna2Webp from '@/assets/sunna2.webp'
+import { useTheming } from '@/store/state'
+import type { LicenseMascot } from '@/store/theme.ts'
 
 const { formatMessage } = useVIntl()
+const themeStore = useTheming()
+
+const mascotImages: Record<Exclude<LicenseMascot, 'none'>, string> = {
+	sunna: sunnaPng,
+	sunna2: sunna2Webp,
+}
+
+const mascotUrl = computed(() =>
+	themeStore.licenseMascot === 'none' ? null : mascotImages[themeStore.licenseMascot],
+)
 
 const props = defineProps<{
 	requireAccept?: boolean
@@ -97,8 +111,15 @@ async function onDecline() {
 	<Teleport to="body">
 		<Transition name="modal">
 			<div class="license-overlay" @click.self="!requireAccept && onDecline()">
-			<div class="license-modal">
-				<h2 class="license-title">{{ formatMessage(messages.title) }}</h2>
+			<div class="license-modal-wrapper">
+				<img
+					v-if="mascotUrl"
+					:src="mascotUrl"
+					alt="Mascot"
+					class="license-mascot-card"
+				/>
+				<div class="license-modal">
+					<h2 class="license-title">{{ formatMessage(messages.title) }}</h2>
 
 				<div class="tab-bar">
 					<button
@@ -127,6 +148,7 @@ async function onDecline() {
 					</ButtonStyled>
 				</div>
 			</div>
+			</div>
 		</div>
 	</Transition>
 	</Teleport>
@@ -144,13 +166,35 @@ async function onDecline() {
 	backdrop-filter: blur(8px);
 }
 
+.license-modal-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.license-mascot-card {
+	position: absolute;
+	left: -95px;
+	top: -120px;
+	z-index: 1;
+	width: 260px;
+	height: auto;
+	max-height: 380px;
+	object-fit: contain;
+	pointer-events: none;
+	filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+
 .license-modal {
+	position: relative;
+	z-index: 2;
 	background: var(--color-raised-bg);
 	border-radius: var(--radius-xl);
 	padding: 2rem;
-	max-width: 700px;
-	width: 92vw;
-	max-height: 88vh;
+	width: 680px;
+	max-width: 90vw;
+	height: 76vh;
 	display: flex;
 	flex-direction: column;
 	box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);

@@ -15,6 +15,107 @@ use std::time::SystemTime;
 
 const INSTALL_SUPPORT_LOG_TAIL_BYTES: u64 = 128 * 1024;
 
+pub async fn build_app_support_details(state: &State) -> crate::Result<String> {
+    let mut details = String::new();
+    let _ = writeln!(details, "Allay App Support Report");
+    let _ = writeln!(details, "Generated: {}", chrono::Local::now().format("%Y-%m-%d %H:%M:%S"));
+    write_environment_details(&mut details);
+    write_java_summary(&mut details, state).await;
+    write_instance_summary(&mut details, state).await;
+    write_all_job_summary(&mut details, state).await;
+    write_latest_log(&mut details, state).await;
+    censor_support_text(details, state).await
+}
+
+async fn write_java_summary(details: &mut String, state: &State) {
+    let _ = writeln!(details);
+    let _ = writeln!(details, "Java installations");
+    match crate::state::JavaVersion::get_all(&state.pool).await {
+        Ok(map) if map.is_empty() => {
+            let _ = writeln!(details, "No Java installations registered.");
+        }
+        Ok(map) => {
+            for entry in map.iter() {
+                let java = entry.value();
+                let _ = writeln!(
+                    details,
+                    "- {version} (arch={arch}) at {path}",
+                    version = java.version,
+                    arch = java.architecture,
+                    path = java.path,
+                );
+            }
+        }
+        Err(error) => {
+            let _ = writeln!(details, "Unable to list Java: {error}");
+        }
+    }
+}
+
+async fn write_instance_summary(details: &mut String, state: &State) {
+    let _ = writeln!(details);
+    let _ = writeln!(details, "Instances");
+    match crate::state::instances::list_instances(&state.pool).await {
+        Ok(list) if list.is_empty() => {
+            let _ = writeln!(details, "No instances created yet.");
+        }
+        Ok(list) => {
+            for meta in list.iter().take(50) {
+                let _ = writeln!(
+                    details,
+                    "- {name} (id={id}, path={path})",
+                    name = meta.instance.name,
+                    id = meta.instance.id,
+                    path = meta.instance.path,
+                );
+            }
+            if list.len() > 50 {
+                let _ = writeln!(details, "- ... {} more", list.len() - 50);
+            }
+        }
+        Err(error) => {
+            let _ = writeln!(details, "Unable to list instances: {error}");
+        }
+    }
+}
+
+async fn write_all_job_summary(details: &mut String, _state: &State) {
+    let _ = writeln!(details);
+    let _ = writeln!(details, "Recent download jobs");
+    match crate::install::list_jobs(true).await {
+        Ok(jobs) if jobs.is_empty() => {
+            let _ = writeln!(details, "No download jobs recorded.");
+        }
+        Ok(jobs) => {
+            for snap in jobs.iter().take(20) {
+                let title = snap
+                    .display
+                    .as_ref()
+                    .map(|d| d.title.as_str())
+                    .unwrap_or("untitled");
+                let _ = writeln!(
+                    details,
+                    "- {title}: {status} (phase={phase}, kind={kind}, id={id})",
+                    status = serde_json::to_string(&snap.status)
+                        .unwrap_or_else(|_| "unknown".to_string())
+                        .trim_matches('"'),
+                    phase = phase_label(snap.phase),
+                    kind = serde_json::to_string(&snap.kind)
+                        .unwrap_or_else(|_| "unknown".to_string())
+                        .trim_matches('"'),
+                    id = snap.job_id,
+                );
+            }
+            if jobs.len() > 20 {
+                let _ = writeln!(details, "- ... {} more", jobs.len() - 20);
+            }
+        }
+        Err(error) => {
+            let _ = writeln!(details, "Unable to list jobs: {error}");
+        }
+    }
+}
+
 pub async fn build_job_support_details(
     job: &store::InstallJobRecord,
     state: &State,

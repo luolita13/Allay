@@ -99,43 +99,15 @@
 							<h2 class="m-0 truncate text-lg font-semibold text-contrast">
 								{{ jobTitle(job) }}
 							</h2>
-							<TagItem>
-								<component :is="providerIcon(job.provider)" />
-								{{ providerLabel(job.provider) }}
-							</TagItem>
 							<Badge :color="statusColor(job.status)" :type="statusLabel(job.status)" />
-							<Badge
-								v-if="job.instance_deleted"
-								color="gray"
-								:type="formatMessage(messages.instanceDeleted)"
-							/>
 						</div>
 						<div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-secondary">
+							<component :is="providerIcon(job.provider)" class="size-3.5" />
+							<span>{{ providerLabel(job.provider) }}</span>
+							<BulletDivider />
 							<span>{{ phaseLabel(job.phase) }}</span>
 							<BulletDivider />
 							<span>{{ formatDate(job.finished ?? job.modified) }}</span>
-							<template v-if="installJobInstanceId(job)">
-									<BulletDivider />
-									<span>{{
-										formatMessage(messages.instanceTarget, {
-											instance:
-												instanceNames[installJobInstanceId(job)!] ??
-												installJobInstanceId(job),
-										})
-									}}</span>
-								</template>
-						</div>
-						<div
-							v-if="downloadTelemetry(job).length"
-							class="mt-1 flex flex-wrap items-center gap-2 text-sm text-secondary"
-						>
-							<template
-								v-for="(metric, index) in downloadTelemetry(job)"
-								:key="`${index}-${metric}`"
-							>
-								<BulletDivider v-if="index > 0" />
-								<span>{{ metric }}</span>
-							</template>
 						</div>
 					</div>
 					<div class="flex flex-wrap items-center gap-2">
@@ -147,11 +119,6 @@
 						<ButtonStyled v-if="canRetry(job)" color="brand" size="small">
 							<button :disabled="busy.has(job.job_id)" @click="retry(job)">
 								<RefreshCwIcon />{{ formatMessage(messages.retry) }}
-							</button>
-						</ButtonStyled>
-						<ButtonStyled v-if="job.error" type="outlined" size="small">
-							<button :disabled="busy.has(job.job_id)" @click="copyDiagnostics(job)">
-								<ClipboardCopyIcon />{{ formatMessage(messages.copyDiagnostics) }}
 							</button>
 						</ButtonStyled>
 						<ButtonStyled
@@ -216,35 +183,7 @@
 							{{ job.error.message }}
 						</Admonition>
 
-						<!-- Job context info -->
-						<div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-							<span class="text-secondary">
-								{{ formatMessage(messages.jobKindLabel) }}:
-								<span class="font-medium text-contrast">{{ kindLabel(job.kind) }}</span>
-							</span>
-							<span class="text-secondary">
-								{{ formatMessage(messages.targetLabel) }}:
-								<span class="font-medium text-contrast">{{
-									job.target.type === 'new_instance'
-										? formatMessage(messages.targetNewInstance)
-										: formatMessage(messages.targetExistingInstance)
-								}}</span>
-							</span>
-							<template v-if="installJobInstanceId(job) && !job.instance_deleted">
-								<span class="text-secondary">
-									{{ formatMessage(messages.openInstance) }}:
-									<span class="font-medium text-contrast">{{
-										instanceNames[installJobInstanceId(job)!] ??
-										installJobInstanceId(job)
-									}}</span>
-								</span>
-							</template>
-						</div>
-
 						<div v-if="job.items.length" class="flex flex-col gap-2">
-							<p class="m-0 text-xs text-secondary">
-								{{ formatMessage(messages.fileDetailsDescription) }}
-							</p>
 							<Table
 								:columns="itemColumns"
 								:data="job.items"
@@ -279,9 +218,6 @@
 								</template>
 								<template #cell-status="{ row }">
 									<Badge :color="itemStatusColor(row.status)" :type="statusLabel(row.status)" />
-								</template>
-								<template #cell-attempts="{ row }">
-									<span>{{ itemAttempts(row) }}</span>
 								</template>
 								<template #cell-progress="{ row }">
 									<span>{{ itemProgress(row) }}</span>
@@ -323,7 +259,6 @@
 <script setup lang="ts">
 import {
 	ChevronDownIcon,
-	ClipboardCopyIcon,
 	ClockIcon,
 	CurseForgeIcon,
 	DownloadIcon,
@@ -350,23 +285,20 @@ import {
 	StyledInput,
 	Table,
 	type TableColumn,
-	TagItem,
 	useFormatBytes,
 	useVIntl,
 } from '@modrinth/ui'
 import { convertFileSrc } from '@tauri-apps/api/core'
 	import { openUrl } from '@tauri-apps/plugin-opener'
-	import { computed, onMounted, ref, watch } from 'vue'
+	import { computed, onMounted, ref } from 'vue'
 	import { useRouter } from 'vue-router'
 
 	import {
-		download_job_support_details,
 		installJobInstanceId,
 		type InstallJobSnapshot,
 		type InstallJobStatus,
 		type InstallPhaseId,
 	} from '@/helpers/install'
-	import { get_many } from '@/helpers/instance'
 	import type { LoadingBar } from '@/helpers/state'
 	import { injectDownloadManager } from '@/providers/download-manager'
 
@@ -403,15 +335,7 @@ const messages = defineMessages({
 	},
 	cancel: { id: 'app.downloads.cancel', defaultMessage: 'Cancel' },
 	retry: { id: 'app.downloads.retry', defaultMessage: 'Retry' },
-	copyDiagnostics: {
-		id: 'app.downloads.copy-diagnostics',
-		defaultMessage: 'Copy diagnostics',
-	},
 	openInstance: { id: 'app.downloads.open-instance', defaultMessage: 'Open instance' },
-	instanceDeleted: {
-		id: 'app.downloads.instance-deleted',
-		defaultMessage: 'Instance deleted',
-	},
 	details: { id: 'app.downloads.details', defaultMessage: 'Details' },
 	hideDetails: { id: 'app.downloads.hide-details', defaultMessage: 'Hide details' },
 	deleteRecord: { id: 'app.downloads.delete-record', defaultMessage: 'Delete record' },
@@ -443,18 +367,9 @@ const messages = defineMessages({
 		defaultMessage:
 			'Completed, failed, interrupted, and canceled records will be permanently deleted.',
 	},
-	instanceTarget: {
-		id: 'app.downloads.instance-target',
-		defaultMessage: 'Instance: {instance}',
-	},
 	notAvailable: { id: 'app.downloads.not-available', defaultMessage: '\u2014' },
 	itemName: { id: 'app.downloads.item-name', defaultMessage: 'File' },
 	itemStatus: { id: 'app.downloads.item-status', defaultMessage: 'Status' },
-	itemAttempts: { id: 'app.downloads.item-attempts', defaultMessage: 'Attempts' },
-	attemptProgress: {
-		id: 'app.downloads.item-attempt-progress',
-		defaultMessage: '{attempt}/{maxAttempts}',
-	},
 	itemProgress: { id: 'app.downloads.item-progress', defaultMessage: 'Downloaded' },
 	manualDownload: {
 		id: 'app.curseforge.manual-downloads.open',
@@ -468,94 +383,9 @@ const messages = defineMessages({
 		id: 'app.curseforge.manual-downloads.project-file',
 		defaultMessage: 'Project {projectId} \u00b7 File {fileId}',
 	},
-	downloadSource: {
-		id: 'app.downloads.download-source',
-		defaultMessage: 'Source: {source}',
-	},
-	downloadSourceOfficial: {
-		id: 'app.downloads.source.official',
-		defaultMessage: 'Official',
-	},
-	downloadSourceBmclapi: {
-		id: 'app.downloads.source.bmclapi',
-		defaultMessage: 'OpenBMCLAPI',
-	},
-	downloadSourceMcim: { id: 'app.downloads.source.mcim', defaultMessage: 'MCIM' },
-	downloadSourceAlternate: {
-		id: 'app.downloads.source.alternate',
-		defaultMessage: 'Alternate source',
-	},
-	downloadSpeed: {
-		id: 'app.downloads.download-speed',
-		defaultMessage: 'Speed: {speed}/s',
-	},
-	downloadEtaSeconds: {
-		id: 'app.downloads.download-eta-seconds',
-		defaultMessage: '{seconds}s remaining',
-	},
-	downloadEtaMinutes: {
-		id: 'app.downloads.download-eta-minutes',
-		defaultMessage: '{minutes}m remaining',
-	},
-	downloadEtaHours: {
-		id: 'app.downloads.download-eta-hours',
-		defaultMessage: '{hours}h {minutes}m remaining',
-	},
-	downloadFallbacks: {
-			id: 'app.downloads.download-fallbacks',
-			defaultMessage: '{count} fallbacks',
-		},
 		curseforgeFileInstall: {
 			id: 'app.downloads.curseforge-file-install',
 			defaultMessage: 'CurseForge file install',
-		},
-		jobKindLabel: {
-			id: 'app.downloads.job-kind',
-			defaultMessage: 'Type',
-		},
-		targetLabel: {
-			id: 'app.downloads.target-label',
-			defaultMessage: 'Target',
-		},
-		targetNewInstance: {
-			id: 'app.downloads.target-new-instance',
-			defaultMessage: 'New instance',
-		},
-		targetExistingInstance: {
-			id: 'app.downloads.target-existing-instance',
-			defaultMessage: 'Existing instance',
-		},
-		fileDetailsDescription: {
-			id: 'app.downloads.file-details-description',
-			defaultMessage: 'Individual files in this download job',
-		},
-		kindCreateInstance: {
-			id: 'app.downloads.kind.create-instance',
-			defaultMessage: 'Create instance',
-		},
-		kindCreateModpack: {
-			id: 'app.downloads.kind.create-modpack',
-			defaultMessage: 'Create modpack instance',
-		},
-		kindImportInstance: {
-			id: 'app.downloads.kind.import-instance',
-			defaultMessage: 'Import instance',
-		},
-		kindDuplicateInstance: {
-			id: 'app.downloads.kind.duplicate-instance',
-			defaultMessage: 'Duplicate instance',
-		},
-		kindInstallExisting: {
-			id: 'app.downloads.kind.install-existing',
-			defaultMessage: 'Install to instance',
-		},
-		kindInstallPack: {
-			id: 'app.downloads.kind.install-pack',
-			defaultMessage: 'Install modpack to instance',
-		},
-		kindInstallContent: {
-			id: 'app.downloads.kind.install-content',
-			defaultMessage: 'Install content',
 		},
 	})
 
@@ -633,35 +463,6 @@ const phaseMessages = defineMessages({
 const legacyDownloads = manager.legacyDownloads
 const historyJobs = manager.historyJobs
 
-// Instance name cache: instance_id -> instance_name
-const instanceNames = ref<Record<string, string>>({})
-
-async function refreshInstanceNames() {
-	const allJobs = [...manager.activeJobs.value, ...manager.historyJobs.value]
-	const idsToResolve = allJobs
-		.map((job) => installJobInstanceId(job))
-		.filter((id): id is string => !!id && !instanceNames.value[id])
-
-	if (idsToResolve.length === 0) return
-
-	try {
-		const instances = await get_many(idsToResolve)
-		for (const inst of instances) {
-			if (inst.id && inst.name) {
-				instanceNames.value[inst.id] = inst.name
-			}
-		}
-	} catch {
-		// Silently ignore — raw IDs will be used as fallback
-	}
-}
-
-// Refresh instance names when jobs change
-watch(
-	() => [manager.activeJobs.value.length, manager.historyJobs.value.length],
-	() => void refreshInstanceNames(),
-)
-
 const providerOptions = ['all', 'modrinth', 'curse_forge', 'minecraft', 'java', 'application', 'local']
 const historyStatusOptions = ['all', 'succeeded', 'failed', 'interrupted', 'canceled']
 const downloadTabs = computed(() => [
@@ -673,10 +474,9 @@ const downloadTabs = computed(() => [
 	{ href: 'history', label: formatMessage(messages.history), icon: ClockIcon },
 ])
 const itemColumns = computed<TableColumn[]>(() => [
-	{ key: 'name', label: formatMessage(messages.itemName), width: '48%' },
-	{ key: 'status', label: formatMessage(messages.itemStatus), width: '18%' },
-	{ key: 'attempts', label: formatMessage(messages.itemAttempts), width: '16%' },
-	{ key: 'progress', label: formatMessage(messages.itemProgress), width: '18%', align: 'right' },
+	{ key: 'name', label: formatMessage(messages.itemName), width: '60%' },
+	{ key: 'status', label: formatMessage(messages.itemStatus), width: '20%' },
+	{ key: 'progress', label: formatMessage(messages.itemProgress), width: '20%', align: 'right' },
 ])
 const sourceJobs = computed(() =>
 	tab.value === 'active' ? manager.activeJobs.value : manager.historyJobs.value,
@@ -711,20 +511,6 @@ function jobTitle(job: InstallJobSnapshot) {
 				job.job_id
 			)
 		}
-
-	function kindLabel(kind: InstallJobSnapshot['kind']) {
-		const labels: Record<string, string> = {
-			create_instance: formatMessage(messages.kindCreateInstance),
-			create_modpack_instance: formatMessage(messages.kindCreateModpack),
-			import_instance: formatMessage(messages.kindImportInstance),
-			duplicate_instance: formatMessage(messages.kindDuplicateInstance),
-			install_existing_instance: formatMessage(messages.kindInstallExisting),
-			install_pack_to_existing_instance: formatMessage(messages.kindInstallPack),
-			install_content: formatMessage(messages.kindInstallContent),
-			install_curseforge_file: formatMessage(messages.curseforgeFileInstall),
-		}
-		return labels[kind] ?? kind
-	}
 
 function displayIcon(icon: string) {
 	return /^(https?:|data:|blob:|asset:|tauri:)/.test(icon) ? icon : convertFileSrc(icon)
@@ -819,67 +605,9 @@ function progressText(job: InstallJobSnapshot) {
 		return phaseLabel(job.phase)
 	}
 
-	function downloadTelemetry(job: InstallJobSnapshot) {
-		const summary = job.summary ?? {}
-		const metrics: string[] = []
-		if (summary.source) {
-			metrics.push(
-				formatMessage(messages.downloadSource, { source: downloadSourceLabel(summary.source) }),
-			)
-		}
-		if (summary.speed_bytes_per_second && summary.speed_bytes_per_second > 0) {
-			metrics.push(
-				formatMessage(messages.downloadSpeed, { speed: formatBytes(summary.speed_bytes_per_second) }),
-			)
-		}
-		if (summary.eta_seconds != null) {
-			metrics.push(formatDownloadEta(summary.eta_seconds))
-		}
-		if (summary.fallback_count > 0) {
-			metrics.push(formatMessage(messages.downloadFallbacks, { count: summary.fallback_count }))
-		}
-		return metrics
-	}
-
-function downloadSourceLabel(source: string) {
-	switch (source) {
-		case 'official':
-			return formatMessage(messages.downloadSourceOfficial)
-		case 'bmclapi':
-			return formatMessage(messages.downloadSourceBmclapi)
-		case 'mcim':
-			return formatMessage(messages.downloadSourceMcim)
-		default:
-			return formatMessage(messages.downloadSourceAlternate)
-	}
-}
-
-function formatDownloadEta(seconds: number) {
-	const clamped = Math.max(0, Math.round(seconds))
-	if (clamped < 60) {
-		return formatMessage(messages.downloadEtaSeconds, { seconds: clamped })
-	}
-	const minutes = Math.floor(clamped / 60)
-	if (minutes < 60) {
-		return formatMessage(messages.downloadEtaMinutes, { minutes })
-	}
-	return formatMessage(messages.downloadEtaHours, {
-		hours: Math.floor(minutes / 60),
-		minutes: minutes % 60,
-	})
-}
-
 function itemProgress(item: DownloadItem) {
 	if (!item.bytes_total) return formatMessage(messages.notAvailable)
 	return `${formatBytes(item.bytes_downloaded)} / ${formatBytes(item.bytes_total)}`
-}
-
-function itemAttempts(item: DownloadItem) {
-	if (!item.attempt || !item.max_attempts) return formatMessage(messages.notAvailable)
-	return formatMessage(messages.attemptProgress, {
-		attempt: item.attempt,
-		maxAttempts: item.max_attempts,
-	})
 }
 
 function itemError(item: DownloadItem) {
@@ -943,12 +671,6 @@ async function remove(job: InstallJobSnapshot) {
 	await withBusy(job.job_id, () => manager.remove(job.job_id))
 }
 
-async function copyDiagnostics(job: InstallJobSnapshot) {
-	await withBusy(job.job_id, async () =>
-		navigator.clipboard.writeText(await download_job_support_details(job.job_id)),
-	)
-}
-
 async function clearHistory() {
 	try {
 		await manager.clearHistory()
@@ -972,6 +694,6 @@ async function refreshDownloads() {
 onMounted(() => {
 		// Ensure the manager is started (no-op if already running from App.vue).
 		// Also trigger a refresh to catch any jobs that started while we were away.
-		void manager.refresh().then(() => void refreshInstanceNames())
+		void manager.refresh()
 	})
 </script>

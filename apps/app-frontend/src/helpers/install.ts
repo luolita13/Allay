@@ -348,6 +348,10 @@ export async function download_job_support_details(jobId: string) {
 	return await invoke<string>('plugin:install|download_job_support_details', { jobId })
 }
 
+export async function app_support_details() {
+	return await invoke<string>('plugin:install|app_support_details')
+}
+
 export function installJobInstanceId(job: InstallJobSnapshot): string | null {
 	return job.instance_id ?? job.target.instance_id ?? null
 }

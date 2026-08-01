@@ -1552,6 +1552,11 @@ pub async fn job_support_details(job_id: Uuid) -> crate::Result<String> {
     super::diagnostics::build_job_support_details(&job, &state).await
 }
 
+pub async fn app_support_details() -> crate::Result<String> {
+    let state = State::get().await?;
+    super::diagnostics::build_app_support_details(&state).await
+}
+
 pub async fn retry_job_as_new(job_id: Uuid) -> crate::Result<InstallJobSnapshot> {
     let state = State::get().await?;
     let job = store::get_required(job_id, &state).await?;
