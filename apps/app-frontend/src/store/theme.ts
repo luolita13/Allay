@@ -34,6 +34,7 @@ export const DEFAULT_FEATURE_FLAGS = {
 	pride_fundraiser: true,
 	i18n_debug: false,
 	show_instance_play_time: true,
+	route_transitions: true,
 	// Home page section visibility
 	home_show_jump_back_in: true,
 	home_show_discover_modpacks: true,

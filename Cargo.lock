@@ -11053,6 +11053,7 @@ dependencies = [
  "core-graphics",
  "daedalus",
  "dashmap",
+ "dirs",
  "either",
  "enumset",
  "futures",

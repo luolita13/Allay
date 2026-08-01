@@ -5,9 +5,6 @@ import {
 	ClipboardCopyIcon,
 	ExternalIcon,
 	GlobeIcon,
-	GridIcon,
-	ImageIcon,
-	ListIcon,
 	PlusIcon,
 	SpinnerIcon,
 } from '@modrinth/assets'
@@ -371,15 +368,6 @@ const {
 
 const offline = ref(!navigator.onLine)
 
-// Display mode: list / grid / gallery
-const DISPLAY_MODES = ['list', 'grid', 'gallery'] as const
-type DisplayMode = (typeof DISPLAY_MODES)[number]
-const browseDisplayMode = ref<DisplayMode>('list')
-
-function cycleBrowseDisplayMode() {
-	const currentIdx = DISPLAY_MODES.indexOf(browseDisplayMode.value)
-	browseDisplayMode.value = DISPLAY_MODES[(currentIdx + 1) % DISPLAY_MODES.length]
-}
 window.addEventListener('offline', () => {
 	debugLog('went offline')
 	offline.value = true
@@ -1324,19 +1312,12 @@ provideBrowseManager({
 	onContextMenu: handleRightClick,
 	offline,
 	lockedFilterMessages,
-	displayMode: browseDisplayMode,
-	cycleDisplayMode: cycleBrowseDisplayMode,
 })
 </script>
 
 <template>
 	<div class="flex flex-col gap-3 p-6">
 		<BrowsePageLayout>
-			<template #display-mode-icon>
-				<GridIcon v-if="browseDisplayMode === 'grid'" />
-				<ImageIcon v-else-if="browseDisplayMode === 'gallery'" />
-				<ListIcon v-else />
-			</template>
 			<template #install-header-after>
 				<!-- Source switcher: Modrinth / CurseForge -->
 				<div

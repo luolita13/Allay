@@ -142,12 +142,6 @@ const messages = defineMessages({
 			</ButtonStyled>
 		</div>
 
-		<ButtonStyled v-if="ctx.cycleDisplayMode" circular>
-			<button @click="ctx.cycleDisplayMode!()">
-				<slot name="display-mode-icon" />
-			</button>
-		</ButtonStyled>
-
 		<Pagination
 			:page="ctx.currentPage.value"
 			:count="ctx.pageCount.value"

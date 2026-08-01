@@ -6,6 +6,7 @@ import {
 	GameIcon,
 	GlobeIcon,
 	MemoryStickIcon,
+	MonitorIcon,
 	UploadIcon,
 } from '@modrinth/assets'
 import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/ui'
@@ -23,6 +24,7 @@ const messages = defineMessages({
   cpu: { id: 'app.home.system-status.cpu', defaultMessage: 'CPU' },
   memory: { id: 'app.home.system-status.memory', defaultMessage: 'Memory' },
   disk: { id: 'app.home.system-status.disk', defaultMessage: 'Disk' },
+  gpu: { id: 'app.home.system-status.gpu', defaultMessage: 'GPU' },
   network: { id: 'app.home.system-status.network', defaultMessage: 'Network' },
   instances: { id: 'app.home.system-status.instances', defaultMessage: 'Instances' },
   available: { id: 'app.home.system-status.available', defaultMessage: 'available' },
@@ -54,6 +56,15 @@ const memoryLabel = computed(() => {
 const diskLabel = computed(() => {
 	if (!systemInfo.value) return '—'
 	return `${formatBytes(systemInfo.value.disk.availableBytes)} ${formatMessage(messages.available)}`
+})
+
+const gpuLabel = computed(() => {
+	if (!systemInfo.value?.gpus?.length) return '—'
+	const gpu = systemInfo.value.gpus[0]
+	if (gpu.memoryTotalBytes) {
+		return `${formatBytes(gpu.memoryTotalBytes)} VRAM`
+	}
+	return gpu.vendor
 })
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null
@@ -120,17 +131,20 @@ onUnmounted(() => {
 				<p class="m-0 text-2xl font-bold text-contrast">
 					{{ loading ? '…' : formatPercent(systemInfo?.disk.usagePercent ?? 0) }}
 				</p>
-				<p class="m-0 text-xs text-secondary truncate">
-					{{ loading ? '' : diskLabel }}
+				<p class="m-0 text-xs text-secondary truncate" :title="systemInfo?.disk.mountPoint">
+					{{ loading ? '' : diskLabel }} · {{ systemInfo?.disk.mountPoint }}
 				</p>
 			</div>
 			<div class="stat-card p-3 rounded-xl bg-surface-2 flex flex-col gap-1">
 				<div class="flex items-center gap-2 text-secondary">
-					<GameIcon class="size-4" />
-					<span class="text-xs">{{ formatMessage(messages.instances) }}</span>
+					<MonitorIcon class="size-4" />
+					<span class="text-xs">{{ formatMessage(messages.gpu) }}</span>
 				</div>
-				<p class="m-0 text-2xl font-bold text-contrast">
-					{{ loading ? '…' : instanceCount }}
+				<p class="m-0 text-sm font-bold text-contrast truncate" :title="systemInfo?.gpus?.[0]?.name">
+					{{ loading ? '…' : (systemInfo?.gpus?.[0]?.name ?? 'N/A') }}
+				</p>
+				<p class="m-0 text-xs text-secondary truncate">
+					{{ loading ? '' : gpuLabel }}
 				</p>
 			</div>
 		</div>

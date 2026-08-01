@@ -254,6 +254,7 @@ fn main() {
         .plugin(api::crash_diagnosis::init())
         .plugin(api::theme_pack::init())
         .plugin(api::translation::init())
+        .plugin(api::launcher_logs::init())
         .manage(PendingUpdateData::default())
         .invoke_handler(tauri::generate_handler![
             initialize_state,

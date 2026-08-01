@@ -1,5 +1,5 @@
 <script setup>
-import { BoxIcon, FolderOpenIcon, FolderSearchIcon, TrashIcon } from '@modrinth/assets'
+import { BoxIcon, EyeIcon, FolderOpenIcon, FolderSearchIcon, TrashIcon } from '@modrinth/assets'
 import {
 	ButtonStyled,
 	Combobox,
@@ -13,6 +13,7 @@ import {
 import { open } from '@tauri-apps/plugin-dialog'
 import { computed, ref, watch } from 'vue'
 
+import LauncherLogViewer from '@/components/ui/modal/LauncherLogViewer.vue'
 import { purge_cache_types } from '@/helpers/cache.js'
 import { get, set } from '@/helpers/settings.ts'
 import { showAppDbBackupsFolder, showLauncherLogsFolder } from '@/helpers/utils.js'
@@ -145,21 +146,25 @@ const messages = defineMessages({
 	dbBackupsDescription: {
 		id: 'app.resource-management.db-backups.description',
 		defaultMessage:
-			'Backups of important app data are stored here for easy recovery later.',
+			'Automatically created before each app version upgrade to protect your data during database migrations. A new backup is only generated when the launcher version changes — if this folder is empty, no upgrade has occurred yet.',
 	},
 	launcherLogsTitle: {
-		id: 'app.resource-management.launcher-logs.title',
-		defaultMessage: 'Launcher Logs',
-	},
-	launcherLogsButton: {
-		id: 'app.resource-management.launcher-logs.button',
-		defaultMessage: 'Open Logs Folder',
-	},
-	launcherLogsDescription: {
-		id: 'app.resource-management.launcher-logs.description',
-		defaultMessage:
-			'Session logs are stored here. If you encounter a bug or crash, please attach the latest log file when reporting an issue.',
-	},
+			id: 'app.resource-management.launcher-logs.title',
+			defaultMessage: 'Launcher Logs',
+		},
+		launcherLogsButton: {
+			id: 'app.resource-management.launcher-logs.button',
+			defaultMessage: 'Open Logs Folder',
+		},
+		launcherLogsViewButton: {
+			id: 'app.resource-management.launcher-logs.view-button',
+			defaultMessage: 'View Logs',
+		},
+		launcherLogsDescription: {
+			id: 'app.resource-management.launcher-logs.description',
+			defaultMessage:
+				'Each launcher session creates a timestamped log file (session_YYYYMMDD_HHMMSS.log) here. The most recent 16 sessions are retained automatically. Please attach the latest log when reporting bugs or crashes.',
+		},
 	selectAppDirectory: {
 		id: 'app.resource-management.select-app-directory',
 		defaultMessage: 'Select new app directory',
@@ -168,6 +173,7 @@ const messages = defineMessages({
 
 const settings = ref(await get())
 const purgeCacheConfirmModal = ref(null)
+const launcherLogViewerRef = ref(null)
 
 const sourceOptions = computed(() => [
 	{ value: '1', label: formatMessage(messages.automaticSource) },
@@ -255,6 +261,10 @@ async function openDbBackupsFolder() {
 
 async function openLauncherLogsFolder() {
 	await showLauncherLogsFolder().catch(handleError)
+}
+
+function openLauncherLogViewer() {
+	launcherLogViewerRef.value?.show()
 }
 
 async function findLauncherDir() {
@@ -448,15 +458,25 @@ async function findLauncherDir() {
 
 		<div class="flex flex-col gap-2.5">
 			<h2 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.launcherLogsTitle) }}</h2>
-			<ButtonStyled>
-				<button id="open-launcher-logs-folder" @click="openLauncherLogsFolder">
-					<FolderOpenIcon />
-					{{ formatMessage(messages.launcherLogsButton) }}
-				</button>
-			</ButtonStyled>
+			<div class="flex flex-wrap gap-2">
+				<ButtonStyled>
+					<button id="view-launcher-logs" @click="openLauncherLogViewer">
+						<EyeIcon />
+						{{ formatMessage(messages.launcherLogsViewButton) }}
+					</button>
+				</ButtonStyled>
+				<ButtonStyled>
+					<button id="open-launcher-logs-folder" @click="openLauncherLogsFolder">
+						<FolderOpenIcon />
+						{{ formatMessage(messages.launcherLogsButton) }}
+					</button>
+				</ButtonStyled>
+			</div>
 			<p class="m-0 leading-tight text-secondary">
 				{{ formatMessage(messages.launcherLogsDescription) }}
 			</p>
 		</div>
 	</div>
+
+	<LauncherLogViewer ref="launcherLogViewerRef" />
 </template>

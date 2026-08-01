@@ -19,6 +19,14 @@ export interface DiskInfo {
 	mountPoint: string
 }
 
+export interface GpuInfo {
+	name: string
+	vendor: string
+	usagePercent: number | null
+	memoryTotalBytes: number | null
+	memoryUsedBytes: number | null
+}
+
 export interface NetworkInfo {
 	receivedBytesPerSecond: number
 	transmittedBytesPerSecond: number
@@ -28,6 +36,7 @@ export interface SystemInfo {
 	cpu: CpuInfo
 	memory: MemoryInfo
 	disk: DiskInfo
+	gpus: GpuInfo[]
 	network: NetworkInfo
 }
 

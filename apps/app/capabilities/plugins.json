@@ -154,6 +154,12 @@
 		"crash-diagnosis:allow-crash-diagnosis-export-report",
 		"crash-diagnosis:allow-crash-diagnosis-apply-auto-fix",
 		"crash-diagnosis:allow-crash-diagnosis-cleanup-logs",
-		"translation:default"
+		"translation:default",
+		"launcher-logs:allow-launcher-logs-list-sessions",
+		"launcher-logs:allow-launcher-logs-read-session",
+		"launcher-logs:allow-launcher-logs-read-current-tail",
+		"launcher-logs:allow-launcher-logs-delete-session",
+		"launcher-logs:allow-launcher-logs-clear-all",
+		"launcher-logs:allow-launcher-logs-get-dir-path"
 	]
 }

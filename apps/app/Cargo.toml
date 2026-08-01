@@ -13,6 +13,7 @@ base64 = { workspace = true }
 chrono = { workspace = true }
 daedalus = { workspace = true }
 dashmap = { workspace = true }
+dirs = { workspace = true }
 either = { workspace = true }
 enumset = { workspace = true, features = ["serde"] }
 futures = { workspace = true, features = ["alloc", "async-await"] }

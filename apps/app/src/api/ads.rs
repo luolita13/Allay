@@ -5,7 +5,6 @@ use std::time::{Duration, Instant};
 use tauri::plugin::TauriPlugin;
 use tauri::{Manager, PhysicalPosition, PhysicalSize, Runtime};
 use tauri_plugin_opener::OpenerExt;
-use theseus::settings;
 use tokio::sync::RwLock;
 
 pub struct AdsState {

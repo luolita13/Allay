@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ClipboardCopyIcon, ExternalIcon } from '@modrinth/assets'
+import { ClipboardCopyIcon, DownloadIcon, ExternalIcon } from '@modrinth/assets'
 import {
 	ButtonStyled,
 	defineMessages,
@@ -7,6 +7,7 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { getVersion } from '@tauri-apps/api/app'
+import { save } from '@tauri-apps/plugin-dialog'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/plugin-os'
 import { ref } from 'vue'
@@ -51,12 +52,12 @@ const messages = defineMessages({
 		defaultMessage: 'Report an Issue',
 	},
 	copyAppDiagnostics: {
-		id: 'app.about.copy-diagnostics',
-		defaultMessage: 'Copy diagnostics',
+		id: 'app.about.export-diagnostics',
+		defaultMessage: 'Export diagnostics',
 	},
 	copyDiagnosticsSuccess: {
-		id: 'app.about.copy-diagnostics.success',
-		defaultMessage: 'Diagnostics copied to clipboard',
+		id: 'app.about.export-diagnostics.success',
+		defaultMessage: 'Diagnostics exported',
 	},
 	overrideAuthorized: {
 		id: 'app.about.easter-egg.override-authorized',
@@ -83,6 +84,7 @@ const clickCount = ref(0)
 const showOverrideMessage = ref(false)
 const showHallOfFame = ref(false)
 const copyingDiagnostics = ref(false)
+const diagnosticsExported = ref(false)
 
 // Arcade-style high score table — replaces the AI-ish card grid
 const highScores = [
@@ -127,7 +129,17 @@ async function copyAppDiagnostics() {
 	copyingDiagnostics.value = true
 	try {
 		const text = await app_support_details()
-		await navigator.clipboard.writeText(text)
+		const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+		const filePath = await save({
+			defaultPath: `allay-diagnostics-${timestamp}.txt`,
+			filters: [{ name: 'Text', extensions: ['txt'] }],
+		})
+		if (filePath) {
+			const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+			await writeTextFile(filePath, text)
+			diagnosticsExported.value = true
+			setTimeout(() => (diagnosticsExported.value = false), 2000)
+		}
 	} catch (error) {
 		handleError(error)
 	} finally {
@@ -225,8 +237,9 @@ async function copyAppDiagnostics() {
 		<!-- Diagnostics -->
 		<ButtonStyled color="brand" size="large" :disabled="copyingDiagnostics">
 			<button class="copy-diagnostics-btn" @click="copyAppDiagnostics">
-				<ClipboardCopyIcon :class="{ 'animate-spin': copyingDiagnostics }" />
-				{{ formatMessage(messages.copyAppDiagnostics) }}
+				<DownloadIcon v-if="!diagnosticsExported" :class="{ 'animate-spin': copyingDiagnostics }" />
+				<ClipboardCopyIcon v-else />
+				{{ diagnosticsExported ? formatMessage(messages.copyDiagnosticsSuccess) : formatMessage(messages.copyAppDiagnostics) }}
 			</button>
 		</ButtonStyled>
 

@@ -43,6 +43,16 @@ pub struct DiskInfo {
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct GpuInfo {
+    pub name: String,
+    pub vendor: String,
+    pub usage_percent: Option<f32>,
+    pub memory_total_bytes: Option<u64>,
+    pub memory_used_bytes: Option<u64>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct NetworkInfo {
     pub received_bytes_per_second: u64,
     pub transmitted_bytes_per_second: u64,
@@ -54,6 +64,7 @@ pub struct SystemInfo {
     pub cpu: CpuInfo,
     pub memory: MemoryInfo,
     pub disk: DiskInfo,
+    pub gpus: Vec<GpuInfo>,
     pub network: NetworkInfo,
 }
 
@@ -116,23 +127,25 @@ pub fn get_system_info(monitor: State<SystemMonitor>) -> Result<SystemInfo> {
     };
 
     let disks = Disks::new_with_refreshed_list();
-    #[cfg(target_os = "windows")]
-    let target = std::path::Path::new("C:\\");
-    #[cfg(not(target_os = "windows"))]
-    let target = std::path::Path::new("/");
-
-    if let Some(main_disk) = disks.iter().find(|d| d.mount_point() == target) {
-        disk.total_bytes = main_disk.total_space();
-        disk.available_bytes = main_disk.available_space();
-        disk.usage_percent = if main_disk.total_space() > 0 {
-            ((main_disk.total_space() - main_disk.available_space()) as f64
-                / main_disk.total_space() as f64
-                * 100.0) as f32
-        } else {
-            0.0
-        };
-        disk.mount_point = main_disk.mount_point().to_string_lossy().to_string();
+    // Aggregate ALL physical disks to show total storage across the system.
+    // This gives users a complete picture rather than just one drive.
+    let mut total_space: u64 = 0;
+    let mut available_space: u64 = 0;
+    for d in disks.iter() {
+        total_space += d.total_space();
+        available_space += d.available_space();
     }
+    disk.total_bytes = total_space;
+    disk.available_bytes = available_space;
+    disk.usage_percent = if total_space > 0 {
+        ((total_space - available_space) as f64 / total_space as f64 * 100.0) as f32
+    } else {
+        0.0
+    };
+    disk.mount_point = "All disks".to_string();
+
+    // GPU detection via WMI (Windows) or lspci (Linux) or system_profiler (macOS)
+    let gpus = detect_gpus();
 
     let networks = Networks::new_with_refreshed_list();
     let received_total: u64 = networks.iter().map(|(_, n)| n.total_received()).sum();
@@ -174,6 +187,222 @@ pub fn get_system_info(monitor: State<SystemMonitor>) -> Result<SystemInfo> {
         }),
         memory,
         disk,
+        gpus,
         network,
     })
+}
+
+/// Detect GPU information using platform-specific methods.
+/// On Windows: parses `dxdiag` output.
+/// On Linux: parses `lspci` output.
+/// On macOS: parses `system_profiler` output.
+fn detect_gpus() -> Vec<GpuInfo> {
+    #[cfg(target_os = "windows")]
+    {
+        detect_gpus_windows()
+    }
+    #[cfg(target_os = "linux")]
+    {
+        detect_gpus_linux()
+    }
+    #[cfg(target_os = "macos")]
+    {
+        detect_gpus_macos()
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    {
+        Vec::new()
+    }
+}
+
+/// Returns true if the GPU name belongs to a virtual display adapter,
+/// software renderer, or remote-desktop virtual GPU rather than real
+/// hardware. These should be filtered out to avoid confusing users.
+fn is_virtual_display_adapter(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    // Known virtual display adapters and software renderers
+    const VIRTUAL_KEYWORDS: &[&str] = &[
+        "basic render driver",
+        "microsoft basic display",
+        "microsoft display adapter",
+        "virtual display",
+        "virtual adapter",
+        "virtual gpu",
+        "gameviewer",
+        "anydesk",
+        "todesk display",
+        "parsec virtual",
+        "sunshine display",
+        "remote desktop display",
+        "mirror display",
+        "indirect display",
+        "ddu display",
+        "spacedesk",
+        "deskreen",
+        "divid",
+        "iweski",
+        "usb display",
+        "headless",
+        "null display",
+    ];
+    VIRTUAL_KEYWORDS.iter().any(|kw| lower.contains(kw))
+}
+
+#[cfg(target_os = "windows")]
+fn detect_gpus_windows() -> Vec<GpuInfo> {
+    // Use PowerShell + Get-CimInstance to enumerate GPU devices.
+    // This is more reliable than parsing dxdiag XML and doesn't require
+    // writing temp files.
+    let output = std::process::Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Get-CimInstance Win32_VideoController | Select-Object Name, AdapterCompatibility, AdapterRAM | ConvertTo-Json",
+        ])
+        .output();
+
+    let output = match output {
+        Ok(o) if o.status.success() => o,
+        _ => return Vec::new(),
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    if stdout.trim().is_empty() {
+        return Vec::new();
+    }
+
+    // The output can be a single object or an array; normalize to array
+    let json: serde_json::Value = match serde_json::from_str(&stdout) {
+        Ok(v) => v,
+        Err(_) => return Vec::new(),
+    };
+
+    let entries: Vec<&serde_json::Value> = match &json {
+        serde_json::Value::Array(arr) => arr.iter().collect(),
+        single => vec![single],
+    };
+
+    let mut gpus = Vec::new();
+    for entry in entries {
+        let name = entry
+            .get("Name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Unknown GPU")
+            .to_string();
+        let vendor = entry
+            .get("AdapterCompatibility")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Unknown")
+            .to_string();
+        let memory_total = entry
+            .get("AdapterRAM")
+            .and_then(|v| v.as_u64());
+
+        // Skip virtual display adapters, software renderers, and remote
+        // desktop virtual GPUs that are not real hardware.
+        if is_virtual_display_adapter(&name) {
+            continue;
+        }
+
+        gpus.push(GpuInfo {
+            name,
+            vendor,
+            usage_percent: None,
+            memory_total_bytes: memory_total,
+            memory_used_bytes: None,
+        });
+    }
+
+    gpus
+}
+
+#[cfg(target_os = "linux")]
+fn detect_gpus_linux() -> Vec<GpuInfo> {
+    let output = std::process::Command::new("lspci")
+        .arg("-mm")
+        .output();
+
+    let output = match output {
+        Ok(o) if o.status.success() => o,
+        _ => return Vec::new(),
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut gpus = Vec::new();
+
+    for line in stdout.lines() {
+        if !line.to_lowercase().contains("vga compatible controller")
+            && !line.to_lowercase().contains("3d controller")
+            && !line.to_lowercase().contains("display controller")
+        {
+            continue;
+        }
+
+        // Parse "Class" "Vendor" "Device" format
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        let name = parts.last().unwrap_or(&"Unknown GPU").to_string();
+        let vendor = parts.get(1).unwrap_or(&"Unknown").to_string();
+
+        gpus.push(GpuInfo {
+            name,
+            vendor,
+            usage_percent: None,
+            memory_total_bytes: None,
+            memory_used_bytes: None,
+        });
+    }
+
+    gpus
+}
+
+#[cfg(target_os = "macos")]
+fn detect_gpus_macos() -> Vec<GpuInfo> {
+    let output = std::process::Command::new("system_profiler")
+        .args(["SPDisplaysDataType", "-json"])
+        .output();
+
+    let output = match output {
+        Ok(o) if o.status.success() => o,
+        _ => return Vec::new(),
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = match serde_json::from_str(&stdout) {
+        Ok(v) => v,
+        Err(_) => return Vec::new(),
+    };
+
+    let mut gpus = Vec::new();
+    if let Some(arr) = json
+        .get("SPDisplaysDataType")
+        .and_then(|v| v.as_array())
+    {
+        for gpu in arr {
+            let name = gpu
+                .get("sppci_model")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Unknown GPU")
+                .to_string();
+            let vendor = gpu
+                .get("spdisplays_vendor")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Apple")
+                .to_string();
+            let memory_total = gpu
+                .get("spdisplays_vram")
+                .and_then(|v| v.as_str())
+                .and_then(|s| s.parse::<u64>().ok());
+
+            gpus.push(GpuInfo {
+                name,
+                vendor,
+                usage_percent: None,
+                memory_total_bytes: memory_total,
+                memory_used_bytes: None,
+            });
+        }
+    }
+
+    gpus
 }

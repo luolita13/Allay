@@ -445,6 +445,21 @@ fn main() {
                     .default_permission(
                         DefaultPermissionRule::AllowAllCommands,
                     ),
+            )
+            .plugin(
+                "launcher-logs",
+                InlinedPlugin::new()
+                    .commands(&[
+                        "launcher_logs_list_sessions",
+                        "launcher_logs_read_session",
+                        "launcher_logs_read_current_tail",
+                        "launcher_logs_delete_session",
+                        "launcher_logs_clear_all",
+                        "launcher_logs_get_dir_path",
+                    ])
+                    .default_permission(
+                        DefaultPermissionRule::AllowAllCommands,
+                    ),
             ),
     )
     .expect("Failed to run tauri-build");

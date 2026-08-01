@@ -1813,9 +1813,32 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				>
 					{{ formatMessage(messages.authUnreachableBody) }}
 				</Admonition>
-				<RouterView v-slot="{ Component }">
-					<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
-						<component :is="Component" />
+				<RouterView v-slot="{ Component, route }">
+					<Transition
+						v-if="themeStore.getFeatureFlag('route_transitions')"
+						name="route-fade"
+						mode="out-in"
+					>
+						<Suspense :key="route.path" @pending="onSuspensePending" @resolve="onSuspenseResolve">
+							<component :is="Component" />
+							<template #fallback>
+								<div class="flex items-center justify-center h-full w-full">
+									<div class="flex flex-col items-center gap-3">
+										<div
+											class="w-8 h-8 border-2 border-[--color-brand] border-t-transparent rounded-full animate-spin"
+										></div>
+										<span class="text-sm text-[--color-text-secondary]">Loading...</span>
+									</div>
+								</div>
+							</template>
+						</Suspense>
+					</Transition>
+					<Suspense
+						v-else
+						@pending="onSuspensePending"
+						@resolve="onSuspenseResolve"
+					>
+						<component :is="Component" :key="route.path" />
 						<template #fallback>
 							<div class="flex items-center justify-center h-full w-full">
 								<div class="flex flex-col items-center gap-3">
@@ -2229,6 +2252,36 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 
 	.fade-enter-from {
 		opacity: 0;
+	}
+
+	/* Route transition: smooth fade + slight upward slide */
+	.route-fade-enter-active {
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.route-fade-leave-active {
+		transition:
+			opacity 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.route-fade-enter-from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+
+	.route-fade-leave-to {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.route-fade-enter-active,
+	.route-fade-leave-active {
+		transition: opacity 0.1s ease;
 	}
 }
 </style>
