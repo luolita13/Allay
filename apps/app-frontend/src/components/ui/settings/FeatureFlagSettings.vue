@@ -20,14 +20,6 @@ const messages = defineMessages({
 		id: 'app.feature-flag-settings.experimental-badge',
 		defaultMessage: 'Experimental',
 	},
-	routeTransitionsLabel: {
-		id: 'app.feature-flag-settings.route-transitions-label',
-		defaultMessage: 'Route Transitions',
-	},
-	routeTransitionsDescription: {
-		id: 'app.feature-flag-settings.route-transitions-description',
-		defaultMessage: 'Enable route transitions between pages.\nIF YOU ENCOUNTER PROBLEMS, DISABLE THIS FEATURE.',
-	},
 })
 
 interface FeatureFlagDefinition {
@@ -38,12 +30,6 @@ interface FeatureFlagDefinition {
 }
 
 const FEATURE_FLAGS: FeatureFlagDefinition[] = [
-	{
-		key: 'route_transitions',
-		label: 'routeTransitionsLabel',
-		description: 'routeTransitionsDescription',
-		experimental: true,
-	},
 ]
 
 function setFeatureFlag(key: FeatureFlag, value: boolean) {
