@@ -909,9 +909,9 @@ async fn fetch_bytes_bytehaul(
 
     let mut spec = bytehaul::DownloadSpec::new(url)
         .output_path(&output_path_str)
-        .max_connections(8)
-        .piece_size(4 * 1024 * 1024)       // 4 MiB pieces
-        .min_split_size(5 * 1024 * 1024)   // only split files > 5 MiB
+        .max_connections(4)
+        .piece_size(4 * 1024 * 1024)        // 4 MiB pieces
+        .min_split_size(10 * 1024 * 1024)   // only split files > 10 MiB
         .retry_policy(3, std::time::Duration::from_secs(1), std::time::Duration::from_secs(30))
         .max_retry_elapsed(std::time::Duration::from_secs(120))
         .connect_timeout(std::time::Duration::from_secs(10))
