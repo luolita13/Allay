@@ -35,8 +35,8 @@ cargo install rsign2
 
 | 文件 | 字段 | 示例 |
 |------|------|------|
-| `apps/app-frontend/package.json` | `"version"` | `"0.11.0"` |
-| `apps/app/Cargo.toml` | `version` | `0.11.0` |
+| `apps/app-frontend/package.json` | `"version"` | `"0.12.0"` |
+| `apps/app/Cargo.toml` | `version` | `0.12.0` |
 
 #### 3. 构建 NSIS 安装包
 
@@ -65,10 +65,10 @@ $keyPlain | rsign sign -W -x "target/release/bundle/nsis/Allay_x.x.x_x64-setup.e
 
 ```
 target/release/bundle/nsis/
-├── Allay_0.11.0_x64-setup.exe          # 安装包
-├── Allay_0.11.0_x64-setup.exe.sig      # 安装包签名
-├── Allay_0.11.0_x64-setup.nsis.zip     # 更新包（ZIP）
-├── Allay_0.11.0_x64-setup.nsis.zip.sig # 更新包签名
+├── Allay_0.12.0_x64-setup.exe          # 安装包
+├── Allay_0.12.0_x64-setup.exe.sig      # 安装包签名
+├── Allay_0.12.0_x64-setup.nsis.zip     # 更新包（ZIP）
+├── Allay_0.12.0_x64-setup.nsis.zip.sig # 更新包签名
 └── latest.json                         # 更新元数据
 ```
 
