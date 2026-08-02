@@ -3,6 +3,15 @@ $ErrorActionPreference = "Stop"
 $rootDir = "E:\mc\Allay"
 $nsisDir = "$rootDir\target\release\bundle\nsis"
 
+# --- Step 0: Clean old artifacts so we never sign/resurrect stale files ---
+Write-Output "=== CLEANING OLD NSIS ARTIFACTS ==="
+if (Test-Path $nsisDir) {
+    [System.IO.Directory]::GetFiles($nsisDir, "Allay_*") | ForEach-Object {
+        [System.IO.File]::Delete($_)
+        Write-Output "  deleted $_"
+    }
+}
+
 # --- Step 1: Build the Tauri app (NSIS installer only) ---
 Write-Output "=== BUILDING ==="
 Set-Location "$rootDir\apps\app"
@@ -17,26 +26,35 @@ $keyPlain = [System.Text.Encoding]::UTF8.GetString($keyBytes)
 $keyPlainPath = "$env:TEMP\allay-key-plain"
 $keyPlain | Set-Content $keyPlainPath -NoNewline
 
-# --- Step 3: Sign the updater bundles with rsign2 ---
-Write-Output "=== SIGNING ==="
-$exeFile = Get-ChildItem "$nsisDir\*_x64-setup.exe" | Select-Object -First 1
-$zipFile = Get-ChildItem "$nsisDir\*_x64-setup.nsis.zip" | Select-Object -First 1
+# --- Step 3: Locate this release's files by exact version ---
+Write-Output "=== LOCATING BUNDLE FILES ==="
+$version = (Get-Content "$rootDir\apps\app-frontend\package.json" | ConvertFrom-Json).version
+$expectedExe = "Allay_${version}_x64-setup.exe"
+$expectedZip = "Allay_${version}_x64-setup.nsis.zip"
+$exeFile = Get-Item "$nsisDir\$expectedExe" -ErrorAction SilentlyContinue
+$zipFile = Get-Item "$nsisDir\$expectedZip" -ErrorAction SilentlyContinue
 
 if (-not $exeFile -or -not $zipFile) {
-    Write-Error "Build output files not found in $nsisDir"
+    Write-Error "Expected bundle files for version $version not found in $nsisDir"
+    Write-Output "Expected: $expectedExe, $expectedZip"
     exit 1
 }
+Write-Output "  exe: $($exeFile.Name)"
+Write-Output "  zip: $($zipFile.Name)"
+
+# --- Step 4: Sign the updater bundles with rsign2 ---
+Write-Output "=== SIGNING ==="
 
 rsign sign -s $keyPlainPath -W -x "$nsisDir\$($zipFile.Name).sig" "$nsisDir\$($zipFile.Name)"
 rsign sign -s $keyPlainPath -W -x "$nsisDir\$($exeFile.Name).sig" "$nsisDir\$($exeFile.Name)"
 
-# --- Step 4: Generate latest.json ---
+# --- Step 5: Generate latest.json ---
 Write-Output "=== GENERATING latest.json ==="
-$sigRaw = Get-Content "$nsisDir\$($zipFile.Name).sig" -Raw
-# Tauri updater expects base64-encoded signature (same as pubkey format)
-$sigBytes = [System.Text.Encoding]::UTF8.GetBytes($sigRaw.Trim())
+$sigRaw = [System.IO.File]::ReadAllText("$nsisDir\$($zipFile.Name).sig", [System.Text.Encoding]::UTF8)
+# Tauri updater expects base64-encoded signature (same as pubkey format).
+# Do NOT trim the trailing newline — rsign signatures require it.
+$sigBytes = [System.Text.Encoding]::UTF8.GetBytes($sigRaw)
 $sigB64 = [Convert]::ToBase64String($sigBytes)
-$version = (Get-Content "$rootDir\apps\app-frontend\package.json" | ConvertFrom-Json).version
 $pubDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
 $latest = @{
@@ -55,7 +73,15 @@ $latestJson = $latest | ConvertTo-Json -Depth 4
 $Utf8NoBom = New-Object System.Text.UTF8Encoding $false
 [System.IO.File]::WriteAllText("$nsisDir\latest.json", $latestJson, $Utf8NoBom)
 
-# --- Step 5: Verify signatures ---
+# Sanity check: ensure latest.json version matches the release we just built
+$generated = Get-Content "$nsisDir\latest.json" -Raw | ConvertFrom-Json
+if ($generated.version -ne $version) {
+    Write-Error "latest.json version mismatch: generated '$($generated.version)' != expected '$version'"
+    exit 1
+}
+Write-Output "  latest.json version: $($generated.version)"
+
+# --- Step 6: Verify signatures ---
 Write-Output "=== VERIFYING SIGNATURES ==="
 $pubB64 = [System.IO.File]::ReadAllText("$rootDir\apps\app\allay-updater-key.pub", [System.Text.Encoding]::UTF8).Trim()
 $pubBytes = [Convert]::FromBase64String($pubB64)

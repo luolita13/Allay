@@ -69,8 +69,10 @@ target/release/bundle/nsis/
 ├── Allay_0.12.0_x64-setup.exe.sig      # 安装包签名
 ├── Allay_0.12.0_x64-setup.nsis.zip     # 更新包（ZIP）
 ├── Allay_0.12.0_x64-setup.nsis.zip.sig # 更新包签名
-└── latest.json                         # 更新元数据
+└── latest.json                         # 更新元数据（每次发版必须从新生成）
 ```
+
+> ⚠️ `latest.json` 决定客户端是否检测到更新。**绝对不能复用旧版本的 `latest.json`**。如果手动上传，请先用文本编辑器确认其中 `version` 字段与本次发布版本一致。
 
 ## 密钥说明
 
@@ -84,4 +86,20 @@ target/release/bundle/nsis/
 
 1. 改版本号（两个文件）
 2. 运行 `.\build.ps1`（或手动执行上述步骤）
-3. 将 `latest.json` 和 4 个安装包文件上传到 GitHub Releases
+3. 检查 `target/release/bundle/nsis/latest.json` 中的 `version` 是否与本次发布一致
+4. 将 `latest.json` 和 4 个安装包文件上传到 GitHub Releases
+5. 上传后通过下方命令再次确认 `latest.json` 内容正确
+
+```powershell
+Invoke-RestMethod -Uri "https://github.com/luolita13/Allay/releases/download/v0.12.0/latest.json" | ConvertTo-Json -Depth 5
+```
+
+## 常见问题
+
+### 客户端提示 "You are on the latest version"，但 Release 页面已有新版
+
+最可能的原因是 GitHub Release 上的 `latest.json` 还是旧版本。`releases/latest/download/latest.json` 总是返回 latest release 附件中的 `latest.json` 文件，而不是 release 列表的版本号。请重新生成本次的 `latest.json` 并替换上传。
+
+### 构建产物目录残留旧版本文件
+
+如果 `target/release/bundle/nsis/` 里同时存在 `Allay_0.11.0_*` 和 `Allay_0.12.0_*`，`.\build.ps1` 现在会在构建前清理旧产物并按版本号精确匹配文件。手动构建时请先删除旧文件，或在生成 `latest.json` 前确认签名对应的 zip 文件版本正确。
